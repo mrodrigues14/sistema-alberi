@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alberi Consult</title>
+    <link rel="stylesheet" href="styleLogin.css">
+</head>
+<body>
+<div class="login">
+    <h1>Alberi Consult</h1>
+    <h2>Consultoria financeira</h2>
+
+    <div class="login-container">
+        <form action="/login" method="post">
+            <label>
+                <input type="text" placeholder="Usúario" name="username" required>
+            </label>
+            <label>
+                <input type="password" placeholder="Senha" name="password" required>
+            </label>
+            <div class="remember-forgot">
+                <label><input type="checkbox" name="remember"> Lembrar credenciais</label>
+                <a href="/forgot">Esqueceu a senha?</a>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</div>
+<div class="loginBackground">
+    <img src="images/img.png" alt="imagem logo"/>
+</div>
+<script src="loginScript.js"></script>
+</body>
+</html>
