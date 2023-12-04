@@ -2,7 +2,6 @@
 
 - Baixar Node v20.9.0
 - clone do repositorio
-- cd backend
 - npm install
 
 ## Para iniciar:
