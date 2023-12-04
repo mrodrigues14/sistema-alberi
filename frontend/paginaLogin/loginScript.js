@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 if (data.message === 'Login successful') {
-                    window.location.href = '/paginaInicial';
+                    window.location.href = '../paginaInicial/paginaInicial.html';
                 } else {
                     alert(data.message);
                 }
