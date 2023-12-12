@@ -8,6 +8,7 @@ const dbConfig = {
     database: 'alberi'
 };
 
+
 const connection = mysql.createConnection(dbConfig);
 
 connection.connect(error => {
