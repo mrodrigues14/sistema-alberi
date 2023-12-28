@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+
+
+body {
+    background: #eeee;
+    margin: 0;
+
+}
+.navbar {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #FFFFFF;
+    color: white;
+    padding: 1vw;
+    display: flex;
+    margin: 0;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+
+}
+.navbar button {
+    font-family: 'DM Sans', sans-serif;
+    padding: 5px 10px;
+    width: auto;
+    background-color: #FFFFFF;
+    color: black;
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+
+
+}
+
+.dropbtn{
+    border-radius: 5px;
+
+}
+
+.dropbtn:active {
+    border-radius: 5px 5px 0 0;
+}
+
+.buttonMenu{
+    margin: 0 20px;
+    border-radius: 5px;
+
+}
+
+.navbar button:hover {
+    background-color: #8BACAF;
+}
+
+.dropbtn:focus {
+    background-color: #8BACAF;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    margin-left: auto;
+}
+
+.dropdown-content {
+    border-radius: 5px;
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown a:hover {background-color: #ddd;}
+
+.show {display: block;}
