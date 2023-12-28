@@ -1,4 +1,3 @@
-// loginScript.js
 document.addEventListener('DOMContentLoaded', function () {
     const loginForm = document.querySelector('form');
 
@@ -14,12 +13,14 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: JSON.stringify({
                 username: username,
-                password: password })
+                password: password
+            })
         })
             .then(response => response.json())
             .then(data => {
                 if (data.message === 'Login successful') {
-                    window.location.href = '../paginaInicial/paginaInicial.html';
+                    localStorage.setItem('username', data.user.username);
+                    window.location.href = '/paginaInicial/paginaInicial.html';
                 } else {
                     alert(data.message);
                 }
