@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.message === 'Login successful') {
                     localStorage.setItem('username', data.user.username);
-                    window.location.href = '/paginaInicial/paginaInicial.html';
+                    window.location.href = '/paginainicial';
                 } else {
                     alert(data.message);
                 }

@@ -2,8 +2,8 @@
 const mysql = require('mysql2');
 
 const dbConfig = {
-    host: '127.0.0.1',
-    user: 'root',
+    host: '25.3.70.175',
+    user: 'jose',
     password: '1234',
     database: 'alberi'
 };
