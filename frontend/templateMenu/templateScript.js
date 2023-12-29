@@ -1,18 +1,25 @@
 function myFunction() {
     document.getElementById("myDropdown").classList.toggle("show");
-    var dropbtn = document.querySelector(".dropbtn");
-    dropbtn.classList.toggle("dropbtn-active");
+    document.querySelector('.dropbtn').classList.toggle('active');
+    var empresaSelecionada = document.querySelector('.empresaSelecionada');
+    if(document.querySelector('.dropbtn').classList.contains('active')){
+        empresaSelecionada.style.borderRadius = '0';
+    } else {
+        empresaSelecionada.style.borderRadius = '0 0 5px 5px';
+    }
 }
 
 window.onclick = function(event) {
     if (!event.target.matches('.dropbtn')) {
         var dropdowns = document.getElementsByClassName("dropdown-content");
-        var dropbtn = document.querySelector(".dropbtn");
         var i;
         for (i = 0; i < dropdowns.length; i++) {
             var openDropdown = dropdowns[i];
             if (openDropdown.classList.contains('show')) {
                 openDropdown.classList.remove('show');
+                document.querySelector('.dropbtn').classList.remove('active');
+                var empresaSelecionada = document.querySelector('.empresaSelecionada');
+                empresaSelecionada.style.borderRadius = '0 0 5px 5px';
             }
         }
     }

@@ -21,29 +21,26 @@ body {
 .navbar button {
     font-family: 'DM Sans', sans-serif;
     padding: 5px 10px;
-    width: auto;
     background-color: #FFFFFF;
     color: black;
     cursor: pointer;
     font-size: 16px;
     border: none;
-    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
 
 
 }
 
 .dropbtn{
-    border-radius: 5px;
-
-}
-
-.dropbtn:active {
+     width: auto;
     border-radius: 5px 5px 0 0;
+
 }
 
 .buttonMenu{
     margin: 0 20px;
     border-radius: 5px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+    width: auto;
 
 }
 
@@ -56,13 +53,15 @@ body {
 }
 
 .dropdown {
+    border-radius: 5px;
     position: relative;
     display: inline-block;
     margin-left: auto;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+
 }
 
 .dropdown-content {
-    border-radius: 5px;
     display: none;
     position: absolute;
     background-color: #f1f1f1;
@@ -85,3 +84,12 @@ body {
 .dropdown a:hover {background-color: #ddd;}
 
 .show {display: block;}
+
+.empresaSelecionada{
+    width: 100%;
+    border-radius: 0 0 5px 5px;
+}
+
+.dropbtn.active + .empresaSelecionada {
+    border-radius: 0;
+}
