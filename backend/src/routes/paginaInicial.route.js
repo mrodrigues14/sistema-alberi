@@ -3,8 +3,6 @@ const router = express.Router();
 const path = require('path');
 const db = require('../base/database');
 
-let nomeEmpresaConsulta = '';
-
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaInicial/paginaInicial.html'));
 });
@@ -17,7 +15,6 @@ router.post('/consultarEmpresas', (req, res) => {
         }
 
         if (results.length > 0) {
-            // Enviar todos os nomes encontrados
             res.json(results.map(result => result.nome));
         } else {
             res.status(404).send({ message: 'Nenhuma empresa encontrada' });
