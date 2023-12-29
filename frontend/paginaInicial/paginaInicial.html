@@ -8,9 +8,11 @@
 </head>
 <body>
     <div id="menu-container"></div>
-    <div class="botaoSelecaoDeEmpresa">
-        <button> Selecione o cliente desejado</button>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Selecione uma empresa">
+        <button onclick="loadNomeEmpresa()" class="arrow-button"></button>
     </div>
+    <ul id="nameList" class="name-list"></ul>
 
 
 <script src="paginaInicialScript.js"></script>
