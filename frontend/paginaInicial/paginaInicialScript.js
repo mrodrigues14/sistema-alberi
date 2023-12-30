@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-
 function loadNomeEmpresa() {
     fetch('/paginainicial/consultarEmpresas', { method: 'POST' })
         .then(response => {
@@ -31,14 +30,14 @@ function loadNomeEmpresa() {
         })
         .then(data => {
             var names = data;
-            initializeInput(names);
+            inputNomeEmpresa(names);
         })
         .catch(error => {
             console.error('Erro na requisição:', error);
         });
 }
 
-function initializeInput(names) {
+function inputNomeEmpresa(names) {
     var input = document.getElementById('searchInput');
     var list = document.getElementById('nameList');
 
@@ -54,6 +53,8 @@ function initializeInput(names) {
         if (e.target.tagName === 'LI') {
             input.value = e.target.textContent;
             list.style.display = 'none';
+
+            empresaSelecionada(e.target.textContent);
         }
     });
 
@@ -73,4 +74,18 @@ function initializeInput(names) {
     }
 }
 
+function empresaSelecionada(nomeEmpresa) {
+    localStorage.setItem('nomeEmpresaSelecionada', nomeEmpresa);
+    updateNomeEmpresa(nomeEmpresa);
+}
 
+function updateNomeEmpresa(nomeEmpresa) {
+    var empresaSelecionadaButton = document.querySelector('.empresaSelecionada');
+    if (empresaSelecionadaButton) {
+        empresaSelecionadaButton.textContent = nomeEmpresa;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadNomeEmpresa();
+});
