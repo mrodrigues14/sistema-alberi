@@ -43,8 +43,24 @@ function loadAndDisplayUsername() {
         });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    var nomeEmpresa = localStorage.getItem('nomeEmpresaSelecionada');
+
+function handleEmpresa() {
+    var nomeEmpresa = getStoredEmpresaName();
     updateNomeEmpresa(nomeEmpresa);
+}
+
+function getStoredEmpresaName() {
+    return localStorage.getItem('nomeEmpresaSelecionada');
+}
+
+function updateNomeEmpresa(nomeEmpresa) {
+    var empresaSelecionadaElement = document.querySelector('.empresaSelecionada');
+    if (empresaSelecionadaElement && nomeEmpresa) {
+        empresaSelecionadaElement.textContent = nomeEmpresa;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    handleEmpresa()
     loadAndDisplayUsername();
 });

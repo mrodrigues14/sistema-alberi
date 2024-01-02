@@ -12,7 +12,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             var script = document.createElement('script');
             script.src = '/templateMenu/templateScript.js';
-            script.onload = function() { loadAndDisplayUsername() };
+            script.onload = function() {
+                loadAndDisplayUsername();
+                handleEmpresa();
+            };
             document.body.appendChild(script);
         })
         .catch(error => {
@@ -80,10 +83,12 @@ function empresaSelecionada(nomeEmpresa) {
 }
 
 function updateNomeEmpresa(nomeEmpresa) {
-    var empresaSelecionadaButton = document.querySelector('.empresaSelecionada');
-    if (empresaSelecionadaButton) {
-        empresaSelecionadaButton.textContent = nomeEmpresa;
-    }
+    setTimeout(() => {
+        var empresaSelecionadaButton = document.querySelector('.empresaSelecionada');
+        if (empresaSelecionadaButton) {
+            empresaSelecionadaButton.textContent = nomeEmpresa;
+        }
+    }, 0);
 }
 
 document.addEventListener('DOMContentLoaded', function() {

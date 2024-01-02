@@ -1,14 +1,18 @@
-.search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
 input[type="text"] {
     padding: 10px;
     width: 200px;
     border: 2px solid #ccc;
     border-radius: 5px 0 0 5px;
+}
+
+#paginaInicialButton{
+    background-color: #8BACAF;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .arrow-button {
