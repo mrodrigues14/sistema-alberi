@@ -2,7 +2,7 @@ function myFunction() {
     document.getElementById("myDropdown").classList.toggle("show");
     document.querySelector('.dropbtn').classList.toggle('active');
     var empresaSelecionada = document.querySelector('.empresaSelecionada');
-    if(document.querySelector('.dropbtn').classList.contains('active')){
+    if (document.querySelector('.dropbtn').classList.contains('active')) {
         empresaSelecionada.style.borderRadius = '0';
     } else {
         empresaSelecionada.style.borderRadius = '0 0 5px 5px';
@@ -12,8 +12,7 @@ function myFunction() {
 window.onclick = function(event) {
     if (!event.target.matches('.dropbtn')) {
         var dropdowns = document.getElementsByClassName("dropdown-content");
-        var i;
-        for (i = 0; i < dropdowns.length; i++) {
+        for (var i = 0; i < dropdowns.length; i++) {
             var openDropdown = dropdowns[i];
             if (openDropdown.classList.contains('show')) {
                 openDropdown.classList.remove('show');
@@ -24,6 +23,7 @@ window.onclick = function(event) {
         }
     }
 }
+
 function loadAndDisplayUsername() {
     fetch('/api/usuario-logado')
         .then(response => {
@@ -43,3 +43,8 @@ function loadAndDisplayUsername() {
         });
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    var nomeEmpresa = localStorage.getItem('nomeEmpresaSelecionada');
+    updateNomeEmpresa(nomeEmpresa);
+    loadAndDisplayUsername();
+});
