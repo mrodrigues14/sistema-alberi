@@ -1,19 +1,26 @@
 input[type="text"] {
     padding: 10px;
-    width: 200px;
+    width: 300px;
     border: 2px solid #ccc;
     border-radius: 5px 0 0 5px;
+    font-size: 1rem;
 }
+
 
 #paginaInicialButton{
     background-color: #8BACAF;
 }
 
 .search-box {
-    position: relative;
+    position: absolute;
     display: flex;
+    justify-content: center;
     align-items: center;
+    top:40%;
+    left:40%;
+    width: auto;
 }
+
 
 .arrow-button {
     padding: 10px;
@@ -22,6 +29,10 @@ input[type="text"] {
     border-radius: 0 5px 5px 0;
     background-color: white;
     cursor: pointer;
+    width: auto;
+    height: 42px;
+
+
 }
 
 .arrow-button::before {
@@ -37,11 +48,21 @@ input[type="text"] {
 .name-list {
     list-style: none;
     padding: 0;
-    display: none; /* inicialmente escondido */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    width: 100%;/
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 2px;
 }
 
 .name-list li {
-    padding: 5px;
+    padding: 10px;
     border: 1px solid #ddd;
     cursor: pointer;
+    font-size: 1.2rem;
 }
