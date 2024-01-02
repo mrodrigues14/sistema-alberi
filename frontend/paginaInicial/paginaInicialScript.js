@@ -32,12 +32,22 @@ function loadNomeEmpresa() {
             return response.json();
         })
         .then(data => {
-            var names = data;
-            inputNomeEmpresa(names);
+            inputNomeEmpresa(data);
+            addClickEventToListItems();
         })
         .catch(error => {
             console.error('Erro na requisição:', error);
         });
+}
+function addClickEventToListItems() {
+    var listItems = document.querySelectorAll('.name-list li');
+    listItems.forEach(function(item) {
+        item.addEventListener('click', redirecionamentoDePagina);
+    });
+}
+
+function redirecionamentoDePagina() {
+    window.location.href = '../paginaMenuInicial/paginaMenuInicial.html';
 }
 
 function inputNomeEmpresa(names) {
@@ -91,6 +101,7 @@ function updateNomeEmpresa(nomeEmpresa) {
     }, 0);
 }
 
+addClickEventToListItems();
 document.addEventListener('DOMContentLoaded', function() {
     loadNomeEmpresa();
 });
