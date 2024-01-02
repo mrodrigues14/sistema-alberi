@@ -48,7 +48,7 @@ function addClickEventToListItems() {
 }
 
 function redirecionamentoDePagina() {
-    window.location.href = '../paginaMenuInicial/paginaMenuInicial.html';
+    window.location.href = '../paginaEstudos/paginaEstudos.html';
 }
 
 function inputNomeEmpresa(names) {
