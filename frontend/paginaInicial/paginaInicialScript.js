@@ -32,8 +32,7 @@ function loadNomeEmpresa() {
             return response.json();
         })
         .then(data => {
-            var names = data;
-            inputNomeEmpresa(names);
+            inputNomeEmpresa(data);
             addClickEventToListItems();
         })
         .catch(error => {
