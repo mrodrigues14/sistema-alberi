@@ -22,3 +22,18 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Erro ao carregar o template:', error);
         });
 });
+
+document.getElementById('dateButton').addEventListener('click', function() {
+    document.getElementById('seletorMes').click();
+});
+
+document.getElementById('seletorMes').addEventListener('change', function() {
+    var date = new Date(this.value);
+    var options = { month: 'long', year: 'numeric' };
+    var formattedDate = new Intl.DateTimeFormat('pt-BR', options).format(date);
+    document.getElementById('dateButton').textContent = formattedDate;
+});
+
+function teste(){
+    alert("teste");
+}

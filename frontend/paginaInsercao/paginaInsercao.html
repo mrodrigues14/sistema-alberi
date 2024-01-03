@@ -3,15 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <title>Inserção</title>
-    <link rel="stylesheet" href="insercaoStyles.css">
     <style>
         #extratoButton{
             background-color: #8BACAF;
         }
+        #inserirButton{
+            background-color: #8BACAF;
+        }
+        hr{
+            margin: 0;
+            border-color: #adadad;
+            border-top: 0px;
+        }
     </style>
+    <link rel="stylesheet" href="/paginaInsercao/insercaoStyles.css">
 </head>
 <body>
     <div id="menu-container"></div>
+    <hr>
+    <div class="subnavbar">
+        <button class="buttonMenu" id="inserirButton">Inserir extrato</button>
+        <button class="buttonMenu">Consultar extrato</button>
+        <button class="buttonMenu">Rubricas</button>
+        <button class="buttonMenu">Adicionar fornecedor</button>
+        <button class="buttonMenu">Editar categorias</button>
+        <div></div>
+    </div>
+    <hr>
+    <div class="seletores">
+        <div>
+            <label for="seletorBanco">Banco</label>
+            <select id="seletorBanco">
+
+            </select>
+        </div>
+        <div class="data-seletor">
+            <label for="seletorMesAno">Mês/Ano:</label>
+            <input type="month" id="seletorMesAno">
+        </div>
+        <div>
+            <label for="saldoInicial">Saldo Inicial (R$):</label>
+            <input type="number" id="saldoInicial" placeholder="Digite o saldo inicial">
+        </div>
+        </div>
+    <br>
+    <form action="/insercao/" method="post">
+        <div class="tabela">
+            <table>
+                <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Categoria</th>
+                    <th>Nome no Extrato</th>
+                    <th>Tipo de Transação</th>
+                    <th>Valor</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><input type="date" name="Data"></td>
+                    <td><input type="text" name="categoria"></td>
+                    <td><input type="text" name="nome_extrato"></td>
+                    <td>
+                        <label>
+                            <select name="tipo">
+                                <option value="entrada">Entrada</option>
+                                <option value="saida">Saída</option>
+                            </select>
+                        </label>
+                    </td>
+                    <td><input type="number" name="valor"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <input type="submit" value="Enviar">
+    </form>
 
     <script src="/paginaInsercao/paginaInsercao.js"></script>
 </body>

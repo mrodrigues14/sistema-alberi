@@ -1,0 +1,134 @@
+.subnavbar {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #FFFFFF;
+    color: white;
+    padding: 1vw;
+    display: flex;
+    margin: 0;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+
+}
+.subnavbar div{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    width: 51%;
+}
+.subnavbar button {
+    font-family: 'DM Sans', sans-serif;
+    padding: 5px 10px;
+    background-color: #FFFFFF;
+    color: black;
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+
+
+}
+
+.buttonMenu{
+    margin: 0 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+    width: auto;
+
+}
+
+.subnavbar button:hover {
+    background-color: #8BACAF;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.show {display: block;}
+
+.seletores{
+    margin-top: 3vw;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    width: 90%;
+    box-sizing: border-box;
+}
+
+.seletores div{
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #FFFFFF;
+    color: black;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2);
+    margin-left: 5%;
+    margin-right: 5%;
+    flex: 1;
+}
+
+.data-seletor {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#dateButton {
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.tabela{
+    display: flex;
+    padding: 0;
+    justify-items: center;
+    margin-top: 3vw;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+}
+
+.tabela table{
+    border-collapse: collapse;
+    width: 100%;
+    border-radius: 5px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2);
+}
+
+.tabela select{
+    border-radius: 5px;
+    padding: 0;
+    text-align: center;
+    width: 8vw;
+    background-color: #FFFFFF;
+    color: black;
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 5%;
+    margin-right: 5%;
+    flex: 1;
+}
+
+.tabela th, .tabela td {
+    text-align: center;
+    padding: 8px;
+}
