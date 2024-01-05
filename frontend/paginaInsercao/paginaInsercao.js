@@ -34,6 +34,22 @@ document.getElementById('seletorMes').addEventListener('change', function() {
     document.getElementById('dateButton').textContent = formattedDate;
 });
 
+window.onload = function() {
+    fetch('/insercao/dados')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('seletorBanco');
+            data.forEach(banco => {
+                const option = document.createElement('option');
+                option.textContent = banco.nome;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar os dados:', error);
+        });
+}
+
 function teste(){
     alert("teste");
 }

@@ -15,4 +15,10 @@ async function inserir(data, categoria, nome_extrato, tipo, valor){
     );
 }
 
-module.exports = { inserir };
+async function buscarBanco(){
+    const [result] = await mysqlConn.query(`SELECT NOME FROM BANCO`);
+    return result;
+}
+
+
+module.exports = { inserir, buscarBanco };
