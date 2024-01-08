@@ -1,8 +1,43 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
-#paginaInicialButton{
-    background-color: #8BACAF;
+
+input{
+    font-family: 'DM Sans', sans-serif;
+
 }
+
 body{
     font-family: 'DM Sans', sans-serif;
+}
+
+#menuInicialButton{
+    background-color: #8BACAF;
+}
+
+
+.filtoData{
+    background-color: #adadad;
+}
+
+.data-seletor{
+    padding: 10px;
+}
+
+.seletorData{
+    border: none;
+}
+
+.botaoFiltro{
+    background-color: #FFFFFF;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    border-radius: 5px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+    width: auto;
+    margin-left: 10px;
+
+}
+
+.botaoFiltro:hover{
+    background-color: #8BACAF;
 }

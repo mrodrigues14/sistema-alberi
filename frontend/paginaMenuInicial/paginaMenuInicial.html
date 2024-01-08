@@ -4,10 +4,24 @@
     <meta charset="UTF-8">
     <title>Pagina Inicial</title>
     <link rel="stylesheet" href="stylePaginaInicial.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 <body>
-<div id="menu-container"></div>
+    <div id="menu-container"></div>
+    <div class="filtoData">
+        <div class="data-seletor">
+                <label for="dataInicio">Data de Início:</label>
+                <input type="date" id="dataInicio" class="seletorData">
+                <label for="dataFim">Data de Fim:</label>
+                <input type="date" id="dataFim" class="seletorData">
+            <button onclick="handleFiltrarPorData()">Filtrar por Data</button>
+
+        </div>
+    </div>
+    <div class="graficos">
+        <canvas id="graficoValores"></canvas>
+    </div>
 
 
 <script src="paginaMenuInicialScript.js"></script>

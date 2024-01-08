@@ -9,6 +9,7 @@ const adicionarFornecedorRouter = require('./routes/fornecedor');
 const editarCategoriaRouter = require('./routes/categoria.route');
 const cadastroRouter = require('./routes/cadastro.route');
 const dadosRouter = require('./routes/dados.route');
+const paginaMenuInicial = require('./routes/paginaMenuInicial.route');
 
 function routing(app){
     app.use('/api', autenticacaoRouter);
@@ -22,6 +23,7 @@ function routing(app){
     app.use('/cadastro', cadastroRouter);
     app.use('/dados', dadosRouter);
     app.use('/', loginRouter);
+    app.use('/paginaMenuInicial', paginaMenuInicial);
 }
 
 module.exports = routing;
