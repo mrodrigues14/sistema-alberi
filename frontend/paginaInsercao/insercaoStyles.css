@@ -133,3 +133,47 @@
     padding: 8px;
 }
 
+.seletores>div{
+    width: 100%;
+}
+
+.seletores {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+    margin-top: 3vw;
+}
+
+#seletorBanco {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align-last: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+#seletorBanco::-ms-expand {
+    display: none;
+}
+
+input[type="submit"] {
+    width: 19%;
+    margin: 0 auto;
+    margin-top: 1.2vw;
+    display: block;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align: center;
+}

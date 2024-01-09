@@ -1,3 +1,28 @@
+
+window.onload = function() {
+    fetch('/insercao/dados')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            const select = document.getElementById('seletorBanco');
+            const campoOculto = document.querySelector('input[name="id_banco"]');
+            data.forEach(banco => {
+                const option = document.createElement('option');
+                option.value = banco.IDBANCO;
+                option.textContent = banco.NOME;
+                select.appendChild(option);
+            });
+
+            campoOculto.value = select.value;
+
+            select.addEventListener('change', function () {
+                campoOculto.value = select.value;
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar os dados:', error);
+        });
+};
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/templateMenu/template.html')
         .then(response => response.text())
@@ -23,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
+
 document.getElementById('dateButton').addEventListener('click', function() {
     document.getElementById('seletorMes').click();
 });
@@ -33,22 +59,6 @@ document.getElementById('seletorMes').addEventListener('change', function() {
     var formattedDate = new Intl.DateTimeFormat('pt-BR', options).format(date);
     document.getElementById('dateButton').textContent = formattedDate;
 });
-
-window.onload = function() {
-    fetch('/insercao/dados')
-        .then(response => response.json())
-        .then(data => {
-            const select = document.getElementById('seletorBanco');
-            data.forEach(banco => {
-                const option = document.createElement('option');
-                option.textContent = banco.nome;
-                select.appendChild(option);
-            });
-        })
-        .catch(error => {
-            console.error('Erro ao carregar os dados:', error);
-        });
-}
 
 function teste(){
     alert("teste");

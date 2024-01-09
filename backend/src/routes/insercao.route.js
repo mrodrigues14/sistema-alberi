@@ -10,26 +10,26 @@ router.get('/', (req, res) => {
 
 });
 
-router.get('/dados', async (req, res) => {
-    try {
-        const result = await buscarBanco();
-        console.log(result);
+router.get('/dados', (req, res) => {
+    buscarBanco((err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao buscar dados");
+        }
         res.json(result);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Erro ao buscar dados");
-    }
+    });
 });
-
 
 router.post('/', async (req, res) => {
     try {
-        const { Data, categoria, nome_extrato, tipo, valor } = req.body;
-        await inserir(Data, categoria, nome_extrato, tipo, valor);
-        return res.status(200).send("Inserido com sucesso");
+        const { Data, categoria, nome_extrato, tipo, valor, id_banco } = req.body;
+
+        await inserir(Data, categoria, nome_extrato, tipo, valor, id_banco);
+
+        res.status(200).send("Inserido com sucesso");
     } catch (error) {
         console.error(error);
-        return res.status(500).send("Erro ao inserir dados");
+        res.status(500).send("Erro ao inserir dados");
     }
 });
 
