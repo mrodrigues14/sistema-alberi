@@ -114,6 +114,25 @@
     box-shadow: 0 0 15px 0 rgba(0,0,0,0.2);
 }
 
+.tabela table thead{
+    background-color: #8BACAF;
+    color: #000000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+}
+
+.tabela table tbody{
+    background-color: #FFFFFF;
+    color: #000000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+}
+
+.tabela table tbody tr:nth-child(even){
+    background-color: #FFFFFF;
+}
+
+
 .tabela select{
     border-radius: 5px;
     padding: 0;
@@ -130,5 +149,78 @@
 
 .tabela th, .tabela td {
     text-align: center;
+    padding: 8px;
+}
+
+.seletores>div{
+    width: 100%;
+}
+
+.seletores {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+    margin-top: 3vw;
+}
+
+#seletorBanco {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align-last: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+#seletorBanco::-ms-expand {
+    display: none;
+}
+
+input[type="submit"] {
+    width: 19%;
+    margin: 0 auto;
+    margin-top: 1.2vw;
+    display: block;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align: center;
+}
+
+#ultimasInsercoes {
+    margin-top: 3vw;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+    box-sizing: border-box;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2);
+}
+
+#ultimasInsercoes thead {
+    background-color: #8BACAF;
+    color: #000000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+}
+
+#ultimasInsercoes tbody {
+    background-color: #FFFFFF;
+    color: #000000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+    text-align: center;
+}
+
+#ultimasInsercoes th, #ultimasInsercoes td {
     padding: 8px;
 }
