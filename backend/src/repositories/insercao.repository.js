@@ -26,5 +26,21 @@ function buscarBanco(callback){
     });
 }
 
+function buscarUltimasInsercoes(callback) {
+    mysqlConn.query(
+        `SELECT DATA, CATEGORIA, NOMENOEXTRATO, TIPODETRANSACAO, VALOR, NOME FROM EXTRATO 
+        INNER JOIN BANCO ON EXTRATO.FK_BANCO_IDBANCO = IDBANCO 
+        ORDER BY idExtrato DESC LIMIT 5`,
+        function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
 
-module.exports = { inserir, buscarBanco };
+
+
+module.exports = { inserir, buscarBanco, buscarUltimasInsercoes };
