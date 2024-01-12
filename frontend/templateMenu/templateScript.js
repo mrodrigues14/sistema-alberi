@@ -43,28 +43,6 @@ function loadAndDisplayUsername() {
         });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('menuInicialButton').addEventListener('click', () => {
-        window.location.href = '/paginainicial'
-    });
-
-    document.getElementById('estudosButton').addEventListener('click', () => {
-        window.location.href = '/estudos';
-    });
-
-    document.getElementById('extratoButton').addEventListener('click', () => {
-        window.location.href = '/extrato';
-    });
-
-    document.getElementById('cadastroButton').addEventListener('click', () => {
-        window.location.href = '/cadastro';
-    });
-
-    document.getElementById('dadosButton').addEventListener('click', () => {
-        window.location.href = '/dados';
-    });
-});
-
 function handleEmpresa() {
     var nomeEmpresa = getStoredEmpresaName();
     updateNomeEmpresa(nomeEmpresa);
@@ -84,4 +62,6 @@ function updateNomeEmpresa(nomeEmpresa) {
 document.addEventListener('DOMContentLoaded', function() {
     handleEmpresa()
     loadAndDisplayUsername();
+
+
 });
