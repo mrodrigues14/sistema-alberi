@@ -22,8 +22,8 @@
     <div id="menu-container"></div>
     <hr>
     <div class="subnavbar">
-        <button class="buttonMenu" id="inserirButton">Inserir extrato</button>
-        <button class="buttonMenu">Consultar extrato</button>
+        <a href="/insercao"><button class="buttonMenu" id="inserirButton">Inserir extrato</button></a>
+        <a href="/consulta"><button class="buttonMenu">Consultar extrato</button></a>
         <button class="buttonMenu">Rubricas</button>
         <button class="buttonMenu">Adicionar fornecedor</button>
         <button class="buttonMenu">Editar categorias</button>
@@ -67,6 +67,7 @@
                 </tbody>
             </table>
         </div>
+        <input type="hidden" name="id_empresa">
         <input type="hidden" name="id_banco">
         <input type="submit" value="Enviar">
     </form>
@@ -80,6 +81,7 @@
             <th>Tipo de Transação</th>
             <th>Valor</th>
             <th>Banco</th>
+            <th>Empresa</th>
         </tr>
         </thead>
         <tbody>

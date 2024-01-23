@@ -1,6 +1,6 @@
 const mysqlConn = require("../base/database");
 
-async function inserir(data, categoria, nome_extrato, tipo, valor, id_banco){
+async function inserir(data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa){
     console.log(data, categoria, nome_extrato, tipo, valor, id_banco);
     data = data !== undefined ? data : null;
     categoria = categoria !== undefined ? categoria : null;
@@ -11,8 +11,8 @@ async function inserir(data, categoria, nome_extrato, tipo, valor, id_banco){
     console.log(data, categoria, nome_extrato, tipo, valor, id_banco);
 
     const result = await mysqlConn.execute(
-        `INSERT INTO EXTRATO (idExtrato, data, categoria, nomeNoExtrato, tipoDeTransacao, valor, FK_BANCO_idBanco) VALUES (null,?,?,?,?,?,?)`,
-        [data, categoria, nome_extrato, tipo, valor, id_banco]
+        `INSERT INTO EXTRATO (idExtrato, data, categoria, nomeNoExtrato, tipoDeTransacao, valor, FK_BANCO_idBanco, id_cliente) VALUES (null,?,?,?,?,?,?,?)`,
+        [data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa]
     );
 }
 
@@ -27,10 +27,27 @@ function buscarBanco(callback){
 }
 
 function buscarUltimasInsercoes(callback) {
+    const query = `
+        SELECT DATA, CATEGORIA, NOMENOEXTRATO, TIPODETRANSACAO, VALOR, B.NOME AS NOME_BANCO, C.NOME AS NOME_CLIENTE
+        FROM EXTRATO
+        INNER JOIN BANCO B ON EXTRATO.FK_BANCO_IDBANCO = B.IDBANCO
+        INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
+        ORDER BY EXTRATO.idExtrato DESC LIMIT 5`;
+
+    mysqlConn.query(query, function(err, result, fields) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+
+function buscarIDEmpresa(nomeEmpresa, callback) {
     mysqlConn.query(
-        `SELECT DATA, CATEGORIA, NOMENOEXTRATO, TIPODETRANSACAO, VALOR, NOME FROM EXTRATO 
-        INNER JOIN BANCO ON EXTRATO.FK_BANCO_IDBANCO = IDBANCO 
-        ORDER BY idExtrato DESC LIMIT 5`,
+        `SELECT IDCLIENTE FROM CLIENTE WHERE NOME = ?`,
+        [nomeEmpresa],
         function(err, result, fields) {
             if (err) {
                 callback(err, null);
@@ -41,6 +58,4 @@ function buscarUltimasInsercoes(callback) {
     );
 }
 
-
-
-module.exports = { inserir, buscarBanco, buscarUltimasInsercoes };
+module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa };

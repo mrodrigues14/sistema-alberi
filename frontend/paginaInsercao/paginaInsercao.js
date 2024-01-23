@@ -1,12 +1,40 @@
+
 function formatDate(dateString) {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
 }
 
+function getStoredEmpresaName() {
+    return localStorage.getItem('nomeEmpresaSelecionada');
+}
+
 window.onload = function() {
+    fetch('/templateMenu/template.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('menu-container').innerHTML = data;
+
+            var link = document.createElement('link');
+            link.href = '/templateMenu/styletemplate.css';
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            document.head.appendChild(link);
+
+            var script = document.createElement('script');
+            script.src = '/templateMenu/templateScript.js';
+            script.onload = function() {
+                loadAndDisplayUsername();
+                handleEmpresa();
+            };
+            document.body.appendChild(script);
+        })
+        .catch(error => {
+            console.error('Erro ao carregar o template:', error);
+        });
+
     fetch('/insercao/dados')
         .then(response => response.json())
         .then(data => {
@@ -44,50 +72,35 @@ window.onload = function() {
                 row.insertCell().textContent = insercao.NOMENOEXTRATO;
                 row.insertCell().textContent = insercao.TIPODETRANSACAO;
                 row.insertCell().textContent = insercao.VALOR;
-                row.insertCell().textContent = insercao.NOME;
+                row.insertCell().textContent = insercao.NOME_BANCO;
+                row.insertCell().textContent = insercao.NOME_CLIENTE;
             });
         })
         .catch(error => {
             console.error('Erro ao carregar os dados:', error);
         });
-};
 
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('/templateMenu/template.html')
-        .then(response => response.text())
+    const nomeEmpresa = getStoredEmpresaName();
+    console.log("Nome da empresa antes da requisição fetch:", nomeEmpresa);
+    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+        .then(response => response.json())
         .then(data => {
-            document.getElementById('menu-container').innerHTML = data;
-
-            var link = document.createElement('link');
-            link.href = '/templateMenu/styletemplate.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
-
-            var script = document.createElement('script');
-            script.src = '/templateMenu/templateScript.js';
-            script.onload = function() {
-                loadAndDisplayUsername();
-                handleEmpresa();
-            };
-            document.body.appendChild(script);
+            if (data && data.length > 0) {
+                const campoOculto = document.querySelector('input[name="id_empresa"]');
+                if (campoOculto) {
+                    campoOculto.value = data[0].IDCLIENTE;
+                } else {
+                    console.error('Campo oculto id_empresa não encontrado');
+                }
+            } else {
+                console.error('Dados da empresa não retornados ou vazios');
+            }
         })
         .catch(error => {
-            console.error('Erro ao carregar o template:', error);
+            console.error('Erro ao carregar dados da empresa:', error);
         });
-});
 
-document.getElementById('dateButton').addEventListener('click', function() {
-    document.getElementById('seletorMes').click();
-});
-
-document.getElementById('seletorMes').addEventListener('change', function() {
-    var date = new Date(this.value);
-    var options = { month: 'long', year: 'numeric' };
-    var formattedDate = new Intl.DateTimeFormat('pt-BR', options).format(date);
-    document.getElementById('dateButton').textContent = formattedDate;
-});
-
+};
 function teste(){
     alert("teste");
 }
