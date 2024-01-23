@@ -58,4 +58,17 @@ function buscarIDEmpresa(nomeEmpresa, callback) {
     );
 }
 
-module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa };
+function buscarCategorias(callback) {
+    mysqlConn.query(
+        `SELECT CATEGORIA FROM CATEGORIA`,
+        function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
+
+module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias };
