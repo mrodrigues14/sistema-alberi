@@ -224,3 +224,7 @@ input[type="submit"] {
 #ultimasInsercoes th, #ultimasInsercoes td {
     padding: 8px;
 }
+
+#ultimasInsercoes tbody tr:nth-child(even){
+    background-color: #FFFFFF;
+}
