@@ -36,6 +36,8 @@
 
             </select>
         </div>
+
+
     </div>
     <form id="meuFormulario" action="/insercao/" method="post">
         <div class="tabela">
@@ -52,7 +54,13 @@
                 <tbody>
                 <tr>
                     <td><input type="date" name="Data"></td>
-                    <td><input type="text" name="categoria"></td>
+                    <td>
+                        <label>
+                            <select name="categoria" id="seletorCategoria">
+
+                            </select>
+                        </label>
+                    </td>
                     <td><input type="text" name="nome_extrato"></td>
                     <td>
                         <label>

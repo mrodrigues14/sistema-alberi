@@ -100,6 +100,21 @@ window.onload = function() {
             console.error('Erro ao carregar dados da empresa:', error);
         });
 
+    fetch('/insercao/dados-categoria')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('seletorCategoria');
+            data.forEach(categoria => {
+                const option = document.createElement('option');
+                option.value = categoria.CATEGORIA;
+                option.textContent = categoria.CATEGORIA;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar os dados:', error);
+        });
+
 };
 function teste(){
     alert("teste");

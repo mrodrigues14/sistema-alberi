@@ -5,6 +5,7 @@ const {inserir, buscarUltimasInsercoes} = require('../repositories/insercao.repo
 const {buscarBanco} = require('../repositories/insercao.repository');
 const {Router} = require("express");
 const {buscarIDEmpresa} = require("../repositories/insercao.repository");
+const {buscarCategorias} = require("../repositories/insercao.repository");
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaInsercao/paginaInsercao.html'));
@@ -34,6 +35,16 @@ router.get('/ultimas-insercoes', async (req, res) => {
 router.get('/dados-empresa', (req, res) => {
     const { nomeEmpresa } = req.query;
     buscarIDEmpresa(nomeEmpresa, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao buscar dados");
+        }
+        res.json(result);
+    });
+});
+
+router.get('/dados-categoria', (req, res) => {
+    buscarCategorias((err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");
