@@ -1,0 +1,243 @@
+.subnavbar {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #FFFFFF;
+    color: white;
+    padding: 1vw;
+    display: flex;
+    margin: 0;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+
+}
+.subnavbar div{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    width: 51%;
+}
+.subnavbar button {
+    font-family: 'DM Sans', sans-serif;
+    padding: 5px 10px;
+    background-color: #FFFFFF;
+    color: black;
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+
+
+}
+
+.buttonMenu{
+    margin: 0 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+    width: auto;
+
+}
+
+.subnavbar button:hover {
+    background-color: #8BACAF;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.show {display: block;}
+
+.seletores{
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 3vw;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    width: 90%;
+    box-sizing: border-box;
+}
+
+.seletores div{
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #FFFFFF;
+    color: black;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2);
+    margin-left: 5%;
+    margin-right: 5%;
+    flex: 1;
+}
+
+.seletores>div{
+    width: 100%;
+}
+
+.seletores {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+    margin-top: 3vw;
+}
+
+#seletorBanco {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align-last: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+#seletorBanco::-ms-expand {
+    display: none;
+}
+
+#seletorData{
+    width: 80%;
+    padding: 4px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align-last: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+#seletorData::-ms-expand {
+    display: none;
+}
+
+#seletores input[type="submit"] {
+    width: 19%;
+    margin: 0 auto;
+    margin-top: 1.2vw;
+    display: block;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align: center;
+}
+
+.hide-calendar .ui-datepicker-calendar {
+    display: none;
+}
+
+#consulta {
+    margin-top: 2vw;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+    box-sizing: border-box;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2);
+}
+
+#consulta thead {
+    background-color: #8BACAF;
+    color: #000000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+}
+
+#consulta tbody {
+    background-color: #FFFFFF;
+    color: #000000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+    text-align: center;
+}
+
+#consulta td, #consulta th {
+    padding: 5px;
+}
+
+#consulta td {
+    border-bottom: 1px solid #ddd;
+}
+
+.ui-datepicker-buttonpane .ui-datepicker-current {
+    display: none !important;
+}
+
+.ui-datepicker-buttonpane {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ui-datepicker-buttonpane .ui-datepicker-close {
+    text-align: center;
+    padding: 6px 12px;
+    margin: 0 auto;
+    display: block;
+}
+
+.ui-datepicker-buttonpane .ui-datepicker-close:hover {
+    background-color: #8BACAF;
+    color: #fff;
+}
+
+.ui-datepicker {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+    font-size: 16px;
+    text-align: center;
+}
+
+#seletorMesAno {
+    text-align: center;
+}
+
+#downloadButtons {
+    margin-top: 1.5vw;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    box-sizing: border-box;
+    display: flex;
+    justify-items: center;
+    align-items: center;
+}
+
+#downloadButtons button {
+    width: calc(50% - 10px);
+    margin: auto;
+    margin-top: 0.5vw;
+    margin-left: 5px;
+    margin-right: 5px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align: center;
+}
