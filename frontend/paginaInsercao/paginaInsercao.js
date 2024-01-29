@@ -116,6 +116,17 @@ window.onload = function() {
         });
 
 };
+
+function abrirPopUp(){
+    document.getElementById("popup").style.display = "block";
+    document.getElementById("sobreposicao").style.display = "block";
+}
+
+function fecharPopUp(){
+    document.getElementById("popup").style.display = "none";
+    document.getElementById("sobreposicao").style.display = "none";
+}
+
 function teste(){
     alert("teste");
 }

@@ -56,18 +56,6 @@
 
 .show {display: block;}
 
-.seletores{
-    margin-top: 3vw;
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
-    width: 90%;
-    box-sizing: border-box;
-}
-
 .seletores div{
     border-radius: 5px;
     padding: 10px;
@@ -152,10 +140,6 @@
     padding: 8px;
 }
 
-.seletores>div{
-    width: 100%;
-}
-
 .seletores {
     display: flex;
     justify-content: space-between;
@@ -227,4 +211,92 @@ input[type="submit"] {
 
 #ultimasInsercoes tbody tr:nth-child(even){
     background-color: #FFFFFF;
+}
+
+#categoriasButtonDiv {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+#categoriasButton {
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: transparent;
+    height: 55px;
+
+}
+
+#categoriasButton:hover {
+    background-color: #8BACAF;
+}
+
+#dateButton:hover {
+    background-color: #8BACAF;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    left: 50%;
+    padding: 0;
+    overflow: hidden;
+    margin: 0;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #000;
+    z-index: 3;
+    width: 60%;
+    height: 60%;
+    background: #FFFFFF;
+    opacity: 1
+
+}
+.sobreposicao {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 3;
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    background: #FFFFFF;
+}
+
+.fechar{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    color: #000;
+}
+
+#seletorCategoria{
+    width: 80%;
+    padding: 1px 1px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align-last: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
