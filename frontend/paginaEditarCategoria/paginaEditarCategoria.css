@@ -1,42 +1,116 @@
-.subnavbar {
-    font-family: 'DM Sans', sans-serif;
-    background-color: #FFFFFF;
-    color: white;
-    padding: 1vw;
+
+.editorCategoria{
     display: flex;
-    margin: 0;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    text-align: center;
-
-}
-.subnavbar div{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
-    width: 51%;
-}
-.subnavbar button {
-    font-family: 'DM Sans', sans-serif;
-    padding: 5px 10px;
+    justify-content: center;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    margin-left: 10%;
+    margin-right: 10%;
+    border-radius: 10px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2);
+    padding: 10px;
     background-color: #FFFFFF;
-    color: black;
-    cursor: pointer;
-    font-size: 16px;
-    border: none;
+}
 
+.adicionarCategoria{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    margin-left: 15%;
+    margin-right: 15%;
+    width: 300px;
+    height: 100px;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+}
+
+.adicionarCategoria form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 
 }
 
-.buttonMenu{
-    margin: 0 20px;
+.adicionarCategoria input{
+    text-align: center;
+    width: 80%;
+    padding: 8px 12px;
+    border: 0;
     border-radius: 5px;
-    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
-    width: auto;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.adicionarCategoria button{
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #8BACAF;
+    color: #FFFFFF;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+    align-self: end;
+}
+
+.adicionarCategoria button:hover{
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+.removerCategoria{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    margin-left: 15%;
+    margin-right: 15%;
+    width: 300px;
+    height: 100px;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+}
+
+.removerCategoria form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 
 }
 
-.subnavbar button:hover {
+.removerCategoria input{
+    text-align: center;
+    width: 80%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.removerCategoria button{
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
     background-color: #8BACAF;
+    color: #FFFFFF;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+    align-self: end;
 }

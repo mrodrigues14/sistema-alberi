@@ -17,6 +17,7 @@
         }
     </style>
     <link rel="stylesheet" href="/paginaInsercao/insercaoStyles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div id="menu-container"></div>
@@ -26,7 +27,6 @@
         <a href="/consulta"><button class="buttonMenu">Consultar extrato</button></a>
         <button class="buttonMenu">Rubricas</button>
         <button class="buttonMenu">Adicionar fornecedor</button>
-        <button class="buttonMenu">Editar categorias</button>
         <div></div>
     </div>
     <hr>
@@ -37,8 +37,17 @@
             </select>
         </div>
 
-
+        <div id="categoriasButtonDiv">
+            <button id="categoriasButton" onclick="abrirPopUp()">Editar Categorias</button>
+        </div>
     </div>
+
+    <div class="sobreposicao" id="sobreposicao"></div>
+    <div class="popup" id="popup">
+        <div class="fechar" onclick="fecharPopUp()"><i class="fas fa-times"></i></div>
+        <iframe src="/categoria"></iframe>
+    </div>
+
     <form id="meuFormulario" action="/insercao/" method="post">
         <div class="tabela">
             <table>

@@ -1,24 +1,13 @@
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('/templateMenu/template.html')
-        .then(response => response.text())
+window.onload = function() {
+    fetch('/categoria/dados')
+        .then(response => response.json())
         .then(data => {
-            document.getElementById('menu-container').innerHTML = data;
-
-            var link = document.createElement('link');
-            link.href = '/templateMenu/styletemplate.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
-
-            var script = document.createElement('script');
-            script.src = 'templateMenu/templateScript.js';
-            script.onload = function() {
-                loadAndDisplayUsername();
-                handleEmpresa();
-            };
-            document.body.appendChild(script);
+            const select = document.getElementById('seletorCategoria');
+            data.forEach(categoria => {
+                const option = document.createElement('option');
+                option.value = categoria.CATEGORIA;
+                option.textContent = categoria.CATEGORIA;
+                select.appendChild(option);
+            });
         })
-        .catch(error => {
-            console.error('Erro ao carregar o template:', error);
-        });
-});
+}
