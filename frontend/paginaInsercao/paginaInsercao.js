@@ -125,6 +125,7 @@ function abrirPopUp(){
 function fecharPopUp(){
     document.getElementById("popup").style.display = "none";
     document.getElementById("sobreposicao").style.display = "none";
+    location.reload();
 }
 
 function teste(){
