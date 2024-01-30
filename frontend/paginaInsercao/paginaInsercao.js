@@ -130,3 +130,67 @@ function fecharPopUp(){
 function teste(){
     alert("teste");
 }
+function excelDateToJSDate(excelDate) {
+    // O Excel armazena datas a partir de 1 de janeiro de 1900
+    const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
+    const convertedDate = date.toISOString().split('T')[0];
+    return convertedDate;
+}
+
+function mostrarPopupCarregamento() {
+    document.getElementById('loadingPopup').style.display = 'block';
+}
+
+function fecharPopupCarregamento() {
+    document.getElementById('loadingPopup').style.display = 'none';
+}
+
+function lerExcel() {
+    var input = document.getElementById('excelFile');
+    var reader = new FileReader();
+
+    reader.onload = function () {
+        var fileData = reader.result;
+        var workbook = XLSX.read(fileData, { type: 'binary' });
+        workbook.SheetNames.forEach(function (sheetName) {
+            var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+            XL_row_object.forEach(function (row) {
+                if (row.Data && !isNaN(row.Data)) {
+                    row.Data = excelDateToJSDate(row.Data);
+                }
+            });
+            var json_object = JSON.stringify(XL_row_object);
+            console.log("JSON Convertido:", json_object);
+
+            mostrarPopupCarregamento();  // Mostrar pop-up de carregamento
+
+            fetch('/insercao/inserir-lote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: json_object
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na resposta do servidor');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    fecharPopupCarregamento();  // Fechar o pop-up após a conclusão
+                    console.log(data);
+                })
+                .catch(error => {
+                    fecharPopupCarregamento();  // Fechar o pop-up em caso de erro
+                    console.error('Falha ao enviar dados:', error);
+                });
+        });
+    };
+
+    reader.onerror = function (ex) {
+        console.log(ex);
+    };
+
+    reader.readAsBinaryString(input.files[0]);
+}

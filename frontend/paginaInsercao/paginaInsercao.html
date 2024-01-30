@@ -40,6 +40,21 @@
         <div id="categoriasButtonDiv">
             <button id="categoriasButton" onclick="abrirPopUp()">Editar Categorias</button>
         </div>
+
+        <!-- Dentro do formulário existente, ou em um novo formulário -->
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="excelFile" accept=".xlsx, .xls" />
+            <input type="button" value="Upload e Processar" onclick="lerExcel()">
+        </form>
+
+        <!-- Pop-up de Carregamento -->
+        <div id="loadingPopup" style="display: none;">
+            <div class="loadingContent">
+                <p>Carregando, por favor aguarde...</p>
+            </div>
+        </div>
+
+
     </div>
 
     <div class="sobreposicao" id="sobreposicao"></div>
@@ -107,5 +122,7 @@
     </table>
 
     <script src="/paginaInsercao/paginaInsercao.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
 </body>
 </html>
