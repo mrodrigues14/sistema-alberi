@@ -47,6 +47,11 @@
             <input type="text" id="seletorMesAno" name="mes_ano">
         </div>
     </div>
+    
+    <div id="downloadButtons">
+        <button onclick="gerarPDF()">Gerar PDF</button>
+        <button onclick="gerarExcel()">Gerar Excel</button>
+    </div>
 
     <table id="consulta">
         <thead>
@@ -65,10 +70,6 @@
         </tbody>
     </table>
 
-    <div id="downloadButtons">
-        <button onclick="gerarPDF()">Gerar PDF</button>
-        <button onclick="gerarExcel()">Gerar Excel</button>
-    </div>
     <script src="/paginaConsulta/paginaConsulta.js"></script>
 </body>
 </html>
