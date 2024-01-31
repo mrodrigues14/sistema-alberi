@@ -147,9 +147,6 @@ function atualizarTabela(dados) {
     });
 }
 
-document.getElementById('seletorBanco').addEventListener('change', buscarDados);
-document.getElementById('seletorMesAno').addEventListener('change', buscarDados);
-
 function gerarPDF() {
     var { jsPDF } = window.jspdf;
     var doc = new jsPDF();
