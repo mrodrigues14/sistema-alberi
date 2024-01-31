@@ -1,0 +1,242 @@
+let idEmpresa = 0;
+let totalEntrada = 0;
+let totalSaida = 0;
+
+function getStoredEmpresaName() {
+    return localStorage.getItem('nomeEmpresaSelecionada');
+}
+
+$(document).ready(function() {
+    $('#seletorMesAno').datepicker({
+        changeMonth: true,
+        changeYear: true,
+        showButtonPanel: true,
+        dateFormat: 'mm-yy',
+        closeText: 'Pronto',
+        showTodayButton: false,
+        monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+        monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+            'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+        beforeShow: function(input, inst) {
+            $(inst.dpDiv).addClass('hide-calendar');
+        },
+        onClose: function(dateText, inst) {
+            var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+            $(this).datepicker('setDate', new Date(year, month, 1));
+            $(this).val($.datepicker.formatDate('mm-yy', new Date(year, month, 1)));
+            buscarDados();
+            buscarDadosCategoria()
+                .then(buscarSaidaCategoria)
+                .then(atualizarTabelaSaldoDoMes)
+        }
+    });
+});
+
+function formatDateToFirstOfMonth(mesAnoString) {
+    if (!mesAnoString) return '';
+
+    const [mes, ano] = mesAnoString.split('-');
+    return `${ano}-${mes}-01`;
+}
+
+window.onload = function() {
+    fetch('/templateMenu/template.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('menu-container').innerHTML = data;
+
+            var link = document.createElement('link');
+            link.href = '/templateMenu/styletemplate.css';
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            document.head.appendChild(link);
+
+            var script = document.createElement('script');
+            script.src = '/templateMenu/templateScript.js';
+            script.onload = function () {
+                loadAndDisplayUsername();
+                handleEmpresa();
+            };
+            document.body.appendChild(script);
+        })
+        .catch(error => {
+            console.error('Erro ao carregar o template:', error);
+        });
+
+    const nomeEmpresa = getStoredEmpresaName();
+    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                console.log('Dados da empresa recebidos:', data);
+                idEmpresa = data[0].IDCLIENTE
+                console.log('idEmpresa definido como:', idEmpresa);
+            } else {
+                console.error('Dados da empresa não retornados ou vazios');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao carregar dados da empresa:', error);
+        });
+}
+
+function buscarDados() {
+    const mesAno = $('#seletorMesAno').val();
+    const dataFormatada = formatDateToFirstOfMonth(mesAno);
+
+    const url = `/estudos/resumofin/saldoinicial?empresa=${idEmpresa}&data=${dataFormatada}`;
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro HTTP! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Dados recebidos:', data);
+            atualizarTabela(data);
+        })
+        .catch(error => {
+            console.error('Erro ao buscar os dados:', error);
+        });
+}
+
+
+function atualizarTabela(data) {
+    console.log('Atualizando tabela com dados:', data);
+    const tbody = document.getElementById('saldoInicialTable').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+    let total = 0;
+
+    data.forEach(item => {
+        console.log('Processando item:', item);
+        const novaLinha = tbody.insertRow();
+        const celulaBanco = novaLinha.insertCell(0);
+        const celulaValor = novaLinha.insertCell(1);
+
+        celulaBanco.textContent = item.banco;
+        celulaValor.textContent = parseFloat(item.saldo).toFixed(2);
+        celulaValor.className = 'right-align';
+
+        total += parseFloat(item.saldo);
+    });
+
+    const tfoot = document.getElementById('saldoInicialTable').getElementsByTagName('tfoot')[0];
+    tfoot.rows[0].cells[1].textContent = total.toFixed(2);
+    tfoot.rows[0].cells[1].className = 'right-align';
+
+}
+
+document.getElementById('seletorMesAno').addEventListener('change', buscarDados);
+document.getElementById('seletorMesAno').addEventListener('change', buscarDadosCategoria);
+
+function buscarDadosCategoria(){
+    const mesAno = $('#seletorMesAno').val();
+    const dataFormatada = formatDateToFirstOfMonth(mesAno);
+    const url = `/estudos/resumofin/entradacategoria?empresa=${idEmpresa}&data=${dataFormatada}`;
+
+    return new Promise((resolve, reject) => {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                atualizarTabelaCategoria(data);
+                resolve();
+            })
+            .catch(error => {
+                console.error('Erro ao buscar os dados:', error);
+                reject(error);
+            });
+    });
+}
+
+
+function atualizarTabelaCategoria(data) {
+    console.log('Atualizando tabela com dados:', data);
+    const tbody = document.getElementById('EntradaCategoriaTable').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+    let total = 0;
+
+    data.forEach(item => {
+        const novaLinha = tbody.insertRow();
+        const celulaCategoria = novaLinha.insertCell(0);
+        const celulaValor = novaLinha.insertCell(1);
+
+        celulaCategoria.textContent = item.categoria;
+        celulaValor.textContent = parseFloat(item.valor).toFixed(2);
+        celulaValor.className = 'right-align';
+
+        total += parseFloat(item.valor);
+    });
+    totalEntrada = total;
+    const tfoot = document.getElementById('EntradaCategoriaTable').getElementsByTagName('tfoot')[0];
+    tfoot.rows[0].cells[1].textContent = total.toFixed(2);
+    tfoot.rows[0].cells[1].className = 'right-align';
+}
+
+function buscarSaidaCategoria(){
+    const mesAno = $('#seletorMesAno').val();
+    const dataFormatada = formatDateToFirstOfMonth(mesAno);
+    const url = `/estudos/resumofin/saidacategoria?empresa=${idEmpresa}&data=${dataFormatada}`;
+
+    return new Promise((resolve, reject) => {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                atualizarTabelaSaidaCategoria(data);
+                resolve();
+            })
+            .catch(error => {
+                console.error('Erro ao buscar os dados:', error);
+                reject(error);
+            });
+    });
+}
+
+
+function atualizarTabelaSaidaCategoria(data) {
+    console.log('Atualizando tabela com dados:', data);
+    const tbody = document.getElementById('saidaCategoriaTable').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+    let total = 0;
+
+    data.forEach(item => {
+        console.log('Processando item:', item);
+        const novaLinha = tbody.insertRow();
+        const celulaCategoria = novaLinha.insertCell(0);
+        const celulaValor = novaLinha.insertCell(1);
+
+        celulaCategoria.textContent = item.categoria;
+        celulaValor.textContent = parseFloat(item.valor).toFixed(2);
+        celulaValor.className = 'right-align';
+
+        total += parseFloat(item.valor);
+    });
+    totalSaida = total;
+
+    const tfoot = document.getElementById('saidaCategoriaTable').getElementsByTagName('tfoot')[0];
+    tfoot.rows[0].cells[1].textContent = total.toFixed(2);
+    tfoot.rows[0].cells[1].className = 'right-align';
+}
+
+function atualizarTabelaSaldoDoMes(){
+    const saldo = totalEntrada - totalSaida;
+    const tbody = document.getElementById('saldoDoMesTable').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+    const novaLinha = tbody.insertRow();
+    const celulaSaldo = novaLinha.insertCell(0);
+    celulaSaldo.textContent = saldo.toFixed(2);
+    celulaSaldo.className = 'right-align';
+}

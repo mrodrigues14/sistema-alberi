@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumo Financeiro</title>
+    <link rel="stylesheet" href="/paginaEstudos/resumoFinanceiro/resumoFinanceiro.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+<body>
+    <div id="containerData">
+        <div>
+            <label for="seletorMesAno">Mes/Ano</label>
+        </div>
+        <div>
+            <input type="text" id="seletorMesAno" name="mes_ano">
+        </div>
+    </div>
+    <div class="container">
+        <div id="saldoInicial">
+            <h1>Saldo Inicial</h1>
+            <table id="saldoInicialTable">
+                <thead>
+                    <tr>
+                        <th class="left-align">Banco</th>
+                        <th class="centro">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td class="left-align">Total</td>
+                    <td class="right-align"></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div id="EntradaCategoria">
+            <h1>Entrada por Categoria</h1>
+            <table id="EntradaCategoriaTable">
+                <thead>
+                    <tr>
+                        <th class="left-align">Categoria</th>
+                        <th class="centro">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td class="left-align">Total</td>
+                    <td class="right-align"></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div id="saidaCategoria">
+            <h1>Saida por Categoria</h1>
+            <table id="saidaCategoriaTable">
+                <thead>
+                    <tr>
+                        <th class="left-align">Categoria</th>
+                        <th class="centro">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td class="left-align">Total</td>
+                    <td class="right-align"></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div id="saldoDoMes">
+            <h1>Saldo do Mês</h1>
+            <table id="saldoDoMesTable">
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+<script src="/paginaEstudos/resumoFinanceiro/resumoFinanceiro.js"></script>
+</body>
+</html>
