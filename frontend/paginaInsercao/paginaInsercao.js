@@ -162,7 +162,7 @@ function lerExcel() {
             var json_object = JSON.stringify(XL_row_object);
             console.log("JSON Convertido:", json_object);
 
-            mostrarPopupCarregamento();  // Mostrar pop-up de carregamento
+            mostrarPopupCarregamento();
 
             fetch('/insercao/inserir-lote', {
                 method: 'POST',
@@ -178,11 +178,11 @@ function lerExcel() {
                     return response.text();
                 })
                 .then(data => {
-                    fecharPopupCarregamento();  // Fechar o pop-up após a conclusão
+                    fecharPopupCarregamento();
                     console.log(data);
                 })
                 .catch(error => {
-                    fecharPopupCarregamento();  // Fechar o pop-up em caso de erro
+                    fecharPopupCarregamento();
                     console.error('Falha ao enviar dados:', error);
                 });
         });
