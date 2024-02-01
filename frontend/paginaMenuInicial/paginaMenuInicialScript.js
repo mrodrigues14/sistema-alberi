@@ -63,7 +63,7 @@ document.getElementById('seletorMes').addEventListener('change', function() {
 
 function setDefaultDates() {
     const hoje = new Date();
-    const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1-30);
     const diaAnterior = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 1);
 
     document.getElementById('dataInicio').valueAsDate = primeiroDiaDoMes;
