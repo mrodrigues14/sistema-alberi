@@ -90,4 +90,27 @@ function saidaCategoria(empresa, data, callback){
         });
 }
 
-module.exports = {saldoInicial, entradaCategoria, saidaCategoria};
+function totalEntradasPorMes(empresa, ano, callback) {
+    console.log(`Recebendo empresa: ${empresa}, ano: ${ano}`);
+    mysqlConn.query(`
+        SELECT 
+            MONTH(DATA) as mes, 
+            SUM(valor) as total
+        FROM 
+            extrato 
+        WHERE 
+            ID_CLIENTE = ? AND 
+            YEAR(DATA) = ? AND 
+            tipoDeTransacao = 'ENTRADA'
+        GROUP BY 
+            MONTH(DATA)
+    `, [empresa, ano], function(err, results) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, results);
+        }
+    });
+}
+
+module.exports = {saldoInicial, entradaCategoria, saidaCategoria, totalEntradasPorMes};

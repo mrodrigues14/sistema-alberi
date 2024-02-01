@@ -43,6 +43,8 @@ window.onload = function() {
         .catch(error => {
             console.error('Erro ao carregar dados da empresa:', error);
         });
+
+
 };
 
 function getStoredEmpresaName() {

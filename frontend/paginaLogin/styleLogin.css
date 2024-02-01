@@ -97,3 +97,58 @@ body{
     max-width: 100%;
     height: auto;
 }
+
+@media screen and (max-width: 768px) {
+    .login {
+        width: 70%;
+        margin-top: -10rem;
+    }
+
+    .login h1 {
+        font-size: 40px;
+    }
+
+    .login h2 {
+        font-size: 20px;
+    }
+
+    .login-container form {
+        max-width: 300px;
+    }
+}
+
+/* Media Query para dispositivos móveis */
+@media screen and (max-width: 480px) {
+    .login {
+        width: 90%;
+        margin-top: -5rem;
+    }
+
+    .login h1 {
+        font-size: 30px;
+    }
+
+    .login h2 {
+        font-size: 18px;
+    }
+
+    .login-container form {
+        max-width: 250px;
+    }
+
+    .login-container input[type="text"],
+    .login-container input[type="password"],
+    .login-container button {
+        width: calc(100% - 20px);
+        padding: 10px;
+    }
+
+    .loginBackground {
+        height: auto;
+    }
+
+    .loginBackground img {
+        width: 100%;
+        height: auto;
+    }
+}
