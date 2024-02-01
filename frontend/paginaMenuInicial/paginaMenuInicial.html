@@ -15,12 +15,24 @@
                 <input type="date" id="dataInicio" class="seletorData">
                 <label for="dataFim">Data de Fim:</label>
                 <input type="date" id="dataFim" class="seletorData">
-            <button onclick="handleFiltrarPorData()">Filtrar por Data</button>
+            <button onclick="handleFiltrarPorDataSaida(); handleFiltrarPorCategoriaSaida(); handleFiltrarPorCategoriaEntrada; handleFiltrarPorDataEntrada;">Filtrar por Data</button>
 
         </div>
     </div>
     <div class="graficos">
-        <canvas id="graficoValores"></canvas>
+        <div class="graficosValoresMes">
+            <canvas id="graficoValoresSaidaMes"></canvas>
+        </div>
+
+        <div class="GraficosCategoriasMes">
+            <canvas id="graficoValoresEntradaMes"></canvas>
+        </div>
+        <div>
+            <canvas id="graficoValoresSaidaPorCategoria"></canvas>
+        </div>
+        <div>
+            <canvas id="graficoValoresEntradaPorCategoria"></canvas>
+        </div>
     </div>
 
 
