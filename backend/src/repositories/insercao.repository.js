@@ -10,10 +10,18 @@ async function inserir(data, categoria, nome_extrato, tipo, valor, id_banco, id_
     id_banco = id_banco !== undefined ? id_banco : null;
     console.log(data, categoria, nome_extrato, tipo, valor, id_banco);
 
-    const result = await mysqlConn.execute(
-        `INSERT INTO EXTRATO (idExtrato, data, categoria, nomeNoExtrato, tipoDeTransacao, valor, FK_BANCO_idBanco, id_cliente) VALUES (null,?,?,?,?,?,?,?)`,
-        [data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa]
-    );
+    try {
+        const result = await mysqlConn.execute(
+            `INSERT INTO EXTRATO (idExtrato, data, categoria, nomeNoExtrato, tipoDeTransacao, valor, FK_BANCO_idBanco, id_cliente) VALUES (null,?,?,?,?,?,?,?)`,
+            [data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa]
+        );
+
+        console.log(`Dados inseridos com sucesso: ${data}, ${categoria}, ${nome_extrato}, ${tipo}, ${valor}, ${id_banco}, ${id_empresa}`);
+    } catch (error) {
+        console.error(`Erro ao inserir dados: ${error.message}`);
+        throw error;
+    }
+
 }
 
 function buscarBanco(callback){
