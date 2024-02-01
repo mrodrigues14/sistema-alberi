@@ -20,8 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             document.body.appendChild(script);
 
-            buscarTotalEntradasPorMes();
-
         })
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
@@ -36,6 +34,8 @@ window.onload = function() {
             if (data && data.length > 0) {
                 console.log('Dados da empresa recebidos:', data);
                 idEmpresa = data[0].IDCLIENTE;
+                buscarTotalEntradasPorMes();
+
                 console.log('idEmpresa definido como:', idEmpresa);
             } else {
                 console.error('Dados da empresa não retornados ou vazios');
@@ -44,6 +44,7 @@ window.onload = function() {
         .catch(error => {
             console.error('Erro ao carregar dados da empresa:', error);
         });
+        console.log('Teste2:',idEmpresa);
 
 
 };
@@ -51,6 +52,8 @@ window.onload = function() {
 function getStoredEmpresaName() {
     return localStorage.getItem('nomeEmpresaSelecionada');
 }
+
+
 
 function buscarTotalEntradasPorMes() {
     const ano = new Date().getFullYear();
@@ -68,34 +71,35 @@ function buscarTotalEntradasPorMes() {
 
 function inserirDadosNaTabela(dados) {
     const tbody = document.querySelector('#tabelaResumo tbody');
-    tbody.innerHTML = '';
+    tbody.innerHTML = ''; // Limpa o corpo da tabela
 
     dados.forEach(entrada => {
         const mes = entrada.mes;
         const totalLiquido = entrada.total;
 
-        // Criar nova linha na tabela
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${mesParaNome(mes)}</td>
+            <td><input type="number" class="valor-bruto-input" onchange="calcularDesconto(this)" /></td>
             <td class="valor-liquido">${totalLiquido.toFixed(2)}</td>
-            <td><input type="number" class="valor-liquido" onchange="calcularDesconto(this)" /></td>
-            <td class="desconto"></td>
+            <td class="desconto">-</td>
         `;
         tbody.appendChild(tr);
     });
 }
+
 
 function mesParaNome(mes) {
     const nomesDosMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     return nomesDosMeses[mes - 1];
 }
 
-function calcularDesconto(inputValorLiquido) {
-    const tr = inputValorLiquido.parentElement.parentElement;
-    const valorBruto = parseFloat(tr.querySelector('.valor-bruto').textContent);
-    const valorLiquido = parseFloat(inputValorLiquido.value);
+function calcularDesconto(inputValorBruto) {
+    const tr = inputValorBruto.parentElement.parentElement;
+    const valorBruto = parseFloat(inputValorBruto.value);
+    const valorLiquido = parseFloat(tr.querySelector('.valor-liquido').textContent);
     const desconto = valorBruto - valorLiquido;
 
     tr.querySelector('.desconto').textContent = desconto.toFixed(2);
 }
+

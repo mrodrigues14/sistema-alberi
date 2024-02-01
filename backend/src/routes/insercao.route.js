@@ -39,6 +39,7 @@ router.get('/dados-empresa', (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");
         }
+        console.log(result)
         res.json(result);
     });
 });
