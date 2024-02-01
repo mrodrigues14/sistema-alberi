@@ -46,13 +46,14 @@ function entradaCategoria(empresa, data, callback){
     mysqlConn.query(`SELECT
                         e.categoria,
                         SUM(CASE WHEN e.tipoDeTransacao = 'ENTRADA' THEN e.valor ELSE 0 END) AS valor
-                        FROM
-                            extrato e
-                        WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA < ?
-                        GROUP BY
-                            e.categoria
-                        HAVING 
-                            SUM(e.valor > 0)`, parametros,
+                    FROM
+                        extrato e
+                    WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA < ?
+                    GROUP BY
+                        e.categoria
+                    HAVING 
+                        SUM(e.valor) > 0
+                    `, parametros,
         function(err, result, fields) {
             if (err) {
                 callback(err, null);

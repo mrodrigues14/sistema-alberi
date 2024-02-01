@@ -41,6 +41,7 @@ window.onload = function() {
             console.log(data);
             const select = document.getElementById('seletorBanco');
             const campoOculto = document.querySelector('input[name="id_banco"]');
+
             data.forEach(banco => {
                 const option = document.createElement('option');
                 option.value = banco.IDBANCO;
@@ -48,12 +49,20 @@ window.onload = function() {
                 select.appendChild(option);
             });
 
-            campoOculto.value = select.value;
+            const ultimaSelecao = localStorage.getItem('ultimaSelecaoBanco');
+            if (ultimaSelecao) {
+                select.value = ultimaSelecao;
+                campoOculto.value = ultimaSelecao;
+            } else {
+                campoOculto.value = select.value;
+            }
 
             select.addEventListener('change', function () {
                 campoOculto.value = select.value;
+                localStorage.setItem('ultimaSelecaoBanco', select.value);
             });
         })
+
         .catch(error => {
             console.error('Erro ao carregar os dados:', error);
         });
@@ -127,6 +136,8 @@ function fecharPopUp(){
     document.getElementById("sobreposicao").style.display = "none";
     location.reload();
 }
+
+
 
 function teste(){
     alert("teste");
