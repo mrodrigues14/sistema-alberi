@@ -56,8 +56,7 @@ document.getElementById('dateButton').addEventListener('click', function() {
 document.getElementById('seletorMes').addEventListener('change', function() {
     var date = new Date(this.value);
     var options = { month: 'long', year: 'numeric' };
-    var formattedDate = new Intl.DateTimeFormat('pt-BR', options).format(date);
-    document.getElementById('dateButton').textContent = formattedDate;
+    document.getElementById('dateButton').textContent = new Intl.DateTimeFormat('pt-BR', options).format(date);
 });
 
 function setDefaultDates() {
@@ -69,12 +68,14 @@ function setDefaultDates() {
     document.getElementById('dataFim').valueAsDate = diaAnterior;
 
     setTimeout(() => {
-        handleFiltrarPorData();
-        handleFiltrarPorCategoria();
+        handleFiltrarPorDataSaida();
+        handleFiltrarPorCategoriaSaida();
+        handleFiltrarPorDataEntrada();
+        handleFiltrarPorCategoriaEntrada();
     }, 500);
 }
 
-function handleFiltrarPorData() {
+function handleFiltrarPorDataSaida() {
     const dataInicio = document.getElementById('dataInicio').value;
     const dataFim = document.getElementById('dataFim').value;
 
@@ -93,6 +94,59 @@ function handleFiltrarPorData() {
     }
 }
 
+function handleFiltrarPorCategoriaSaida() {
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
+
+    if (dataInicio && dataFim) {
+        fetch(`/paginaMenuInicial/filtroValoresCategoriaMes?dataInicio=${encodeURIComponent(dataInicio)}&dataFim=${encodeURIComponent(dataFim)}&idCliente=${idEmpresa}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados de saída por categoria:', data);
+                criarGraficoSaidaPorCategoria(data);
+            })
+            .catch(error => console.error('Erro ao buscar dados de saída por categoria:', error));
+    } else {
+        console.error('Datas não fornecidas');
+    }
+}
+
+function handleFiltrarPorCategoriaEntrada() {
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
+
+    if (dataInicio && dataFim) {
+        fetch(`/paginaMenuInicial/filtrarValoresDeEntradaPorCategoria?dataInicio=${encodeURIComponent(dataInicio)}&dataFim=${encodeURIComponent(dataFim)}&idCliente=${idEmpresa}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados de saída por categoria:', data);
+                criarGraficoEntradaPorCategoria(data);
+            })
+            .catch(error => console.error('Erro ao buscar dados de saída por categoria:', error));
+    } else {
+        console.error('Datas não fornecidas');
+    }
+}
+
+function handleFiltrarPorDataEntrada() {
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
+
+    if (dataInicio && dataFim) {
+        fetch(`/paginaMenuInicial/filtrarValoresEntrada?dataInicio=${encodeURIComponent(dataInicio)}&dataFim=${encodeURIComponent(dataFim)}&idCliente=${idEmpresa}`)
+            .then(response => response.json())
+            .then(valoresData => {
+                console.log('Valores filtrados:', valoresData);
+                criarGraficoValoresEntrada(valoresData);
+            })
+            .catch(error => {
+                console.error('Erro ao filtrar por data:', error);
+            });
+    } else {
+        console.error('Datas não fornecidas');
+    }
+}
+
 function criarGraficoValores(valoresData) {
     const valores = valoresData.map(item => item.valor);
     const datas = valoresData.map(item => {
@@ -100,10 +154,10 @@ function criarGraficoValores(valoresData) {
         return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
     });
 
-    var ctx = document.getElementById('graficoValoresSaidaMes').getContext('2d');
+    const ctx = document.getElementById('graficoValoresSaidaMes').getContext('2d');
 
     var chart = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: datas,
             datasets: [{
@@ -124,22 +178,37 @@ function criarGraficoValores(valoresData) {
     });
 }
 
-function handleFiltrarPorCategoria() {
-    const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim = document.getElementById('dataFim').value;
+function criarGraficoValoresEntrada(valoresData) {
+    const valores = valoresData.map(item => item.valor);
+    const datas = valoresData.map(item => {
+        const date = new Date(item.data);
+        return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+    });
 
-    if (dataInicio && dataFim) {
-        fetch(`/paginaMenuInicial/filtroValoresCategoriaMes?dataInicio=${encodeURIComponent(dataInicio)}&dataFim=${encodeURIComponent(dataFim)}&idCliente=${idEmpresa}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log('Dados de saída por categoria:', data);
-                criarGraficoSaidaPorCategoria(data);
-            })
-            .catch(error => console.error('Erro ao buscar dados de saída por categoria:', error));
-    } else {
-        console.error('Datas não fornecidas');
-    }
+    const ctx = document.getElementById('graficoValoresEntradaMes').getContext('2d');
+
+    var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: datas,
+            datasets: [{
+                label: 'Valores',
+                data: valores,
+                backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                borderColor: 'rgba(0, 123, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
 }
+
 
 function criarGraficoSaidaPorCategoria(dadosCategoria) {
     const categorias = dadosCategoria.map(item => item.categoria);
@@ -147,14 +216,12 @@ function criarGraficoSaidaPorCategoria(dadosCategoria) {
 
     var ctx = document.getElementById('graficoValoresSaidaPorCategoria').getContext('2d');
     var chart = new Chart(ctx, {
-        type: 'bar',
+        type: 'doughnut',
         data: {
             labels: categorias,
             datasets: [{
                 label: 'Valor de Saída por Categoria',
                 data: valores,
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderColor: 'rgba(255, 99, 132, 1)',
                 borderWidth: 1
             }]
         },
@@ -178,4 +245,38 @@ function criarGraficoSaidaPorCategoria(dadosCategoria) {
     });
 }
 
+function criarGraficoEntradaPorCategoria(dadosCategoria) {
+    const categorias = dadosCategoria.map(item => item.categoria);
+    const valores = dadosCategoria.map(item => item.valorTotal);
+
+    var ctx = document.getElementById('graficoValoresEntradaPorCategoria').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: categorias,
+            datasets: [{
+                label: 'Valor de Saída por Categoria',
+                data: valores,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Valores de Saída por Categoria'
+                }
+            }
+        }
+    });
+}
 

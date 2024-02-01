@@ -1,9 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
-
 input{
     font-family: 'DM Sans', sans-serif;
-
 }
 
 body{
@@ -13,7 +11,6 @@ body{
 #menuInicialButton{
     background-color: #8BACAF;
 }
-
 
 .filtoData{
     background-color: #adadad;
@@ -35,9 +32,22 @@ body{
     box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
     width: auto;
     margin-left: 10px;
-
 }
 
 .botaoFiltro:hover{
     background-color: #8BACAF;
+}
+
+.graficos{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 10px;
+    width: 100%;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .graficos {
+        grid-template-columns: 1fr;
+    }
 }
