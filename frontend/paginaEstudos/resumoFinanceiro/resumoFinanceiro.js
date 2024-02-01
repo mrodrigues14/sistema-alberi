@@ -164,7 +164,9 @@ function atualizarTabelaCategoria(data) {
     tbody.innerHTML = '';
     let total = 0;
 
-    data.forEach(item => {
+    const dadosFiltrados = data.filter(item => parseFloat(item.valor) > 0);
+
+    dadosFiltrados.forEach(item => {
         const novaLinha = tbody.insertRow();
         const celulaCategoria = novaLinha.insertCell(0);
         const celulaValor = novaLinha.insertCell(1);
@@ -175,6 +177,7 @@ function atualizarTabelaCategoria(data) {
 
         total += parseFloat(item.valor);
     });
+
     totalEntrada = total;
     const tfoot = document.getElementById('EntradaCategoriaTable').getElementsByTagName('tfoot')[0];
     tfoot.rows[0].cells[1].textContent = total.toFixed(2);

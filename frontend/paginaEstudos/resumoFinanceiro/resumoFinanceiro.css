@@ -208,3 +208,28 @@
     background-color: #8BACAF;
     color: white;
 }
+
+#botao-voltar{
+    width: 100%;
+    background-color: #8BACAF;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
+}
+
+#botao-voltar:hover{
+    background-color: #6D8A8D;
+}
+
+#botao-voltar-container{
+    margin-top: 3vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
