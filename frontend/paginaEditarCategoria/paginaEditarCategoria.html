@@ -16,6 +16,17 @@
             </form>
         </div>
 
+        <div class="adicionarSubcategoria">
+            <form action="/categoria/subcategoria" method="post">
+                <label>
+                    <select name="categoriaPai" id="seletorCategoria">
+                    </select>
+                </label>
+                <input type="text" name="SUBCATEGORIA" placeholder="Subcategoria">
+                <input type="submit" value="Adicionar">
+            </form>
+        </div>
+
         <div class="removerCategoria">
             <form action="/categoria/delete/" method="post">
                 <label>

@@ -73,16 +73,26 @@ window.onload = function() {
             const table = document.getElementById('ultimasInsercoes');
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = '';
-
+            
             data.forEach(insercao => {
+                let saldo = 0;
                 const row = tbody.insertRow();
                 row.insertCell().textContent = formatDate(insercao.DATA);
                 row.insertCell().textContent = insercao.CATEGORIA;
-                row.insertCell().textContent = insercao.NOMENOEXTRATO;
-                row.insertCell().textContent = insercao.TIPODETRANSACAO;
-                row.insertCell().textContent = insercao.VALOR;
+                row.insertCell().textContent = insercao.DESCRICAO;
+                row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
+                if(insercao.TIPO_DE_TRANSACAO == "ENTRADA"){
+                    saldo+=insercao.VALOR;
+                    row.insertCell().textContent = insercao.VALOR;
+                    row.insertCell().textContent = "";
+                }
+                else{
+                    saldo-=insercao.VALOR;
+                    row.insertCell().textContent = "";
+                    row.insertCell().textContent = insercao.VALOR;
+                }
+                row.insertCell().textContent = saldo;
                 row.insertCell().textContent = insercao.NOME_BANCO;
-                row.insertCell().textContent = insercao.NOME_CLIENTE;
             });
         })
         .catch(error => {
@@ -109,24 +119,53 @@ window.onload = function() {
             console.error('Erro ao carregar dados da empresa:', error);
         });
 
-    fetch('/insercao/dados-categoria')
+        fetch('/insercao/dados-categoria')
         .then(response => response.json())
         .then(data => {
             const select = document.getElementById('seletorCategoria');
-            data.forEach(categoria => {
-                const option = document.createElement('option');
-                option.value = categoria.CATEGORIA;
-                option.textContent = categoria.CATEGORIA;
-                select.appendChild(option);
-            });
+            const categorias = construirArvoreDeCategorias(data);
+            adicionarCategoriasAoSelect(select, categorias);
         })
         .catch(error => {
             console.error('Erro ao carregar os dados:', error);
         });
-
+    
+        
 };
+    
+function construirArvoreDeCategorias(categorias) {
+    let mapa = {};
+    let arvore = [];
 
-function abrirPopUp(){
+    categorias.forEach(categoria => {
+        mapa[categoria.IDCATEGORIA] = {...categoria, subcategorias: []};
+    });
+
+    Object.values(mapa).forEach(categoria => {
+        if (categoria.ID_CATEGORIA_PAI) {
+            mapa[categoria.ID_CATEGORIA_PAI].subcategorias.push(categoria);
+        } else {
+            arvore.push(categoria);
+        }
+    });
+
+    return arvore;
+}
+
+function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
+    categorias.forEach(categoria => {
+        const option = document.createElement('option');
+        option.value = categoria.IDCATEGORIA;
+        option.textContent = prefixo + categoria.NOME;
+        select.appendChild(option);
+
+        if (categoria.subcategorias.length > 0) {
+            adicionarCategoriasAoSelect(select, categoria.subcategorias, prefixo + '---');
+        }
+    });
+}
+
+    function abrirPopUp(){
     document.getElementById("popup").style.display = "block";
     document.getElementById("sobreposicao").style.display = "block";
 }
@@ -143,7 +182,6 @@ function teste(){
     alert("teste");
 }
 function excelDateToJSDate(excelDate) {
-    // O Excel armazena datas a partir de 1 de janeiro de 1900
     const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
     const convertedDate = date.toISOString().split('T')[0];
     return convertedDate;

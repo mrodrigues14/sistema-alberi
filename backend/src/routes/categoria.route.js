@@ -4,6 +4,7 @@ const path = require('path');
 const {buscar} = require('../repositories/categoria.repository');
 const {adicionar} = require('../repositories/categoria.repository');
 const {deletar} = require('../repositories/categoria.repository');
+const {adicionarSubcategoria} = require('../repositories/categoria.repository');
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEditarCategoria/paginaEditarCategoria.html'));
@@ -37,6 +38,17 @@ router.post('/delete' , (req, res) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao deletar categoria");
+        }
+        res.redirect('/categoria');
+    });
+});
+
+router.post('/subcategoria', (req, res) => {
+    const {categoriaPai, SUBCATEGORIA} = req.body;
+    adicionarSubcategoria(categoriaPai, SUBCATEGORIA, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao adicionar subcategoria");
         }
         res.redirect('/categoria');
     });

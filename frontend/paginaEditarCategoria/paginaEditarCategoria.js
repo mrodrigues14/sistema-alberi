@@ -5,8 +5,8 @@ window.onload = function() {
             const select = document.getElementById('seletorCategoria');
             data.forEach(categoria => {
                 const option = document.createElement('option');
-                option.value = categoria.CATEGORIA;
-                option.textContent = categoria.CATEGORIA;
+                option.value = categoria.IDCATEGORIA;
+                option.textContent = categoria.NOME;
                 select.appendChild(option);
             });
         })

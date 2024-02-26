@@ -56,9 +56,9 @@ router.get('/dados-categoria', (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const { Data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa } = req.body;
+        const { Data, categoria, descricao, nomeExtrato, tipo, valor,id_banco, id_empresa } = req.body;
 
-        await inserir(Data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa);
+        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_banco, id_empresa);
 
         res.redirect('/insercao');
     } catch (error) {
@@ -68,14 +68,12 @@ router.post('/', async (req, res) => {
 });
 
 router.post('/inserir-lote', async (req, res) => {
-    const entradas = req.body; // Espera-se que seja uma lista de objetos
+    const entradas = req.body; 
 
     try {
         for (const entrada of entradas) {
-            // Desestruturação de cada objeto JSON para obter as variáveis
             const { Data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa } = entrada;
 
-            // Chamar a função inserir para cada conjunto de dados
             await inserir(Data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa);
         }
         res.status(200).send("Dados inseridos com sucesso");

@@ -67,6 +67,89 @@
     color: #000000;
 }
 
+.adicionarSubcategoria{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    margin-left: 15%;
+    margin-right: 15%;
+    width: 300px;
+    height: 100px;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+}
+
+.adicionarSubcategoria form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+}
+
+.adicionarSubcategoria input{
+    text-align: center;
+    width: 80%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.adicionarSubcategoria button{
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #8BACAF;
+    color: #FFFFFF;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+    align-self: end;
+}
+
+.adicionarSubcategoria button:hover{
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+.adicionarCategoria label{
+    margin-top: 5%;
+    margin-bottom: 5%;
+    margin-left: 15%;
+    margin-right: 15%;
+    width: 300px;
+    height: 100px;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.adicionarSubcategoria select{
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: transparent;
+    text-align: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+}
+
 .removerCategoria{
     display: flex;
     align-items: center;

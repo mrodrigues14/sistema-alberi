@@ -9,7 +9,7 @@ router.post('/login', (req, res) => {
     console.log("Tentativa de login com:", username, password);
 
     if (username && password) {
-        db.query('SELECT * FROM usuarios WHERE usuarioLogin = ? AND senha = ?', [username, password], (error, results) => {
+        db.query('SELECT * FROM usuarios WHERE USUARIO_LOGIN = ? AND SENHA = ?', [username, password], (error, results) => {
             if (error) {
                 console.error('Erro durante a busca no banco de dados:', error);
                 return res.status(500).send('Server error');
@@ -17,7 +17,7 @@ router.post('/login', (req, res) => {
 
             if (results.length > 0) {
 
-                req.session.username = results[0].nomeDoUsuario;
+                req.session.username = results[0].NOME_DO_USUARIO;
                 return res.status(200).send({ message: 'Login successful', user: results[0] });
             } else {
                 return res.status(401).send({ message: 'Invalid credentials' });
