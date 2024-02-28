@@ -56,9 +56,12 @@ function buscarIDEmpresa(nomeEmpresa, callback) {
     );
 }
 
-function buscarCategorias(callback) {
+function buscarCategorias(IDCLIENTE, callback) {
     mysqlConn.query(
-        `SELECT IDCATEGORIA, NOME, ID_CATEGORIA_PAI FROM CATEGORIA`,
+        `SELECT C.IDCATEGORIA AS IDCATEGORIA, C.NOME AS NOME, C.ID_CATEGORIA_PAI AS ID_CATEGORIA_PAI 
+        FROM CATEGORIA C
+        INNER JOIN RELACAOCLIENTECATEGORIA RCC ON C.IDCATEGORIA = RCC.ID_CATEGORIA
+        WHERE RCC.ID_CLIENTE = ?`, [IDCLIENTE],
         function(err, result, fields) {
             if (err) {
                 callback(err, null);

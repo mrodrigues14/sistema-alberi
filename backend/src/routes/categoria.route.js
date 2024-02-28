@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const {buscar} = require('../repositories/categoria.repository');
-const {adicionar} = require('../repositories/categoria.repository');
+const {adicionarOuAssociarCategoria} = require('../repositories/categoria.repository');
 const {deletar} = require('../repositories/categoria.repository');
 const {adicionarSubcategoria} = require('../repositories/categoria.repository');
 
@@ -21,9 +21,9 @@ router.get('/dados' , (req, res) => {
 });
 
 router.post('/' , (req, res) => {
-    const {CATEGORIA} = req.body;
-    console.log(CATEGORIA);
-    adicionar(CATEGORIA, (err, result) => {
+    const {CATEGORIA, idcliente} = req.body;
+    console.log(CATEGORIA, idcliente);
+    adicionarOuAssociarCategoria(CATEGORIA, idcliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao adicionar categoria");
@@ -44,8 +44,8 @@ router.post('/delete' , (req, res) => {
 });
 
 router.post('/subcategoria', (req, res) => {
-    const {categoriaPai, SUBCATEGORIA} = req.body;
-    adicionarSubcategoria(categoriaPai, SUBCATEGORIA, (err, result) => {
+    const {IDCLIENTE, categoriaPai, SUBCATEGORIA} = req.body;
+    adicionarSubcategoria(IDCLIENTE ,categoriaPai, SUBCATEGORIA, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao adicionar subcategoria");
