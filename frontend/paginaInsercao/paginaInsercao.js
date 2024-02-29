@@ -40,7 +40,6 @@
         fetch('/insercao/dados')
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 const select = document.getElementById('seletorBanco');
                 const campoOculto = document.querySelector('input[name="id_banco"]');
 
@@ -103,7 +102,6 @@
                     fetch(`/insercao/dados-categoria?IDCLIENTE=${encodeURIComponent(IDCLIENTE)}`)
                         .then(response => response.json())
                         .then(data => {
-                            console.log(data);
                             const select = document.getElementById('seletorCategoria');
                             const categorias = construirArvoreDeCategorias(data);
                             adicionarCategoriasAoSelect(select, categorias);

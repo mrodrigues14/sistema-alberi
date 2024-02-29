@@ -21,6 +21,7 @@
             <form action="/categoria/subcategoria" method="post">
                 <label>
                     <select name="categoriaPai" id="seletorCategoria">
+
                     </select>
                 </label>
                 <input type="text" name="SUBCATEGORIA" placeholder="Subcategoria">
@@ -32,10 +33,11 @@
         <div class="removerCategoria">
             <form action="/categoria/delete/" method="post">
                 <label>
-                    <select name="categoria" id="seletorCategoria">
-
+                    <select name="categoria" id="seletorCategoria2">
+                    
                     </select>
                 </label>
+                <input type="hidden" name="idcliente3">
                 <input type="submit" value="Remover">
             </form>
         </div>

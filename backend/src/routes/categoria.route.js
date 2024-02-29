@@ -11,7 +11,9 @@ router.get('/', (req, res) => {
 });
 
 router.get('/dados' , (req, res) => {
-    buscar((err, result) => {
+    const {idcliente} = req.query;
+    console.log(idcliente);
+    buscar(idcliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");
@@ -33,8 +35,8 @@ router.post('/' , (req, res) => {
 });
 
 router.post('/delete' , (req, res) => {
-    const {categoria} = req.body;
-    deletar(categoria, (err, result) => {
+    const {idcliente3, categoria} = req.body;
+    deletar(categoria, idcliente3, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao deletar categoria");
@@ -44,8 +46,8 @@ router.post('/delete' , (req, res) => {
 });
 
 router.post('/subcategoria', (req, res) => {
-    const {IDCLIENTE, categoriaPai, SUBCATEGORIA} = req.body;
-    adicionarSubcategoria(IDCLIENTE ,categoriaPai, SUBCATEGORIA, (err, result) => {
+    const {idcliente2, categoriaPai, SUBCATEGORIA} = req.body;
+    adicionarSubcategoria(idcliente2 ,categoriaPai, SUBCATEGORIA, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao adicionar subcategoria");

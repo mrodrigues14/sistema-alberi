@@ -29,18 +29,7 @@ window.onload = function() {
             console.error('Erro ao carregar o template:', error);
         });
 
-    fetch('/categoria/dados')
-        .then(response => response.json())
-        .then(data => {
-            const select = document.getElementById('seletorCategoria');
-            data.forEach(categoria => {
-                const option = document.createElement('option');
-                option.value = categoria.IDCATEGORIA;
-                option.textContent = categoria.NOME;
-                select.appendChild(option);
-            });
-        })
-
+        
         const nomeEmpresa = getStoredEmpresaName();
         fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
         .then(response => response.json())
@@ -49,6 +38,48 @@ window.onload = function() {
                 const campoOculto = document.querySelector('input[name="idcliente"]');
                 if (campoOculto) {
                     campoOculto.value = data[0].IDCLIENTE;
+                    idCliente = data[0].IDCLIENTE;
+                    fetch(`/categoria/dados?idcliente=${encodeURIComponent(idCliente)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById('seletorCategoria');
+                        data.forEach(categoria => {
+                            const option = document.createElement('option');
+                            option.value = categoria.IDCATEGORIA;
+                            option.textContent = categoria.NOME;
+                            select.appendChild(option);
+                    });
+            })
+                } else {
+                    console.error('Campo oculto id_empresa não encontrado');
+                }
+            } else {
+                console.error('Dados da empresa não retornados ou vazios');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao carregar dados da empresa:', error);
+        });
+        
+        fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                const campoOculto = document.querySelector('input[name="idcliente2"]');
+                if (campoOculto) {
+                    campoOculto.value = data[0].IDCLIENTE;
+                    idCliente = data[0].IDCLIENTE;
+                    fetch(`/categoria/dados?idcliente=${encodeURIComponent(idCliente)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById('seletorCategoria2');
+                        data.forEach(categoria => {
+                            const option = document.createElement('option');
+                            option.value = categoria.IDCATEGORIA;
+                            option.textContent = categoria.NOME;
+                            select.appendChild(option);
+                        });
+                    })
                 } else {
                     console.error('Campo oculto id_empresa não encontrado');
                 }
@@ -64,9 +95,21 @@ window.onload = function() {
         .then(response => response.json())
         .then(data => {
             if (data && data.length > 0) {
-                const campoOculto = document.querySelector('input[name="idcliente2"]');
+                const campoOculto = document.querySelector('input[name="idcliente3"]');
                 if (campoOculto) {
                     campoOculto.value = data[0].IDCLIENTE;
+                    idCliente = data[0].IDCLIENTE;
+                    fetch(`/categoria/dados?idcliente=${encodeURIComponent(idCliente)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById('seletorCategoria');
+                        data.forEach(categoria => {
+                            const option = document.createElement('option');
+                            option.value = categoria.IDCATEGORIA;
+                            option.textContent = categoria.NOME;
+                            select.appendChild(option);
+                    });
+            })
                 } else {
                     console.error('Campo oculto id_empresa não encontrado');
                 }

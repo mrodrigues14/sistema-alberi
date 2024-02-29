@@ -1,13 +1,19 @@
 const mysqlConn = require("../base/database");
 
-function buscar(callback){
-    mysqlConn.query(`SELECT IDCATEGORIA, NOME, ID_CATEGORIA_PAI FROM CATEGORIA`, function(err, result, fields) {
-        if (err) {
-            callback(err, null);
-        } else {
-            callback(null, result);
+function buscar(idcliente, callback){
+    mysqlConn.query(
+        `SELECT C.IDCATEGORIA AS IDCATEGORIA, C.NOME AS NOME, C.ID_CATEGORIA_PAI AS ID_CATEGORIA_PAI 
+        FROM CATEGORIA C
+        INNER JOIN RELACAOCLIENTECATEGORIA RCC ON C.IDCATEGORIA = RCC.ID_CATEGORIA
+        WHERE RCC.ID_CLIENTE = ?`, [idcliente],
+        function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
         }
-    });
+    );
 }
 
 function adicionarOuAssociarCategoria(categoria, idCliente, callback) {
@@ -43,8 +49,10 @@ function adicionarOuAssociarCategoria(categoria, idCliente, callback) {
 }
 
 
-function deletar(categoria, callback){
-    mysqlConn.query(`DELETE FROM CATEGORIA WHERE NOME = '${categoria}'`, function(err, result, fields) {
+function deletar(idcategoria, idcliente, callback){
+    console.log(idcategoria, idcliente);
+    mysqlConn.query(`DELETE FROM RELACAOCLIENTECATEGORIA WHERE ID_CLIENTE = ? AND ID_CATEGORIA = ?`, [idcliente, idcategoria],
+    function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
