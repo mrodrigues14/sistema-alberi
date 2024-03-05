@@ -12,6 +12,20 @@
         <div class="adicionarCategoria">
             <form action="/categoria/" method="post">
                 <input type="text" name="CATEGORIA" placeholder="Categoria">
+                <input type="hidden" name="idcliente">
+                <input type="submit" value="Adicionar">
+            </form>
+        </div>
+
+        <div class="adicionarSubcategoria">
+            <form action="/categoria/subcategoria" method="post">
+                <label>
+                    <select name="categoriaPai" id="seletorCategoria">
+
+                    </select>
+                </label>
+                <input type="text" name="SUBCATEGORIA" placeholder="Subcategoria">
+                <input type="hidden" name="idcliente2">
                 <input type="submit" value="Adicionar">
             </form>
         </div>
@@ -19,10 +33,11 @@
         <div class="removerCategoria">
             <form action="/categoria/delete/" method="post">
                 <label>
-                    <select name="categoria" id="seletorCategoria">
-
+                    <select name="categoria" id="seletorCategoria2">
+                    
                     </select>
                 </label>
+                <input type="hidden" name="idcliente3">
                 <input type="submit" value="Remover">
             </form>
         </div>

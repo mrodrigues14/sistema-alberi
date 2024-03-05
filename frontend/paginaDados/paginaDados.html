@@ -11,7 +11,47 @@
 </head>
 <body>
     <div id="menu-container"></div>
+    <div class="main">
+        <div id="Adicionar Conta">
+            <h1>Adicionar Conta</h1>
+            <form id="formAdd" action="/dados/adicionar" method="post">
+                <label for="nomeBanco">
+                    Nome do Banco:
+                    <input type="text" id="nomeBanco">
+                </label>
+                <label for="tipo">
+                    Tipo:
+                    <select id="tipoConta">
+                        <option value="CONTA CORRENTE">Conta Corrente</option>
+                        <option value="CONTA POUPANÇA">Conta Poupança</option>
+                        <option value="CONTA INVESTIMENTO">Conta Salário</option>
+                    </select>
+                </label>
+                <input type="hidden" name="idcliente">
+                <input type="submit" value="Adicionar">
+            </form>
+        </div>
 
+        <div id="Remover Conta">
+            <h1>Remover Conta</h1>
+            <form>
+                <label for="nomeBanco">
+                    Nome do Banco:
+                    <select>
+
+                    </select>
+                </label>
+                <label for="tipo">
+                    Tipo:
+                    <select id="tipo">
+                        <option value="CONTA CORRENTE">Conta Corrente</option>
+                        <option value="CONTA POUPANÇA">Conta Poupança</option>
+                        <option value="CONTA INVESTIMENTO">Conta Salário</option>
+                    </select>
+                </label>
+            </form>
+        </div>
+    </div>
     <script src="/paginaDados/paginaDados.js"></script>
 </body>
 </html>

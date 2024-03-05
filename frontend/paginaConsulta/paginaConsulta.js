@@ -134,16 +134,25 @@ function atualizarTabela(dados) {
     console.log('Atualizando tabela com:', dados);
     const tbody = document.getElementById('consulta').querySelector('tbody');
     tbody.innerHTML = '';
+    let saldo = 0;
 
     dados.forEach(item => {
         const row = tbody.insertRow();
         row.insertCell().textContent = formatDate(item.DATA);
         row.insertCell().textContent = item.CATEGORIA;
-        row.insertCell().textContent = item.NOMENOEXTRATO;
-        row.insertCell().textContent = item.TIPODETRANSACAO;
-        row.insertCell().textContent = item.VALOR;
-        row.insertCell().textContent = item.NOME_BANCO;
-        row.insertCell().textContent = item.NOME_CLIENTE;
+        row.insertCell().textContent = item.DESCRICAO;
+        row.insertCell().textContent = item.NOME_NO_EXTRATO;
+        if(item.TIPO_DE_TRANSACAO == 'ENTRADA'){
+            row.insertCell().textContent = item.VALOR.toFixed(2)
+            row.insertCell().textContent = ""
+            saldo += parseFloat(item.VALOR);
+        }
+        else{
+            row.insertCell().textContent = ""
+            row.insertCell().textContent = item.VALOR.toFixed(2);
+            saldo -= parseFloat(item.VALOR);
+        }
+        row.insertCell().textContent = saldo.toFixed(2);
     });
 }
 

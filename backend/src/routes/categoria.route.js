@@ -2,15 +2,18 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const {buscar} = require('../repositories/categoria.repository');
-const {adicionar} = require('../repositories/categoria.repository');
+const {adicionarOuAssociarCategoria} = require('../repositories/categoria.repository');
 const {deletar} = require('../repositories/categoria.repository');
+const {adicionarSubcategoria} = require('../repositories/categoria.repository');
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEditarCategoria/paginaEditarCategoria.html'));
 });
 
 router.get('/dados' , (req, res) => {
-    buscar((err, result) => {
+    const {idcliente} = req.query;
+    console.log(idcliente);
+    buscar(idcliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");
@@ -20,9 +23,9 @@ router.get('/dados' , (req, res) => {
 });
 
 router.post('/' , (req, res) => {
-    const {CATEGORIA} = req.body;
-    console.log(CATEGORIA);
-    adicionar(CATEGORIA, (err, result) => {
+    const {CATEGORIA, idcliente} = req.body;
+    console.log(CATEGORIA, idcliente);
+    adicionarOuAssociarCategoria(CATEGORIA, idcliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao adicionar categoria");
@@ -32,11 +35,22 @@ router.post('/' , (req, res) => {
 });
 
 router.post('/delete' , (req, res) => {
-    const {categoria} = req.body;
-    deletar(categoria, (err, result) => {
+    const {idcliente3, categoria} = req.body;
+    deletar(categoria, idcliente3, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao deletar categoria");
+        }
+        res.redirect('/categoria');
+    });
+});
+
+router.post('/subcategoria', (req, res) => {
+    const {idcliente2, categoriaPai, SUBCATEGORIA} = req.body;
+    adicionarSubcategoria(idcliente2 ,categoriaPai, SUBCATEGORIA, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao adicionar subcategoria");
         }
         res.redirect('/categoria');
     });
