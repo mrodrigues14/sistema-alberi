@@ -17,11 +17,11 @@
             <form id="formAdd" action="/dados/adicionar" method="post">
                 <label for="nomeBanco">
                     Nome do Banco:
-                    <input type="text" id="nomeBanco">
+                    <input type="text" id="nomeBanco" name="nomeBanco">
                 </label>
-                <label for="tipo">
+                <label for="tipoConta">
                     Tipo:
-                    <select id="tipoConta">
+                    <select id="tipoConta" name="tipoConta">
                         <option value="CONTA CORRENTE">Conta Corrente</option>
                         <option value="CONTA POUPANÇA">Conta Poupança</option>
                         <option value="CONTA INVESTIMENTO">Conta Salário</option>
@@ -34,21 +34,15 @@
 
         <div id="Remover Conta">
             <h1>Remover Conta</h1>
-            <form>
+            <form id="formRemove" action="/dados/remover" method="post">
                 <label for="nomeBanco">
                     Nome do Banco:
-                    <select>
+                    <select id="selectBanco" name="idbanco">
 
                     </select>
                 </label>
-                <label for="tipo">
-                    Tipo:
-                    <select id="tipo">
-                        <option value="CONTA CORRENTE">Conta Corrente</option>
-                        <option value="CONTA POUPANÇA">Conta Poupança</option>
-                        <option value="CONTA INVESTIMENTO">Conta Salário</option>
-                    </select>
-                </label>
+                <input type="hidden" name="idcliente2">
+                <input type="submit" value="Remover">
             </form>
         </div>
     </div>

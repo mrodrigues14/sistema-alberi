@@ -4,7 +4,7 @@ async function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR,
     try {
         const result = await mysqlConn.execute(
             `INSERT INTO EXTRATO (IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, id_cliente) VALUES (null,?,?,?,?,?,?,?,?)`,
-            [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR,id_banco, id_empresa]
+            [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa]
         );
 
     } catch (error) {
@@ -14,8 +14,10 @@ async function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR,
 
 }
 
-function buscarBanco(callback){
-    mysqlConn.query(`SELECT IDBANCO, NOME FROM BANCO`, function(err, result, fields) {
+function buscarBanco(idcliente, callback){
+    mysqlConn.query(`SELECT B.IDBANCO, CONCAT(B.NOME, ' - ' ,B.TIPO) AS NOME_TIPO FROM BANCO B 
+                     INNER JOIN RELACAOCLIENTEBANCO R ON B.IDBANCO = R.ID_BANCO
+                     WHERE R.ID_CLIENTE = ?`, [idcliente], function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
@@ -26,7 +28,7 @@ function buscarBanco(callback){
 
 function buscarUltimasInsercoes(callback) {
     const query = `
-        SELECT DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, B.NOME AS NOME_BANCO, C.NOME AS NOME_CLIENTE
+        SELECT IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, C.NOME AS NOME_CLIENTE
         FROM EXTRATO
         INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
         INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
@@ -72,4 +74,19 @@ function buscarCategorias(IDCLIENTE, callback) {
     );
 }
 
-module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias };
+function deletarExtrato(idExtrato, callback) {
+    mysqlConn.query(
+        `DELETE FROM EXTRATO WHERE IDEXTRATO = ?`,
+        [idExtrato],
+        function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+
+}
+
+module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato };
