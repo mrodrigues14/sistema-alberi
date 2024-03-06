@@ -6,6 +6,8 @@ const {buscarBanco} = require('../repositories/insercao.repository');
 const {Router} = require("express");
 const {buscarIDEmpresa} = require("../repositories/insercao.repository");
 const {buscarCategorias} = require("../repositories/insercao.repository");
+const {deletarExtrato} = require("../repositories/insercao.repository");
+const {deletar} = require("../repositories/categoria.repository");
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaInsercao/paginaInsercao.html'));
@@ -13,12 +15,15 @@ router.get('/', (req, res) => {
 });
 
 router.get('/dados', (req, res) => {
-    buscarBanco((err, result) => {
+    const { idcliente } = req.query;
+    buscarBanco(idcliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");
         }
-        res.json(result);
+        else{
+            res.send(result);
+        }
     });
 });
 
@@ -39,7 +44,6 @@ router.get('/dados-empresa', (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");
         }
-        console.log(result)
         res.json(result);
     });
 });
@@ -57,9 +61,10 @@ router.get('/dados-categoria', (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const { Data, categoria, descricao, nomeExtrato, tipo, valor,id_banco, id_empresa } = req.body;
+        const { Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa } = req.body;
+        console.log(req.body);
 
-        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_banco, id_empresa);
+        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa);
 
         res.redirect('/insercao');
     } catch (error) {
@@ -84,5 +89,15 @@ router.post('/inserir-lote', async (req, res) => {
     }
 });
 
+router.post('/deletar-extrato', (req, res) => {
+    const { idExtrato } = req.body;
+    deletarExtrato(idExtrato, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao deletar extrato");
+        }
+        res.redirect('/insercao');
+    });
+});
 
 module.exports = router;

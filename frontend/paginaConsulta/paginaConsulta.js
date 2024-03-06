@@ -37,30 +37,24 @@ window.onload = function() {
             console.error('Erro ao carregar o template:', error);
         });
 
-    fetch('/insercao/dados')
+    const nomeEmpresa = getStoredEmpresaName();
+    fetch(`insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
-            const select = document.getElementById('seletorBanco');
-            const campoOculto = document.querySelector('input[name="id_banco"]');
-            data.forEach(banco => {
-                const option = document.createElement('option');
-                option.value = banco.IDBANCO;
-                option.textContent = banco.NOME;
-                select.appendChild(option);
-            });
-
-            campoOculto.value = select.value;
-
-            select.addEventListener('change', function () {
-                campoOculto.value = select.value;
-            });
+            let idcliente = data[0].IDCLIENTE;
+            fetch(`/insercao/dados?idcliente=${idcliente}`)
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('seletorBanco');
+                    data.forEach(banco => {
+                        const option = document.createElement('option');
+                        option.value = banco.IDBANCO;
+                        option.textContent = banco.NOME_TIPO;
+                        select.appendChild(option);
+                    });
+                })
         })
-        .catch(error => {
-            console.error('Erro ao carregar os dados:', error);
-        });
 
-    const nomeEmpresa = getStoredEmpresaName();
     fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
         .then(response => response.json())
         .then(data => {
@@ -153,6 +147,11 @@ function atualizarTabela(dados) {
             saldo -= parseFloat(item.VALOR);
         }
         row.insertCell().textContent = saldo.toFixed(2);
+        const deleteCell = row.insertCell();
+        deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
+                                        <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
+                                        <button type="submit" class="delete-btn">Deletar</button>
+                                        </form>`;
     });
 }
 
