@@ -1,0 +1,135 @@
+body{
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+    height: 100%;
+}
+
+html{
+    height: 90%;
+}
+
+.main{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background-color: #f5f5f5;
+}
+
+#Adicionar-Conta{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #f5f5f5;
+}
+
+#Adicionar-Conta h1{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 30px;
+    color: #000;
+}
+
+#Adicionar-Conta form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #f5f5f5;
+}
+
+#nomeBanco{
+    width: 300px;
+    height: 1vw;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 20px;
+}
+
+label{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #8BACAF;
+    border-radius: 3px;
+    margin-bottom: 1vw;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+}
+
+#tipoConta{
+    width: 300px;
+    height: 2vw;
+    border: 1px solid #000;
+    border-radius: 5px;
+    align-items: center;
+    text-align: center;
+}
+
+#addButton{
+    width: 150px;
+    height: 1.5vw;
+    border: 1px solid #000;
+    border-radius: 5px;
+    font-size: 1vw;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+}
+
+#addButton:hover{
+    background-color: #8BACAF;
+    color: #fff;
+}
+
+#Remover\ Conta{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #f5f5f5;
+}
+
+#Remover\ Conta h1{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 30px;
+    color: #000;
+}
+
+#Remover\ Conta form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #f5f5f5;
+}
+
+#selectBanco{
+    width: 300px;
+    height: 2vw;
+    border: 1px solid #000;
+    border-radius: 5px;
+    align-items: center;
+    text-align: center;
+}
+
+#removeButton{
+    width: 150px;
+    height: 1.5vw;
+    border: 1px solid #000;
+    border-radius: 5px;
+    font-size: 1vw;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+}
+
+#removeButton:hover{
+    background-color: #8BACAF;
+    color: #fff;
+}

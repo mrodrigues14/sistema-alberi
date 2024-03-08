@@ -32,7 +32,7 @@ function buscarUltimasInsercoes(callback) {
         FROM EXTRATO
         INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
         INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
-        ORDER BY EXTRATO.IDEXTRATO DESC LIMIT 7`;
+        ORDER BY EXTRATO.IDEXTRATO DESC LIMIT 6`;
 
     mysqlConn.query(query, function(err, result, fields) {
         if (err) {

@@ -20,12 +20,12 @@ function saldoInicial(empresa, data, callback){
 
     mysqlConn.query(`SELECT
                         b.nome AS banco,
-                        SUM(CASE WHEN e.tipoDeTransacao = 'ENTRADA' THEN e.valor ELSE 0 END) -
-                        SUM(CASE WHEN e.tipoDeTransacao = 'SAIDA' THEN e.valor ELSE 0 END) AS saldo
+                        SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'ENTRADA' THEN e.VALOR ELSE 0 END) -
+                        SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'SAIDA' THEN e.VALOR ELSE 0 END) AS saldo
                     FROM
                         extrato e
                     INNER JOIN
-                        banco b ON e.FK_BANCO_idBanco = b.idBanco
+                        banco b ON e.ID_BANCO = b.IDBANCO
                     WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA < ?
                     GROUP BY
                         b.nome`, parametros,
@@ -45,7 +45,7 @@ function entradaCategoria(empresa, data, callback){
 
     mysqlConn.query(`SELECT
                         e.categoria,
-                        SUM(CASE WHEN e.tipoDeTransacao = 'ENTRADA' THEN e.valor ELSE 0 END) AS valor
+                        SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'ENTRADA' THEN e.VALOR ELSE 0 END) AS valor
                     FROM
                         extrato e
                     WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA < ?
@@ -70,11 +70,11 @@ function saidaCategoria(empresa, data, callback){
 
     mysqlConn.query(`SELECT
                         e.categoria,
-                        SUM(CASE WHEN e.tipoDeTransacao = 'SAIDA' THEN e.valor ELSE 0 END) AS valor
+                        SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'SAIDA' THEN e.VALOR ELSE 0 END) AS valor
                     FROM
                         extrato e
                     WHERE
-                        e.ID_CLIENTE = ? AND e.DATA >= ? AND e.DATA < ? AND e.tipoDeTransacao = 'SAIDA'
+                        e.ID_CLIENTE = ? AND e.DATA >= ? AND e.DATA < ? AND e.TIPO_DE_TRANSACAO = 'SAIDA'
                     GROUP BY
                         e.categoria
                     HAVING
@@ -101,7 +101,7 @@ function totalEntradasPorMes(empresa, ano, callback) {
         WHERE 
             ID_CLIENTE = ? AND 
             YEAR(DATA) = ? AND 
-            tipoDeTransacao = 'ENTRADA'
+            TIPO_DE_TRANSACAO = 'ENTRADA'
         GROUP BY 
             MONTH(DATA)
     `, [empresa, ano], function(err, results) {
