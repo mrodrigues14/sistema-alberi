@@ -8,11 +8,13 @@
             background-color: #8BACAF;
         }
     </style>
+
+    <link rel="stylesheet" href="/paginaDados/paginaDados.css">
 </head>
 <body>
     <div id="menu-container"></div>
     <div class="main">
-        <div id="Adicionar Conta">
+        <div id="Adicionar-Conta">
             <h1>Adicionar Conta</h1>
             <form id="formAdd" action="/dados/adicionar" method="post">
                 <label for="nomeBanco">
@@ -28,7 +30,7 @@
                     </select>
                 </label>
                 <input type="hidden" name="idcliente">
-                <input type="submit" value="Adicionar">
+                <input type="submit" value="Adicionar" id="addButton">
             </form>
         </div>
 
@@ -42,7 +44,7 @@
                     </select>
                 </label>
                 <input type="hidden" name="idcliente2">
-                <input type="submit" value="Remover">
+                <input type="submit" value="Remover" id="removeButton">
             </form>
         </div>
     </div>
