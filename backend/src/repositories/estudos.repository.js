@@ -128,4 +128,159 @@ function totalEntradasPorMes(empresa, ano, callback) {
     });
 }
 
-module.exports = {saldoInicial, entradaCategoria, saidaCategoria, totalEntradasPorMes};
+function getMeses(ano, empresaNome, callback) {
+    mysqlConn.query(`
+        SELECT IDCLIENTE FROM cliente WHERE NOME = ?
+    `, [empresaNome], function(err, result) {
+        if (err) {
+            return callback(err, null);
+        }
+        if (result.length === 0) {
+            return callback(new Error('Nenhum cliente encontrado com o nome da empresa fornecido.'), null);
+        }
+
+        const idCliente = result[0].IDCLIENTE;
+
+        mysqlConn.query(`
+            SELECT DISTINCT MONTH(DATA) AS mes 
+            FROM extrato 
+            WHERE YEAR(DATA) = ? AND ID_CLIENTE = ?
+            ORDER BY mes;
+        `, [ano, idCliente], function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                const mesesNomes = result.map(row => getNomeMesPortugues(row.mes));
+                callback(null, mesesNomes);
+            }
+        });
+    });
+}
+
+function getNomeMesPortugues(mesNumero) {
+    const meses = [
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+    return meses[mesNumero - 1]; // Ajuste para base-0 do array
+}
+
+
+function getReceitaLiquida(mesNome, ano, empresaNome, callback) {
+    const mes = getNumeroMesPortugues(mesNome);
+
+    mysqlConn.query(`
+        SELECT IDCLIENTE FROM cliente WHERE NOME = ?
+    `, [empresaNome], function(err, result) {
+        if (err) {
+            return callback(err, null); // Retorne o erro se houver
+        }
+        if (result.length === 0) {
+            return callback(new Error('Nenhum cliente encontrado com o nome da empresa fornecido.'), null);
+        }
+
+        const idCliente = result[0].IDCLIENTE;
+
+        mysqlConn.query(`
+            SELECT SUM(valor) AS receita_liquida
+            FROM extrato
+            WHERE ID_CLIENTE = ? AND YEAR(DATA) = ? AND MONTH(DATA) = ? AND tipo_de_transacao = 'SAIDA'
+        `, [idCliente, ano, mes], function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result[0] ? result[0].receita_liquida : 0);
+            }
+        });
+    });
+}
+
+
+
+function getValoresCategoria(categoria, mesNome, ano, empresaNome, callback) {
+    const mes = getNumeroMesPortugues(mesNome);
+    const dataInicio = `${ano}-${mes.toString().padStart(2, '0')}-01`;
+    const dataFim = new Date(ano, mes, 0).toISOString().split('T')[0]; // O dia 0 do próximo mês é o último dia do mês atual
+
+    mysqlConn.query(`
+        SELECT IDCLIENTE FROM cliente WHERE NOME = ?
+    `, [empresaNome], function(err, result) {
+        if (err) {
+            return callback(err, null);
+        }
+        if (result.length === 0) {
+            return callback(new Error('Nenhum cliente encontrado com o nome da empresa fornecido.'), null);
+        }
+
+        const idCliente = result[0].IDCLIENTE;
+
+        mysqlConn.query(`
+            SELECT 
+                MONTH(DATA) as mes, 
+                SUM(valor) AS total_categoria, 
+                (SELECT SUM(valor) FROM extrato WHERE ID_CLIENTE = ? AND DATA >= ? AND DATA <= ? AND tipo_de_transacao = 'ENTRADA') AS receita_liquida
+            FROM 
+                extrato 
+            WHERE 
+                categoria = ? AND 
+                ID_CLIENTE = ? AND 
+                DATA >= ? AND 
+                DATA <= ? AND 
+                tipo_de_transacao = 'SAIDA'
+            GROUP BY 
+                MONTH(DATA)
+        `, [idCliente, dataInicio, dataFim, categoria, idCliente, dataInicio, dataFim], function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result[0] ? {
+                    mes: mes,
+                    total_categoria: result[0].total_categoria,
+                    receita_liquida: result[0].receita_liquida
+                } : {mes: mes, total_categoria: 0, receita_liquida: 0});
+            }
+        });
+    });
+}
+
+function getNumeroMesPortugues(nomeMes) {
+    const meses = {
+        "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6,
+        "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12
+    };
+    return meses[nomeMes];
+}
+
+function getCategoria(empresaNome, ano, callback) {
+    mysqlConn.query(`
+        SELECT IDCLIENTE FROM cliente WHERE NOME = ?
+    `, [empresaNome], function(err, result) {
+        if (err) {
+            return callback(err, null);
+        }
+        if (result.length === 0) {
+            return callback(new Error('Nenhum cliente encontrado com o nome da empresa fornecido.'), null);
+        }
+
+        const idCliente = result[0].IDCLIENTE;
+
+        mysqlConn.query(`
+            SELECT DISTINCT categoria
+            FROM extrato
+            WHERE ID_CLIENTE = ? AND YEAR(DATA) = ?
+            ORDER BY categoria;
+        `, [idCliente, ano], function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                const categorias = result.map(row => row.categoria);
+                callback(null, categorias);
+            }
+        });
+    });
+}
+
+
+
+
+module.exports = {saldoInicial, entradaCategoria, saidaCategoria, totalEntradasPorMes, getMeses, getValoresCategoria, getReceitaLiquida, getCategoria};

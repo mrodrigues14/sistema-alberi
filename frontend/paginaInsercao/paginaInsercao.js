@@ -12,7 +12,7 @@ function getStoredEmpresaName() {
 }
 
 let IDCLIENTE = 0;
-
+let IDBANCO = 0 ;
 window.onload = function() {
     fetch('/templateMenu/template.html')
         .then(response => response.text())
@@ -105,6 +105,7 @@ window.onload = function() {
                     data.forEach(banco => {
                         const option = document.createElement('option');
                         option.value = banco.IDBANCO;
+                        IDBANCO = option.value
                         option.textContent = banco.NOME_TIPO;
                         select.appendChild(option);
                     });
@@ -155,11 +156,6 @@ function fecharPopUp(){
     location.reload();
 }
 
-
-
-function teste(){
-    alert("teste");
-}
 function excelDateToJSDate(excelDate) {
     const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
     const convertedDate = date.toISOString().split('T')[0];
@@ -177,6 +173,7 @@ function fecharPopupCarregamento() {
 function lerExcel() {
     var input = document.getElementById('excelFile');
     var reader = new FileReader();
+    var idEmpresa = IDCLIENTE; // Assume que você já tem o ID da empresa definido anteriormente
 
     reader.onload = function () {
         var fileData = reader.result;
@@ -184,9 +181,12 @@ function lerExcel() {
         workbook.SheetNames.forEach(function (sheetName) {
             var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
             XL_row_object.forEach(function (row) {
-                if (row.Data && !isNaN(row.Data)) {
-                    row.Data = excelDateToJSDate(row.Data);
+                if (row['Data'] && !isNaN(row['Data'])) {
+                    row['Data'] = excelDateToJSDate(row['Data']);
                 }
+                // Usa as variáveis globais IDCLIENTE e IDBANCO
+                row['IDCLIENTE'] = idEmpresa;
+                row['IDBANCO'] = IDBANCO;
             });
             var json_object = JSON.stringify(XL_row_object);
             console.log("JSON Convertido:", json_object);
@@ -230,6 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const formulario = document.getElementById('meuFormulario');
 
     seletorBanco.addEventListener('change', function() {
+        IDBANCO = this.value;
         idBancoPost.value = seletorBanco.value;
     });
 

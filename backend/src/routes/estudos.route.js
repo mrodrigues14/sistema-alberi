@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const {saldoInicial, entradaCategoria, saidaCategoria, totalEntradasPorMes} = require('../repositories/estudos.repository.js');
+const {saldoInicial, entradaCategoria,
+    saidaCategoria, totalEntradasPorMes,
+    getMeses, getValoresCategoria,
+    getReceitaLiquida, getCategoria} = require('../repositories/estudos.repository.js');
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/paginaEstudos.html'));
@@ -71,4 +74,47 @@ router.get('/resumoAnual/totalEntradasPorMes', (req, res) => {
     });
 });
 
+router.get('/resumoFin/meses', (req, res) => {
+    const { ano, empresa } = req.query;
+    getMeses(ano, empresa, (err, result) => {
+        if (err) {
+            res.status(500).json(err);
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+router.get('/resumoFin/valoresCategoria', (req, res) => {
+    const { categoria, mes, ano, empresa } = req.query;
+    getValoresCategoria(categoria, mes, ano, empresa, (err, result) => {
+        if (err) {
+            res.status(500).json(err);
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+router.get('/resumoFin/receitaLiquida', (req, res) => {
+    const { mes, ano, empresa } = req.query;
+    getReceitaLiquida(mes, ano, empresa, (err, result) => {
+        if (err) {
+            res.status(500).json(err);
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+router.get('/resumoFin/categorias', (req, res) => {
+    const { ano, empresa } = req.query;
+    getCategoria(empresa, ano, (err, categorias) => {
+        if (err) {
+            res.status(500).json({ message: "Erro ao buscar categorias", error: err });
+        } else {
+            res.status(200).json(categorias);
+        }
+    });
+});
 module.exports = router;
