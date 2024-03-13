@@ -7,14 +7,27 @@ router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/paginaEstudos.html'));
 });
 
-router.get('/resumofin' , (req, res) => {
-    res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/resumoFinanceiro/resumoFinanceiro.html'));
+router.get('/resumoMensal' , (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/resumoMensal/resumoMensal.html'));
 });
 
 router.get('/resumoAnual', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/resumoAnual/resumoAnual.html'));
 })
-router.get('/resumofin/saldoinicial', (req, res) => {
+
+router.get('/faturamento', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/estudoFaturamento/faturamento.html'));
+})
+
+router.get('/resumoDaConta', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/resumoDaConta/resumoDaConta.html'));
+})
+
+router.get('/resumoFin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/resumoFin/resumoFin.html'));
+})
+
+router.get('/resumoMensal/saldoinicial', (req, res) => {
     const {empresa, data} = req.query;
     saldoInicial(empresa, data, (err, result) => {
         if (err) {
@@ -25,7 +38,7 @@ router.get('/resumofin/saldoinicial', (req, res) => {
     });
 });
 
-router.get('/resumofin/entradacategoria', (req, res) => {
+router.get('/resumoMensal/entradacategoria', (req, res) => {
     const {empresa, data} = req.query;
     entradaCategoria(empresa, data, (err, result) => {
         if (err) {
@@ -36,7 +49,7 @@ router.get('/resumofin/entradacategoria', (req, res) => {
     });
 });
 
-router.get('/resumofin/saidacategoria', (req, res) => {
+router.get('/resumoMensal/saidacategoria', (req, res) => {
     const {empresa, data} = req.query;
     saidaCategoria(empresa, data, (err, result) => {
         if (err) {
