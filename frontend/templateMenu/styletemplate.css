@@ -95,7 +95,6 @@ body {
     border-radius: 0;
 }
 
-<<<<<<< HEAD
 .change-button{
     border-radius: 5px;
     padding: 5px 10px;
@@ -247,7 +246,6 @@ body {
     background-color: #f1f1f1;
 }
 
-=======
 .modal {
     display: none;
     position: fixed;
@@ -282,4 +280,3 @@ body {
     text-decoration: none;
     cursor: pointer;
 }
->>>>>>> f692491 (atualizacao)
