@@ -3,20 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Pagina Inicial</title>
+    <style>
+        #menuButton{
+            background-color: #8BACAF;
+        }
+    </style>
     <link rel="stylesheet" href="stylePaginaInicial.css">
-
 </head>
 <body>
     <div id="menu-container"></div>
-    <div class="search-box">
-        <label for="searchInput"></label><input type="text" id="searchInput" placeholder="Selecione uma empresa">
-        <button onclick="loadNomeEmpresa()" class="arrow-button"></button>
-        <div>
-            <ul id="nameList" class="name-list"></ul>
+    <div class="todo-list">
+        <div class="todo-list-header">
+            <h1>Lista de Tarefas</h1>
+            <form id="todo-list-form" action="/paginainicial/adicionartarefa" method="post">
+                <input type="text" id="todo-input" placeholder="Digite uma tarefa" name="titulo">
+                <input type="date" id="todo-date" name="dataLimite">
+                <input type="hidden" name="idcliente" id="idcliente">
+                <input type="submit" value="Enviar" id="todo-submit">
+            </form>
         </div>
+        <div class="todo-list-body">
+            <table id="todo-table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Tarefa</th>
+                        <th>Data</th>
+                        <th>Editar</th>
+                        <th>Excluir</th>
+                    </tr>
+                </thead>
+                <tbody id="todo-tbody">
+
+                </tbody>
+            </table>
+        </div>
+        <div id="iframe-container"></div>
     </div>
-
-
     <script src="paginaInicialScript.js"></script>
 </body>
 </html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="paginaEditarTarefa/editarTarefa.css">
+</head>
+<body>
+    <button id="closeButton" onclick="fecharIframe()">X</button>
+    <div id="tarefa">
+        <form id="editar-tarefa-form" action="/paginainicial/editartarefa" method="post">
+            <select id="seletorTarefas">
+
+            </select>
+            <input type="date" id="todo-date" name="dataLimite">
+            <input type="hidden" name="idcliente" id="idcliente">
+            <input type="submit" value="Enviar">
+        </form>
+    </div>
+</body>
+</html>
