@@ -30,15 +30,4 @@ tfoot td {
     font-weight: bold;
 }
 
-#financeTable {
-    counter-reset: rowNumber;
-}
 
-#financeTable tbody tr {
-    counter-increment: rowNumber;
-}
-
-#financeTable tbody tr td:first-child::before {
-    content: counter(rowNumber);
-    text-align: left;
-}
