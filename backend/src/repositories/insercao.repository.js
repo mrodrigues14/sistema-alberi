@@ -1,17 +1,18 @@
 const mysqlConn = require("../base/database");
 
 async function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa){
+    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa].map(param => param === undefined ? null : param);
+
     try {
         const result = await mysqlConn.execute(
-            `INSERT INTO EXTRATO (IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, id_cliente) VALUES (null,?,?,?,?,?,?,?,?)`,
-            [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa]
+            `INSERT INTO EXTRATO (IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE) VALUES (null,?,?,?,?,?,?,?,?)`,
+            parameters
         );
 
     } catch (error) {
         console.error(`Erro ao inserir dados: ${error.message}`);
         throw error;
     }
-
 }
 
 function buscarBanco(idcliente, callback){

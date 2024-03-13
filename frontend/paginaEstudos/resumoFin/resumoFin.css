@@ -6,10 +6,17 @@ h1 {
     text-align: center;
 }
 
+h2 {
+    text-align: center;
+    margin-top: 40px;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    margin-bottom: 20px; /* Adiciona espaço entre as tabelas */
+
 }
 
 table, th, td {
@@ -30,15 +37,4 @@ tfoot td {
     font-weight: bold;
 }
 
-#financeTable {
-    counter-reset: rowNumber;
-}
 
-#financeTable tbody tr {
-    counter-increment: rowNumber;
-}
-
-#financeTable tbody tr td:first-child::before {
-    content: counter(rowNumber);
-    text-align: left;
-}
