@@ -59,6 +59,31 @@ function updateNomeEmpresa(nomeEmpresa) {
     }
 }
 
+function showCalendarModal() {
+    fetch('templateMenu/calendar.html') // Caminho para o seu calendar.html
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('calendarModalContent').innerHTML = html;
+            document.getElementById('calendarModal').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error loading the calendar:', error);
+        });
+}
+
+function closeCalendarModal() {
+    document.getElementById('calendarModal').style.display = 'none';
+}
+
+// Evento para fechar o modal se clicado fora dele
+window.onclick = function(event) {
+    var modal = document.getElementById('calendarModal');
+    if (event.target == modal) {
+        closeCalendarModal();
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
     handleEmpresa()
     loadAndDisplayUsername();
