@@ -9,14 +9,6 @@
 <div id="menu-container"></div>
 
 <h1>Resumo Financeiro 2024</h1>
-<div>
-    <label for="yearSelector">Escolha o ano:</label>
-    <select id="yearSelector">
-        <option value="2024" selected>2024</option>
-        <option value="2023">2023</option>
-        <option value="2022">2022</option>
-    </select>
-</div>
 <table id="financeTable">
     <thead>
     <tr>
@@ -30,6 +22,7 @@
     </tr>
     </thead>
     <tbody>
+    <!-- As linhas da tabela serão inseridas aqui pelo JavaScript -->
     </tbody>
     <tfoot>
     <tr>
@@ -52,23 +45,6 @@
     </tr>
     </tfoot>
 </table>
-
-<div>
-    <h2>Custos por Categoria</h2>
-    <table id="categoryCostsTable">
-        <thead>
-        <tr id="categoryHeaders">
-            <!-- Cabeçalhos das categorias serão inseridos aqui -->
-        </tr>
-        </thead>
-        <tbody id="categoryBody">
-        <!-- Linhas para cada mês com custos de cada categoria serão inseridas aqui -->
-        </tbody>
-        <tfoot id="categoryFooter">
-        <!-- Totais e médias para cada categoria serão inseridos aqui -->
-        </tfoot>
-    </table>
-</div>
 <script src="/paginaEstudos/resumoFin/resumoFinScript.js"></script>
 </body>
 </html>
