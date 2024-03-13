@@ -53,7 +53,20 @@
     </tr>
     </tfoot>
 </table>
+<!-- Botão para abrir o modal -->
+<button id="openCategoryModal">Selecionar Categorias</button>
 
+<!-- O Modal -->
+<div id="categoryModal" style="display:none;">
+    <div>
+        <h2>Escolha as Categorias</h2>
+        <div id="categoryCheckboxes">
+            <!-- Checkbox serão adicionados aqui -->
+        </div>
+        <button id="saveCategorySelection">Salvar Seleção</button>
+        <button onclick="document.getElementById('categoryModal').style.display='none'">Fechar</button>
+    </div>
+</div>
 <div>
     <h2>Custos por Categoria</h2>
     <table id="categoryCostsTable">
