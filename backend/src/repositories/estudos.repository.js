@@ -41,6 +41,7 @@ function saldoInicial(empresa, data, callback){
 function entradaCategoria(empresa, data, callback){
     const dataProximoMes = new Date(data);
     dataProximoMes.setMonth(dataProximoMes.getMonth() + 1);
+    dataProximoMes.setDate(0);
     const parametros = [empresa, data, dataProximoMes.toISOString().split('T')[0]];
 
     mysqlConn.query(`SELECT
@@ -48,7 +49,7 @@ function entradaCategoria(empresa, data, callback){
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'ENTRADA' THEN e.VALOR ELSE 0 END) AS valor
                     FROM
                         extrato e
-                    WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA < ?
+                    WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA <= ?
                     GROUP BY
                         e.categoria
                     HAVING 
@@ -63,9 +64,11 @@ function entradaCategoria(empresa, data, callback){
         });
 }
 
+
 function saidaCategoria(empresa, data, callback){
     const dataProximoMes = new Date(data);
     dataProximoMes.setMonth(dataProximoMes.getMonth() + 1);
+    dataProximoMes.setDate(0); // Ajusta para o último dia do mês atual
     const parametros = [empresa, data, dataProximoMes.toISOString().split('T')[0]];
 
     mysqlConn.query(`SELECT
@@ -74,7 +77,7 @@ function saidaCategoria(empresa, data, callback){
                     FROM
                         extrato e
                     WHERE
-                        e.ID_CLIENTE = ? AND e.DATA >= ? AND e.DATA < ? AND e.TIPO_DE_TRANSACAO = 'SAIDA'
+                        e.ID_CLIENTE = ? AND e.DATA >= ? AND e.DATA <= ?
                     GROUP BY
                         e.categoria
                     HAVING
@@ -86,9 +89,9 @@ function saidaCategoria(empresa, data, callback){
             } else {
                 callback(null, result);
             }
-
         });
 }
+
 
 function totalEntradasPorMes(empresa, ano, callback) {
     console.log(`Recebendo empresa: ${empresa}, ano: ${ano}`);

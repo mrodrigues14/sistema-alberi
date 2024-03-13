@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
             script.onload = function() {
                 loadAndDisplayUsername();
                 handleEmpresa();
+                loadNomeEmpresa();
             };
             document.body.appendChild(script);
         })
@@ -23,16 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-function myFunction() {
-    document.getElementById("myDropdown").classList.toggle("show");
-    document.querySelector('.dropbtn').classList.toggle('active');
-    var empresaSelecionada = document.querySelector('.empresaSelecionada');
-    if(document.querySelector('.dropbtn').classList.contains('active')){
-        empresaSelecionada.style.borderRadius = '0';
-    } else {
-        empresaSelecionada.style.borderRadius = '0 0 5px 5px';
-    }
-}
+let IDCLIENTE = 0;
 
 window.onclick = function(event) {
     if (!event.target.matches('.dropbtn')) {
@@ -49,6 +41,27 @@ window.onclick = function(event) {
         }
     }
 }
+
+window.onload = function() {
+    const nomeEmpresa = localStorage.getItem('nomeEmpresaSelecionada');
+    console.log(nomeEmpresa);
+    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (data && data.length > 0) {
+                const campoOculto = document.getElementById('idcliente')
+                if (campoOculto) {
+                    campoOculto.value = data[0].IDCLIENTE;
+                    IDCLIENTE = data[0].IDCLIENTE;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar o idcliente:', error);
+        });
+}
+
 function loadAndDisplayUsername() {
     fetch('/api/usuario-logado')
         .then(response => {
@@ -100,36 +113,41 @@ function inputNomeEmpresa(names) {
     var input = document.getElementById('searchInput');
     var list = document.getElementById('nameList');
 
-    input.addEventListener('input', function(e) {
-        updateList(e.target.value);
-    });
+    if (input && list) {
+        input.addEventListener('input', function (e) {
+            updateList(e.target.value);
+        });
 
-    document.querySelector('.arrow-button').addEventListener('click', function() {
-        updateList('');
-    });
+        document.querySelector('.arrow-button').addEventListener('click', function () {
+            updateList('');
+        });
 
-    list.addEventListener('click', function(e) {
-        if (e.target.tagName === 'LI') {
-            input.value = e.target.textContent;
-            list.style.display = 'none';
+        list.addEventListener('click', function (e) {
+            if (e.target.tagName === 'LI') {
+                input.value = e.target.textContent;
+                list.style.display = 'none';
 
-            empresaSelecionada(e.target.textContent);
+                empresaSelecionada(e.target.textContent);
+            }
+        });
+
+        function updateList(filter) {
+            var filteredNames = names.filter(function (name) {
+                return name.toLowerCase().includes(filter.toLowerCase());
+            });
+
+            list.innerHTML = '';
+            filteredNames.forEach(function (name) {
+                var li = document.createElement('li');
+                li.textContent = name;
+                list.appendChild(li);
+            });
+
+            list.style.display = filteredNames.length ? 'block' : 'none';
         }
-    });
-
-    function updateList(filter) {
-        var filteredNames = names.filter(function(name) {
-            return name.toLowerCase().includes(filter.toLowerCase());
-        });
-
-        list.innerHTML = '';
-        filteredNames.forEach(function(name) {
-            var li = document.createElement('li');
-            li.textContent = name;
-            list.appendChild(li);
-        });
-
-        list.style.display = filteredNames.length ? 'block' : 'none';
+    }
+    else{
+        console.error('Elementos input ou list não foram encontrados!');
     }
 }
 
@@ -152,6 +170,138 @@ document.addEventListener('DOMContentLoaded', function() {
     loadNomeEmpresa();
 });
 
+// Até aqui js matheus edition
 
-// Até aqui html matheus edition
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const today = new Date();
+    date.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
 
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    const dias = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+
+    if (dias < 0) {
+        return `${day}/${month}/${year}`;
+    } else if (dias === 0) {
+        return `${day}/${month}/${year} (Hoje)`;
+    } else if (dias === 1) {
+        return `${day}/${month}/${year} (Amanhã)`;
+    } else {
+        return `${day}/${month}/${year} (Faltam ${dias} dias)`;
+    }
+}
+
+
+function toTitleCase(str) {
+    return str.replace(
+        /\w\S*/g,
+        function(txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        }
+    );
+}
+
+function firstLetterToUpperCase(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+function getStatusClass(status) {
+    switch (status.toLowerCase()) {
+        case 'concluído':
+            return 'status-concluido';
+        case 'pendente':
+            return 'status-pendente';
+        case 'não foi iniciado':
+            return 'status-atrasado';
+        default:
+            return '';
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+    fetch(`/paginainicial/tarefas?idcliente=1`)
+        .then(response => response.json())
+        .then(data => {
+            const table = document.getElementById('todo-table');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            data.forEach(tarefa => {
+                const row = tbody.insertRow();
+                row.insertCell().innerHTML = `<button class="${getStatusClass(tarefa.STATUS)}" onclick="completarTarefa(${tarefa.IDTAREFA})">
+                                               ${toTitleCase(tarefa.STATUS)}
+                                               </button>`;
+                row.insertCell().textContent = firstLetterToUpperCase(tarefa.TITULO);
+                row.insertCell().textContent = formatDate(tarefa.DATA_LIMITE);
+                row.insertCell().innerHTML = `<button class="edit-button" onclick="" style="width: 2.5vw">
+                <img src="imagens/editar.png" style="width: 100%">
+                </button>`;
+                row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw">
+                <img src="imagens/lixeira.png" style="width: 100%">
+                </button>`;
+            });
+        })
+        .catch(error => console.error('Erro ao buscar as tarefas:', error));
+});
+
+function completarTarefa(idtarefa) {
+    fetch('/paginainicial/atualizartarefa', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ idtarefa })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao atualizar a tarefa');
+            }
+            return response.json();
+        })
+        .then(data => {
+            window.location.reload();
+        })
+        .catch(error => console.error('Erro ao atualizar a tarefa:', error));
+}
+
+function editarTarefa(idAfazer) {
+    const urlDeEdicao = `/paginainicial/editartarefa`;
+
+    const iframe = document.createElement('iframe');
+    iframe.src = urlDeEdicao;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+
+    const iframeContainer = document.getElementById('iframe-container');
+    iframeContainer.innerHTML = '';
+    iframeContainer.appendChild(iframe);
+
+    iframeContainer.style.display = 'block';
+
+
+}
+
+function fecharIframe() {
+    const iframeContainer = document.getElementById('iframe-container');
+    iframeContainer.style.display = 'none';
+    iframeContainer.innerHTML = '';
+}
+
+function deletarTarefa(idtarefa) {
+    fetch('/paginainicial/deletartarefa', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ idtarefa })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao deletar a tarefa');
+            }
+            window.location.reload(true);
+        })
+        .catch(error => console.error('Erro ao deletar a tarefa:', error));
+}

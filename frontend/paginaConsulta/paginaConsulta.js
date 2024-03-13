@@ -155,11 +155,6 @@ function atualizarTabela(dados) {
     });
 }
 
-let selectBanco = document.getElementById('seletorBanco');
-selectBanco.addEventListener('change', function(){
-   buscarDados();
-});
-
 function gerarPDF() {
     var { jsPDF } = window.jspdf;
     var doc = new jsPDF();
