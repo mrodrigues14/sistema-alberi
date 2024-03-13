@@ -165,6 +165,7 @@ function fetchValoresCategoria(categoria, mesNome, ano, empresaNome) {
         });
 }
 
+// Modifique a função fetchCategorias para também atualizar o modal
 function fetchCategorias(empresa, ano) {
     const url = `/estudos/resumoFin/categorias?empresa=${empresa}&ano=${ano}`;
 
@@ -174,6 +175,24 @@ function fetchCategorias(empresa, ano) {
                 throw new Error(`Erro HTTP! status: ${response.status}`);
             }
             return response.json();
+        })
+        .then(data => {
+            const container = document.getElementById('categoryCheckboxes');
+            container.innerHTML = ''; // Limpa checkboxes existentes
+            data.forEach(categoria => {
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = categoria;
+                checkbox.value = categoria;
+                checkbox.checked = true; // Deixe todos selecionados por padrão ou recupere o estado salvo
+                const label = document.createElement('label');
+                label.htmlFor = categoria;
+                label.textContent = categoria;
+                container.appendChild(checkbox);
+                container.appendChild(label);
+                container.appendChild(document.createElement('br'));
+            });
+            return data; // Retorna as categorias para uso posterior
         })
         .catch(error => {
             console.error('Erro ao buscar categorias:', error);
@@ -219,62 +238,20 @@ function addCategoriaHeader(categoria) {
     th.textContent = categoria;
     headerRow.appendChild(th);
 }
-function calculateAndDisplay(data) {
-    let totalRevenue = 0, totalOperationalCost = 0, totalNonOperationalCost = 0;
+document.getElementById('openCategoryModal').addEventListener('click', function() {
+    document.getElementById('categoryModal').style.display = 'block';
+});
 
-    // Insira os dados na tabela
-    data.forEach((item, index) => {
-        const row = document.createElement('tr');
+// Salvar seleção de categorias
+document.getElementById('saveCategorySelection').addEventListener('click', function() {
+    const checkboxes = document.querySelectorAll('#categoryCheckboxes input[type="checkbox"]:checked');
+    const selectedCategories = Array.from(checkboxes).map(checkbox => checkbox.value);
+    localStorage.setItem('selectedCategories', JSON.stringify(selectedCategories));
+    document.getElementById('categoryModal').style.display = 'none';
+    // Atualize a interface com as categorias selecionadas...
+});
 
-        const revenue = item.receita;
-        const operationalCost = item.custoOperacional;
-        const operationalProfit = revenue - operationalCost;
-        const nonOperationalCost = item.custosNaoOperacionais;
-        const totalCost = operationalCost + nonOperationalCost;
-        const totalProfit = revenue - totalCost;
-
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${revenue.toFixed(2)}</td>
-            <td>${operationalCost.toFixed(2)}</td>
-            <td>${operationalProfit.toFixed(2)}</td>
-            <td>${nonOperationalCost.toFixed(2)}</td>
-            <td>${totalCost.toFixed(2)}</td>
-            <td>${totalProfit.toFixed(2)}</td>
-        `;
-
-        document.querySelector('#financeTable tbody').appendChild(row);
-
-        // Acumula valores para totais e médias
-        totalRevenue += revenue;
-        totalOperationalCost += operationalCost;
-        totalNonOperationalCost += nonOperationalCost;
-    });
-
-    const totalOperationalProfit = totalRevenue - totalOperationalCost;
-    const totalCost = totalOperationalCost + totalNonOperationalCost;
-    const totalProfit = totalRevenue - totalCost;
-
-    // Calcula médias
-    const averageRevenue = totalRevenue / data.length;
-    const averageOperationalCost = totalOperationalCost / data.length;
-    const averageOperationalProfit = totalOperationalProfit / data.length;
-    const averageNonOperationalCost = totalNonOperationalCost / data.length;
-    const averageCost = totalCost / data.length;
-    const averageProfit = totalProfit / data.length;
-
-    // Exibe totais e médias no rodapé da tabela
-    document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
-    document.getElementById('totalOperationalCost').textContent = totalOperationalCost.toFixed(2);
-    document.getElementById('totalOperationalProfit').textContent = totalOperationalProfit.toFixed(2);
-    document.getElementById('totalNonOperationalCost').textContent = totalNonOperationalCost.toFixed(2);
-    document.getElementById('totalCost').textContent = totalCost.toFixed(2);
-    document.getElementById('totalProfit').textContent = totalProfit.toFixed(2);
-
-    document.getElementById('averageRevenue').textContent = averageRevenue.toFixed(2);
-    document.getElementById('averageOperationalCost').textContent = averageOperationalCost.toFixed(2);
-    document.getElementById('averageOperationalProfit').textContent = averageOperationalProfit.toFixed(2);
-    document.getElementById('averageNonOperationalCost').textContent = averageNonOperationalCost.toFixed(2);
-    document.getElementById('averageCost').textContent = averageCost.toFixed(2);
-    document.getElementById('averageProfit').textContent = averageProfit.toFixed(2);
+function getSelectedCategories() {
+    const saved = localStorage.getItem('selectedCategories');
+    return saved ? JSON.parse(saved) : [];
 }
