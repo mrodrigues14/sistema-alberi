@@ -55,6 +55,7 @@ $(document).ready(function() {
             buscarDadosCategoria()
                 .then(buscarSaidaCategoria)
                 .then(atualizarTabelaSaldoDoMes)
+                .then(atualizarTabelaSaldoConta);
         }
     });
 });
@@ -107,6 +108,7 @@ window.onload = function() {
         });
 }
 
+let saldoMesAnterior = 0;
 function buscarDados() {
     const mesAno = $('#seletorMesAno').val();
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
@@ -148,7 +150,7 @@ function atualizarTabela(data) {
 
         total += parseFloat(item.saldo);
     });
-
+    saldoMesAnterior = total;
     const tfoot = document.getElementById('saldoInicialTable').getElementsByTagName('tfoot')[0];
     tfoot.rows[0].cells[1].textContent = total.toFixed(2);
     tfoot.rows[0].cells[1].className = 'right-align';
@@ -241,7 +243,8 @@ function atualizarTabelaSaidaCategoria(data) {
     let total = 0;
 
     data.forEach(item => {
-        console.log('Processando item:', item);
+        if(parseFloat(item.valor) <= 0)
+            return;
         const novaLinha = tbody.insertRow();
         const celulaCategoria = novaLinha.insertCell(0);
         const celulaValor = novaLinha.insertCell(1);
@@ -262,6 +265,17 @@ function atualizarTabelaSaidaCategoria(data) {
 function atualizarTabelaSaldoDoMes(){
     const saldo = totalEntrada - totalSaida;
     const tbody = document.getElementById('saldoDoMesTable').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+    const novaLinha = tbody.insertRow();
+    const celulaSaldo = novaLinha.insertCell(0);
+    celulaSaldo.textContent = saldo.toFixed(2);
+    celulaSaldo.className = 'right-align';
+}
+
+function atualizarTabelaSaldoConta(){
+    const saldoMesAtual = totalEntrada - totalSaida;
+    const saldo = saldoMesAnterior + saldoMesAtual;
+    const tbody = document.getElementById('saldoContaTable').getElementsByTagName('tbody')[0];
     tbody.innerHTML = '';
     const novaLinha = tbody.insertRow();
     const celulaSaldo = novaLinha.insertCell(0);
