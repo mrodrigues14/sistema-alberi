@@ -113,7 +113,7 @@ function buscarDados() {
     const mesAno = $('#seletorMesAno').val();
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
 
-    const url = `/estudos/resumofin/saldoinicial?empresa=${idEmpresa}&data=${dataFormatada}`;
+    const url = `/estudos/resumoMensal/saldoinicial?empresa=${idEmpresa}&data=${dataFormatada}`;
 
     fetch(url)
         .then(response => {
@@ -163,7 +163,7 @@ document.getElementById('seletorMesAno').addEventListener('change', buscarDadosC
 function buscarDadosCategoria(){
     const mesAno = $('#seletorMesAno').val();
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
-    const url = `/estudos/resumofin/entradacategoria?empresa=${idEmpresa}&data=${dataFormatada}`;
+    const url = `/estudos/resumoMensal/entradacategoria?empresa=${idEmpresa}&data=${dataFormatada}`;
 
     return new Promise((resolve, reject) => {
         fetch(url)
@@ -214,7 +214,7 @@ function atualizarTabelaCategoria(data) {
 function buscarSaidaCategoria(){
     const mesAno = $('#seletorMesAno').val();
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
-    const url = `/estudos/resumofin/saidacategoria?empresa=${idEmpresa}&data=${dataFormatada}`;
+    const url = `/estudos/resumoMensal/saidacategoria?empresa=${idEmpresa}&data=${dataFormatada}`;
 
     return new Promise((resolve, reject) => {
         fetch(url)
