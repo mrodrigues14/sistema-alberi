@@ -77,6 +77,18 @@ function fetchTemplate(){
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
+    // Aqui você configuraria seus endpoints para buscar os dados
+    // Por agora, vamos simular dados para o exemplo
+    const data = [
+        { receita: 220306.46, custoOperacional: 20484.98, custosNaoOperacionais: 18959.44 },
+        // Adicione todos os outros meses
+    ];
+
+    // Calcula lucros e custos totais e médias
+    calculateAndDisplay(data);
+});
+
+
 }
 function fetchMeses(ano, empresa) {
     const url = `/estudos/resumoFin/meses?empresa=${empresa}&ano=${ano}`;
