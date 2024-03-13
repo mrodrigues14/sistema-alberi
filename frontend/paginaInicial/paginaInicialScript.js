@@ -54,6 +54,28 @@ window.onload = function() {
                 if (campoOculto) {
                     campoOculto.value = data[0].IDCLIENTE;
                     IDCLIENTE = data[0].IDCLIENTE;
+                    fetch(`/paginainicial/tarefas?idcliente=${IDCLIENTE}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const table = document.getElementById('todo-table');
+                            const tbody = table.querySelector('tbody');
+                            tbody.innerHTML = '';
+                            data.forEach(tarefa => {
+                                const row = tbody.insertRow();
+                                row.insertCell().innerHTML = `<button class="${getStatusClass(tarefa.STATUS)}" onclick="completarTarefa(${tarefa.IDTAREFA})">
+                                               ${toTitleCase(tarefa.STATUS)}
+                                               </button>`;
+                                row.insertCell().textContent = firstLetterToUpperCase(tarefa.TITULO);
+                                row.insertCell().textContent = formatDate(tarefa.DATA_LIMITE);
+                                row.insertCell().innerHTML = `<button class="edit-button" onclick="" style="width: 2.5vw">
+                                                              <img src="imagens/editar.png" style="width: 100%">
+                                                              </button>`;
+                                row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw">
+                                                              <img src="imagens/lixeira.png" style="width: 100%">
+                                                              </button>`;
+                            });
+                        })
+                        .catch(error => console.error('Erro ao buscar as tarefas:', error));
                 }
             }
         })
@@ -220,30 +242,6 @@ function getStatusClass(status) {
             return '';
     }
 }
-document.addEventListener('DOMContentLoaded', function() {
-    fetch(`/paginainicial/tarefas?idcliente=1`)
-        .then(response => response.json())
-        .then(data => {
-            const table = document.getElementById('todo-table');
-            const tbody = table.querySelector('tbody');
-            tbody.innerHTML = '';
-            data.forEach(tarefa => {
-                const row = tbody.insertRow();
-                row.insertCell().innerHTML = `<button class="${getStatusClass(tarefa.STATUS)}" onclick="completarTarefa(${tarefa.IDTAREFA})">
-                                               ${toTitleCase(tarefa.STATUS)}
-                                               </button>`;
-                row.insertCell().textContent = firstLetterToUpperCase(tarefa.TITULO);
-                row.insertCell().textContent = formatDate(tarefa.DATA_LIMITE);
-                row.insertCell().innerHTML = `<button class="edit-button" onclick="" style="width: 2.5vw">
-                <img src="imagens/editar.png" style="width: 100%">
-                </button>`;
-                row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw">
-                <img src="imagens/lixeira.png" style="width: 100%">
-                </button>`;
-            });
-        })
-        .catch(error => console.error('Erro ao buscar as tarefas:', error));
-});
 
 function completarTarefa(idtarefa) {
     fetch('/paginainicial/atualizartarefa', {
