@@ -1,16 +1,14 @@
 const mysqlConn = require('../base/database.js');
 
-function converterDataParaFormatoISO(dataStr) {
-    var partesDaData = dataStr.split('/');
-    return partesDaData[2] + '-' + partesDaData[1] + '-' + partesDaData[0];
-}
-
 function saldoInicial(empresa, data, callback){
-    let dataMesAnterior = new Date(data);
-    dataMesAnterior.setMonth(dataMesAnterior.getMonth() - 1);
-    dataMesAnterior.setDate(1);
-    dataMesAnterior = dataMesAnterior.toLocaleDateString().split('T')[0];
-    dataMesAnterior = converterDataParaFormatoISO(dataMesAnterior);
+    let dataInicial = new Date(data);
+    dataInicial.setMonth(dataInicial.getMonth(), 1);
+    let ano = dataInicial.getFullYear();
+    let mes = dataInicial.getMonth() + 1;
+    mes = mes < 10 ? '0' + mes : mes;
+    let dia = dataInicial.getDate();
+    dia = dia < 10 ? '0' + dia : dia;
+    let dataMesAnterior = `${ano}-${mes}-${dia}`;
 
     const parametros = [
         empresa,
@@ -38,12 +36,18 @@ function saldoInicial(empresa, data, callback){
         });
 }
 
-function entradaCategoria(empresa, data, callback){
-    const dataProximoMes = new Date(data);
-    dataProximoMes.setMonth(dataProximoMes.getMonth() + 1);
-    dataProximoMes.setDate(0);
-    const parametros = [empresa, data, dataProximoMes.toISOString().split('T')[0]];
 
+function entradaCategoria(empresa, data, callback){
+    let dataFinal = new Date(data);
+    dataFinal.setMonth(dataFinal.getMonth()+2, 1);
+    let ano = dataFinal.getFullYear();
+    let mes = dataFinal.getMonth() + 1;
+    mes = mes < 10 ? '0' + mes : mes;
+    let dia = dataFinal.getDate();
+    dia = dia < 10 ? '0' + dia : dia;
+    let dataProxMes = `${ano}-${mes}-${dia}`;
+    
+    const parametros = [empresa, data, dataProxMes];
     mysqlConn.query(`SELECT
                         e.categoria,
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'ENTRADA' THEN e.VALOR ELSE 0 END) AS valor
@@ -66,11 +70,15 @@ function entradaCategoria(empresa, data, callback){
 
 
 function saidaCategoria(empresa, data, callback){
-    const dataProximoMes = new Date(data);
-    dataProximoMes.setMonth(dataProximoMes.getMonth() + 1);
-    dataProximoMes.setDate(0); // Ajusta para o último dia do mês atual
-    const parametros = [empresa, data, dataProximoMes.toISOString().split('T')[0]];
-
+    let dataFinal = new Date(data);
+    dataFinal.setMonth(dataFinal.getMonth()+2, 1);
+    let ano = dataFinal.getFullYear();
+    let mes = dataFinal.getMonth() + 1;
+    mes = mes < 10 ? '0' + mes : mes;
+    let dia = dataFinal.getDate();
+    dia = dia < 10 ? '0' + dia : dia;
+    let dataProxMes = `${ano}-${mes}-${dia}`;
+    const parametros = [empresa, data, dataProxMes];
     mysqlConn.query(`SELECT
                         e.categoria,
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'SAIDA' THEN e.VALOR ELSE 0 END) AS valor
@@ -90,6 +98,10 @@ function saidaCategoria(empresa, data, callback){
                 callback(null, result);
             }
         });
+}
+
+function saldoConta(empresa, data, callback){
+
 }
 
 
