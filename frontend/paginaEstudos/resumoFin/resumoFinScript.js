@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     fetchTemplate();
+    fetchTemplateEstudos();
     document.querySelector('#categoryCostsTable tbody').innerHTML = '';
     document.querySelector('#categoryHeaders').innerHTML = '';
 
@@ -58,7 +59,7 @@ function fetchTemplate(){
     fetch('/templateMenu/template.html')
         .then(response => response.text())
         .then(data => {
-            document.getElementById('menu-container').innerHTML = data;
+            document.getElementById('menu-container-estudos').innerHTML = data;
 
             var link = document.createElement('link');
             link.href = '/templateMenu/styletemplate.css';
@@ -77,7 +78,33 @@ function fetchTemplate(){
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
+
 }
+function fetchTemplateEstudos(){
+    fetch('/paginaEstudos/paginaEstudos.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('menu-container').innerHTML = data;
+
+            var link = document.createElement('link');
+            link.href = '/paginaEstudos/paginaEstudos.css';
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            document.head.appendChild(link);
+
+            var script = document.createElement('script');
+            script.src = '/paginaEstudos/paginaEstudos.js';
+            script.onload = function() {
+                loadAndDisplayUsername();
+                handleEmpresa();
+            };
+            document.body.appendChild(script);
+        })
+        .catch(error => {
+            console.error('Erro ao carregar o template:', error);
+        });
+}
+
 function fetchMeses(ano, empresa) {
     const url = `/estudos/resumoFin/meses?empresa=${empresa}&ano=${ano}`;
 
@@ -199,22 +226,32 @@ function fetchCategorias(empresa, ano) {
         });
 }
 
-function addValoresToCategoryTable(mes, categoria, valor, receitaLiquida, categorias) {
-    const tbody = document.querySelector('#categoryCostsTable tbody');
-    let row = tbody.querySelector(`tr[data-mes="${mes}"]`);
+function addValoresToCategoryTable(categorias, meses, empresa, ano) {
+    const tableBody = document.querySelector('#categoryCostsTable tbody');
+    tableBody.innerHTML = ''; // Limpar o corpo da tabela para nova inserção de dados
 
-    if (!row) {
-        row = document.createElement('tr');
-        row.setAttribute('data-mes', mes);
+    meses.forEach(mes => {
+        const row = document.createElement('tr');
         row.innerHTML = `<td>${mes}</td>`;
-        categorias.forEach(() => row.innerHTML += `<td>0</td>`); // Cria células para os valores das categorias
-        tbody.appendChild(row);
-    }
-
-    const cellIndex = categorias.findIndex(cat => cat === valorCategoria.categoria) + 1; // Encontra o índice da categoria
-    const cell = row.cells[cellIndex];
-    const porcentagem = (valorCategoria.total_categoria / receitaLiquida) * 100;
-    cell.textContent = `${valorCategoria.total_categoria.toFixed(2)} (${porcentagem.toFixed(2)}%)`;
+        categorias.forEach(categoria => {
+            fetchValoresCategoria(categoria, mes, ano, empresa)
+                .then(valorCategoria => {
+                    const valor = valorCategoria.total_categoria;
+                    const receitaLiquida = valorCategoria.receita_liquida;
+                    const porcentagem = receitaLiquida > 0 ? (valor / receitaLiquida) * 100 : 0;
+                    const cell = document.createElement('td');
+                    cell.textContent = `${valor.toFixed(2)} (${porcentagem.toFixed(2)}%)`;
+                    row.appendChild(cell);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar valores da categoria:', error);
+                    const cell = document.createElement('td');
+                    cell.textContent = 'Erro';
+                    row.appendChild(cell);
+                });
+        });
+        tableBody.appendChild(row);
+    });
 }
 function calcularMediaPorcentagemAnual(categorias, selectedYear) {
     categorias.forEach((categoria, index) => {

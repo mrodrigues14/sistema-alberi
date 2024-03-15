@@ -21,9 +21,9 @@ function saldoInicial(empresa, data, callback){
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'ENTRADA' THEN e.VALOR ELSE 0 END) -
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'SAIDA' THEN e.VALOR ELSE 0 END) AS saldo
                     FROM
-                        extrato e
+                        EXTRATO e
                     INNER JOIN
-                        banco b ON e.ID_BANCO = b.IDBANCO
+                        BANCO b ON e.ID_BANCO = b.IDBANCO
                     WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA < ?
                     GROUP BY
                         b.nome`, parametros,
@@ -52,7 +52,7 @@ function entradaCategoria(empresa, data, callback){
                         e.categoria,
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'ENTRADA' THEN e.VALOR ELSE 0 END) AS valor
                     FROM
-                        extrato e
+                        EXTRATO e
                     WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA <= ?
                     GROUP BY
                         e.categoria
@@ -83,7 +83,7 @@ function saidaCategoria(empresa, data, callback){
                         e.categoria,
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'SAIDA' THEN e.VALOR ELSE 0 END) AS valor
                     FROM
-                        extrato e
+                        EXTRATO e
                     WHERE
                         e.ID_CLIENTE = ? AND e.DATA >= ? AND e.DATA <= ?
                     GROUP BY
@@ -100,11 +100,6 @@ function saidaCategoria(empresa, data, callback){
         });
 }
 
-function saldoConta(empresa, data, callback){
-
-}
-
-
 function totalEntradasPorMes(empresa, ano, callback) {
     console.log(`Recebendo empresa: ${empresa}, ano: ${ano}`);
     mysqlConn.query(`
@@ -112,7 +107,7 @@ function totalEntradasPorMes(empresa, ano, callback) {
             MONTH(DATA) as mes, 
             SUM(valor) as total
         FROM 
-            extrato 
+            EXTRATO 
         WHERE 
             ID_CLIENTE = ? AND 
             YEAR(DATA) = ? AND 
@@ -130,7 +125,7 @@ function totalEntradasPorMes(empresa, ano, callback) {
 
 function getMeses(ano, empresaNome, callback) {
     mysqlConn.query(`
-        SELECT IDCLIENTE FROM cliente WHERE NOME = ?
+        SELECT IDCLIENTE FROM CLIENTE WHERE NOME = ?
     `, [empresaNome], function(err, result) {
         if (err) {
             return callback(err, null);
@@ -143,7 +138,7 @@ function getMeses(ano, empresaNome, callback) {
 
         mysqlConn.query(`
             SELECT DISTINCT MONTH(DATA) AS mes 
-            FROM extrato 
+            FROM EXTRATO
             WHERE YEAR(DATA) = ? AND ID_CLIENTE = ?
             ORDER BY mes;
         `, [ano, idCliente], function(err, result, fields) {
@@ -170,7 +165,7 @@ function getReceitaLiquida(mesNome, ano, empresaNome, callback) {
     const mes = getNumeroMesPortugues(mesNome);
 
     mysqlConn.query(`
-        SELECT IDCLIENTE FROM cliente WHERE NOME = ?
+        SELECT IDCLIENTE FROM CLIENTE WHERE NOME = ?
     `, [empresaNome], function(err, result) {
         if (err) {
             return callback(err, null); // Retorne o erro se houver
@@ -183,7 +178,7 @@ function getReceitaLiquida(mesNome, ano, empresaNome, callback) {
 
         mysqlConn.query(`
             SELECT SUM(valor) AS receita_liquida
-            FROM extrato
+            FROM EXTRATO
             WHERE ID_CLIENTE = ? AND YEAR(DATA) = ? AND MONTH(DATA) = ? AND tipo_de_transacao = 'SAIDA'
         `, [idCliente, ano, mes], function(err, result, fields) {
             if (err) {
@@ -203,7 +198,7 @@ function getValoresCategoria(categoria, mesNome, ano, empresaNome, callback) {
     const dataFim = new Date(ano, mes, 0).toISOString().split('T')[0]; // O dia 0 do próximo mês é o último dia do mês atual
 
     mysqlConn.query(`
-        SELECT IDCLIENTE FROM cliente WHERE NOME = ?
+        SELECT IDCLIENTE FROM CLIENTE WHERE NOME = ?
     `, [empresaNome], function(err, result) {
         if (err) {
             return callback(err, null);
@@ -218,9 +213,9 @@ function getValoresCategoria(categoria, mesNome, ano, empresaNome, callback) {
             SELECT 
                 MONTH(DATA) as mes, 
                 SUM(valor) AS total_categoria, 
-                (SELECT SUM(valor) FROM extrato WHERE ID_CLIENTE = ? AND DATA >= ? AND DATA <= ? AND tipo_de_transacao = 'ENTRADA') AS receita_liquida
+                (SELECT SUM(valor) FROM EXTRATO WHERE ID_CLIENTE = ? AND DATA >= ? AND DATA <= ? AND tipo_de_transacao = 'ENTRADA') AS receita_liquida
             FROM 
-                extrato 
+                EXTRATO 
             WHERE 
                 categoria = ? AND 
                 ID_CLIENTE = ? AND 
@@ -253,7 +248,7 @@ function getNumeroMesPortugues(nomeMes) {
 
 function getCategoria(empresaNome, ano, callback) {
     mysqlConn.query(`
-        SELECT IDCLIENTE FROM cliente WHERE NOME = ?
+        SELECT IDCLIENTE FROM CLIENTE WHERE NOME = ?
     `, [empresaNome], function(err, result) {
         if (err) {
             return callback(err, null);
@@ -266,7 +261,7 @@ function getCategoria(empresaNome, ano, callback) {
 
         mysqlConn.query(`
             SELECT DISTINCT categoria
-            FROM extrato
+            FROM EXTRATO
             WHERE ID_CLIENTE = ? AND YEAR(DATA) = ?
             ORDER BY categoria;
         `, [idCliente, ano], function(err, result, fields) {
@@ -280,7 +275,39 @@ function getCategoria(empresaNome, ano, callback) {
     });
 }
 
+function getMeta(empresaNome, ano, callback){
+    mysqlConn.query(`
+        SELECT IDCLIENTE FROM CLIENTE WHERE NOME = ?
+    `, [empresaNome], function(err, result) {
+        if (err) {
+            return callback(err, null);
+        }
+        if (result.length === 0) {
+            return callback(new Error('Nenhum cliente encontrado com o nome da empresa fornecido.'), null);
+        }
+
+        const idCliente = result[0].IDCLIENTE;
+
+        mysqlConn.query(`
+            SELECT CATEGORIA, VALOR_META
+            FROM METAS M
+            WHERE M.IDCLIENTE = ?
+        `, [idCliente, ano], function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                const metas = result.map(row => {
+                    return { categoria: row.CATEGORIA, valorMeta: row.VALOR_META };
+                });
+                callback(null, metas);
+            }
+        });
+    });
+}
 
 
 
-module.exports = {saldoInicial, entradaCategoria, saidaCategoria, totalEntradasPorMes, getMeses, getValoresCategoria, getReceitaLiquida, getCategoria};
+
+
+module.exports = {saldoInicial, entradaCategoria, saidaCategoria, totalEntradasPorMes, getMeses, getValoresCategoria,
+    getReceitaLiquida, getCategoria, getMeta};

@@ -4,7 +4,8 @@ const path = require('path');
 const {saldoInicial, entradaCategoria,
     saidaCategoria, totalEntradasPorMes,
     getMeses, getValoresCategoria,
-    getReceitaLiquida, getCategoria} = require('../repositories/estudos.repository.js');
+    getReceitaLiquida, getCategoria,
+getMeta} = require('../repositories/estudos.repository.js');
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/paginaEstudos.html'));
@@ -28,6 +29,10 @@ router.get('/resumoDaConta', (req, res) => {
 
 router.get('/resumoFin', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/resumoFin/resumoFin.html'));
+})
+
+router.get('/metas', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/metas/metas.html'));
 })
 
 router.get('/resumoMensal/saldoinicial', (req, res) => {
@@ -117,4 +122,22 @@ router.get('/resumoFin/categorias', (req, res) => {
         }
     });
 });
+
+router.get('/metas/buscarMeta', (req, res) => {
+    const empresaNome = req.query.empresa;
+    const ano = req.query.ano;
+
+    if (!empresaNome || !ano) {
+        return res.status(400).send('O nome da empresa e o ano são necessários.');
+    }
+
+    getMeta(empresaNome, ano, (err, metas) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Ocorreu um erro ao obter as metas.');
+        }
+        res.json(metas);
+    });
+});
+
 module.exports = router;
