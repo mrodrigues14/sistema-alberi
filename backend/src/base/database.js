@@ -2,10 +2,10 @@
 const mysql = require('mysql2');
 
 const dbConfig = {
-    host: '25.3.70.175',
-    user: 'matheus',
-    password: '1234',
-    database: 'alberi'
+    host: 'srv816.hstgr.io',
+    user: 'u624627699_admin',
+    password: 'Alberi1234',
+    database: 'u624627699_albericonsult'
 };
 
 const connection = mysql.createConnection(dbConfig);

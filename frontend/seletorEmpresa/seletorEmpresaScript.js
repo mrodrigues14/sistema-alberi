@@ -82,7 +82,7 @@ function addClickEventToListItems() {
 }
 
 function redirecionamentoDePagina() {
-    window.location.href = '../paginaInicial/paginaInicial.html';
+    window.location.href = '/paginainicial';
 }
 
 function inputNomeEmpresa(names) {

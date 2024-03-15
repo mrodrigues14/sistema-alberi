@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/consultarEmpresas', (req, res) => {
-    db.query('SELECT nome FROM cliente', (error, results) => {
+    db.query('SELECT nome FROM CLIENTE', (error, results) => {
         if (error) {
             console.error('Erro durante a busca por empresa no banco de dados:', error);
             return res.status(500).send('Server error');

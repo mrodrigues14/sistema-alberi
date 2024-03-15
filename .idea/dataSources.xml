@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:mysql://25.3.70.175:3306/alberi</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="Alberi server" uuid="950157dd-3ea7-4e94-8537-029d8276a26d">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://srv816.hstgr.io:3306/u624627699_albericonsult</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
