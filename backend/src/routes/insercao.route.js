@@ -78,9 +78,9 @@ router.post('/inserir-lote', async (req, res) => {
 
     try {
         for (const entrada of entradas) {
-            const { Data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa } = entrada;
+            const { Data,	Categoria,	Descricao,	Nome,	Tipo,	Valor, IDBANCO, IDCLIENTE } = entrada;
 
-            await inserir(Data, categoria, nome_extrato, tipo, valor, id_banco, id_empresa);
+            await inserir(Data,	Categoria,	Descricao,	Nome,	Tipo,	Valor, IDBANCO, IDCLIENTE);
         }
         res.status(200).send("Dados inseridos com sucesso");
     } catch (error) {
