@@ -21,7 +21,7 @@ router.get('/filtrarValoresSaida', (req, res) => {
         SELECT 
             valor, data 
         FROM 
-            extrato 
+            EXTRATO 
         WHERE 
             ID_CLIENTE = ? AND
             tipoDeTransacao = 'SAIDA' AND
@@ -47,7 +47,7 @@ router.get('/filtrarValoresEntrada', (req, res) => {
         SELECT 
             valor, data 
         FROM 
-            extrato 
+            EXTRATO 
         WHERE 
             ID_CLIENTE = ? AND
             tipoDeTransacao = 'ENTRADA' AND
@@ -73,15 +73,15 @@ router.get('/filtroValoresCategoriaMes', (req, res) => {
             categoria,
             SUM(valor) AS valorTotal
         FROM 
-            extrato
+            EXTRATO
         WHERE 
             ID_CLIENTE = ? AND
             tipoDeTransacao = 'SAIDA' AND
             DATE(data) BETWEEN ? AND ?
         GROUP BY 
-            categoria
+            CATEGORIA
         ORDER BY 
-            categoria ASC`;
+            CATEGORIA ASC`;
 
     db.query(query, [idCliente, dataInicio, dataFim], (err, results) => {
         if (err) {
@@ -102,15 +102,15 @@ router.get('/filtrarValoresDeEntradaPorCategoria', (req, res)=> {
             categoria,
             SUM(valor) AS valorTotal
         FROM 
-            extrato
+            EXTRATO
         WHERE 
             ID_CLIENTE = ? AND
             tipoDeTransacao = 'ENTRADA' AND
             DATE(data) BETWEEN ? AND ?
         GROUP BY 
-            categoria
+            CATEGORIA
         ORDER BY 
-            categoria ASC`;
+            CATEGORIA ASC`;
 
     db.query(query, [idCliente, dataInicio, dataFim], (err, results) => {
         if (err) {

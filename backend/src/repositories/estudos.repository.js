@@ -21,9 +21,9 @@ function saldoInicial(empresa, data, callback){
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'ENTRADA' THEN e.VALOR ELSE 0 END) -
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'SAIDA' THEN e.VALOR ELSE 0 END) AS saldo
                     FROM
-                        extrato e
+                        EXTRATO e
                     INNER JOIN
-                        banco b ON e.ID_BANCO = b.IDBANCO
+                        BANCO b ON e.ID_BANCO = b.IDBANCO
                     WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA < ?
                     GROUP BY
                         b.nome`, parametros,
@@ -52,7 +52,7 @@ function entradaCategoria(empresa, data, callback){
                         e.categoria,
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'ENTRADA' THEN e.VALOR ELSE 0 END) AS valor
                     FROM
-                        extrato e
+                        EXTRATO e
                     WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA <= ?
                     GROUP BY
                         e.categoria
@@ -83,7 +83,7 @@ function saidaCategoria(empresa, data, callback){
                         e.categoria,
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'SAIDA' THEN e.VALOR ELSE 0 END) AS valor
                     FROM
-                        extrato e
+                        EXTRATO e
                     WHERE
                         e.ID_CLIENTE = ? AND e.DATA >= ? AND e.DATA <= ?
                     GROUP BY
@@ -112,7 +112,7 @@ function totalEntradasPorMes(empresa, ano, callback) {
             MONTH(DATA) as mes, 
             SUM(valor) as total
         FROM 
-            extrato 
+            EXTRATO 
         WHERE 
             ID_CLIENTE = ? AND 
             YEAR(DATA) = ? AND 

@@ -1,4 +1,4 @@
-create table if not exists banco
+create table if not exists BANCO
 (
     IDBANCO int auto_increment
         primary key,
@@ -6,7 +6,7 @@ create table if not exists banco
     TIPO    enum ('CONTA CORRENTE', 'CONTA POUPANÇA', 'CONTA INVESTIMENTO') not null
 );
 
-create table if not exists categoria
+create table if not exists CATEGORIA
 (
     IDCATEGORIA      int auto_increment
         primary key,
@@ -17,7 +17,7 @@ create table if not exists categoria
             on delete set null on update cascade
 );
 
-create table if not exists cliente
+create table if not exists CLIENTE
 (
     IDCLIENTE int auto_increment
         primary key,
@@ -29,7 +29,7 @@ create table if not exists cliente
         unique (CPF, CNPJ, TELEFONE)
 );
 
-create table if not exists extrato
+create table if not exists EXTRATO
 (
     IDEXTRATO         int auto_increment
         primary key,
@@ -49,7 +49,7 @@ create table if not exists extrato
             on delete cascade on update cascade
 );
 
-create table if not exists fornecedor
+create table if not exists FORNECEDOR
 (
     IDFORNECEDOR    int auto_increment
         primary key,
@@ -59,7 +59,7 @@ create table if not exists fornecedor
     TIPO_DE_PRODUTO varchar(100) not null
 );
 
-create table if not exists relacaoclientebanco
+create table if not exists RELACAOCLIENTEBANCO
 (
     ID_CLIENTE int null,
     ID_BANCO   int null,
@@ -77,7 +77,7 @@ create index ID_BANCO
 create index ID_CLIENTE
     on relacaoclientebanco (ID_CLIENTE);
 
-create table if not exists relacaoclientecategoria
+create table if not exists RELACAOCLIENTECATEGORIA
 (
     ID_CLIENTE   int null,
     ID_CATEGORIA int null,
@@ -95,7 +95,7 @@ create index ID_CATEGORIA
 create index ID_CLIENTE
     on relacaoclientecategoria (ID_CLIENTE);
 
-create table if not exists relacaoclientefornecedor
+create table if not exists RELACAOCLIENTEFORNECEDOR
 (
     ID_FORNECEDOR int null,
     ID_CLIENTE    int null,
@@ -107,7 +107,7 @@ create table if not exists relacaoclientefornecedor
             on delete cascade on update cascade
 );
 
-create table if not exists tarefas
+create table if not exists TAREFAS
 (
     IDTAREFA    int auto_increment
         primary key,
@@ -123,7 +123,7 @@ create table if not exists tarefas
 create index FK_TAREFAS
     on tarefas (ID_CLIENTE);
 
-create table if not exists usuarios
+create table if not exists USUARIOS
 (
     IDUSUARIOS      int auto_increment
         primary key,

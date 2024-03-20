@@ -21,3 +21,69 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Erro ao carregar o template:', error);
         });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Seleciona o seletor e os inputs
+    var seletor = document.getElementById('seletorCNPJ');
+    var cpfInput = document.getElementById('cpf');
+    var cnpjInput = document.getElementById('cnpj');
+
+    function toggleInputs() {
+        var selectedValue = seletor.options[seletor.selectedIndex].value;
+
+        if(selectedValue === '0') {
+            cpfInput.style.display = 'block';
+            cnpjInput.style.display = 'none';
+        }
+        else if(selectedValue === '1') {
+            cpfInput.style.display = 'none';
+            cnpjInput.style.display = 'block';
+        }
+    }
+    seletor.addEventListener('change', toggleInputs);
+
+    cpfInput.style.display = 'none';
+    cnpjInput.style.display = 'none';
+
+    seletor.selectedIndex = 0;
+    toggleInputs();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    var seletor = document.getElementById('seletorCNPJ');
+    var cpfLabel = document.querySelector('label[for="cpf"]');
+    var cnpjLabel = document.querySelector('label[for="cnpj"]');
+    function toggleLabels() {
+        var selectedValue = seletor.options[seletor.selectedIndex].value;
+
+        if(selectedValue === '0') {
+            cpfLabel.style.display = 'block';
+            cnpjLabel.style.display = 'none';
+        } else if(selectedValue === '1') {
+            cpfLabel.style.display = 'none';
+            cnpjLabel.style.display = 'block';
+        }
+    }
+
+    seletor.addEventListener('change', toggleLabels);
+
+    cpfLabel.style.display = 'none';
+    cnpjLabel.style.display = 'none';
+
+    seletor.selectedIndex = 0;
+    toggleLabels();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/cadastro/empresas')
+        .then(response => response.json())
+        .then(data => {
+            let empresas =  document.getElementById('selectBanco');
+            data.forEach(empresa => {
+                let option = document.createElement('option');
+                option.value = empresa.NOME;
+                option.text = empresa.NOME;
+                empresas.appendChild(option);
+            });
+        })
+});
