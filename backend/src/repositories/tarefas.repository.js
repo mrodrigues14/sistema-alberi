@@ -1,7 +1,7 @@
 const mysqlConn = require('../base/database.js');
 
 function listarTarefas(idcliente, callback){
-    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM tarefas WHERE id_cliente = ?
+    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE id_cliente = ?
                      ORDER BY DATA_LIMITE ASC`, [idcliente], function(err, result, fields) {
         if (err) {
             callback(err, null);
