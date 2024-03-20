@@ -8,10 +8,50 @@
             background-color: #8BACAF;
         }
     </style>
+    <link rel="stylesheet" href="/paginaCadastro/paginaCadastro.css">
 </head>
 <body>
     <div id="menu-container"></div>
+    <div class="main">
+        <div id="Adicionar-cliente">
+            <h1>Adicionar Cliente</h1>
+            <form id="formAdd" action="/cadastro" method="post">
+                <label for="nomeEmpresa">
+                    Nome da Empresa:
+                    <input type="text" id="nomeEmpresa" name="nomeEmpresa">
+                </label>
+                <select id="seletorCNPJ">
+                    <option value="0">CPF</option>
+                    <option value="1">CNPJ</option>
+                </select>
 
+                <input type="text" id="cpf" name="cpf" placeholder="CPF" class="cpf/cnpj">
+
+                <input type="text" id="cnpj" name="cnpj" placeholder="CNPJ" class="cpf/cnpj">
+
+                <label for="telefone">
+                    Telefone:
+                    <input type="text" id="telefone" name="telefone" placeholder="Telefone (XX) XXXXX-XXXX">
+                </label>
+                <input type="hidden" name="idcliente">
+                <input type="submit" value="Adicionar" id="addButton">
+            </form>
+        </div>
+
+        <div id="Remover Conta">
+            <h1>Remover Empresa</h1>
+            <form id="formRemove" action="/cadastro/remover" method="post">
+                <label for="selectBanco">
+                    Nome da Empresa a ser removida:
+                    <select id="selectBanco" name="selectNomeEmpresa">
+
+                    </select>
+                </label>
+
+                <input type="submit" value="Remover" id="removeButton">
+            </form>
+        </div>
+    </div>
     <script src="/paginaCadastro/paginaCadastro.js"></script>
 </body>
 </html>
