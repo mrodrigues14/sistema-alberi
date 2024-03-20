@@ -59,7 +59,7 @@ function loadAndDisplayUsername() {
 
 
 function loadNomeEmpresa() {
-    fetch('/paginainicial/consultarEmpresas', { method: 'POST' })
+    fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Não foi possível buscar as empresas');
@@ -107,8 +107,12 @@ function inputNomeEmpresa(names) {
     });
 
     function updateList(filter) {
+        // Ensure filter is not null before converting to lower case
+        var safeFilter = filter ? filter.toLowerCase() : '';
+
         var filteredNames = names.filter(function(name) {
-            return name.toLowerCase().includes(filter.toLowerCase());
+            // Ensure name is not null before converting to lower case
+            return name && name.toLowerCase().includes(safeFilter);
         });
 
         list.innerHTML = '';
