@@ -11,6 +11,17 @@ function listarTarefas(idcliente, callback){
     });
 }
 
+function consultarTarefa(idtarefa, callback){
+    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE idtarefa = ?`, [idtarefa], function(err, result, fields) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+
+}
+
 function adicionarTarefa(tarefa, idcliente, dataLimite, callback) {
     mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE) VALUES (NULL, ?, ?, ?, ?)`,
         [tarefa, "NÃO FOI INICIADO", dataLimite, idcliente],
@@ -60,4 +71,10 @@ function atualizarStatus(idtarefa, callback){
     });
 }
 
-module.exports = {listarTarefas, adicionarTarefa, atualizarStatus, deletarTarefa};
+function editarTarefa(idtarefa, titulo, dataLimite, callback){
+    mysqlConn.query('UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ? WHERE IDTAREFA = ?', [titulo, dataLimite, idtarefa], function(err, result){
+        callback(err, result);
+    });
+}
+
+module.exports = {listarTarefas, adicionarTarefa, atualizarStatus, deletarTarefa, consultarTarefa, editarTarefa};

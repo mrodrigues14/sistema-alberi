@@ -1,14 +1,68 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+    border: 0;
+}
+
 #closeButton{
     position: absolute;
     top: 0;
     right: 0;
-    margin: 10px;
+    margin: 4vw;
     cursor: pointer;
 }
-body{
-    width: 100%;
+
+#EditandoTarefa{
+    position: absolute;
+    top: 40.36%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 355.125px;
+    height: auto;
+    border: 2px solid #ccc;
+    border-bottom: 0;
+    border-radius: 5px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    background-color: white;
 }
-html{
+
+#tabela{
     width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
+
+#todo-table td{
+    text-align: center;
+}
+
+#todo-table th{
+    background-color: #f2f2f2;
+}
+
+
+
+#alinhadorTarefa{
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#tarefa{
+    border: 2px solid #ccc;
+    border-top: 0;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
 
