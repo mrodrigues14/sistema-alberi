@@ -6,9 +6,15 @@ const {listarTarefas} = require('../repositories/tarefas.repository.js');
 const {adicionarTarefa} = require('../repositories/tarefas.repository.js');
 const {atualizarStatus} = require('../repositories/tarefas.repository.js');
 const {deletarTarefa} = require('../repositories/tarefas.repository.js');
+const {consultarTarefa} = require('../repositories/tarefas.repository.js');
+const {editarTarefa} = require('../repositories/tarefas.repository.js');
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaInicial/paginaInicial.html'));
+});
+
+router.get('/erro', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaInicial/erro.html'));
 });
 
 router.get('/tarefas', (req, res) => {
@@ -24,6 +30,8 @@ router.get('/tarefas', (req, res) => {
 
 router.post('/adicionartarefa', (req, res) => {
     const {titulo, idcliente, dataLimite} = req.body;
+    if(!titulo || !idcliente || !dataLimite)
+        return res.redirect(`/paginainicial/erro`);
     adicionarTarefa(titulo, idcliente, dataLimite, (err, result) => {
         if (err) {
             return res.status(500).json(err);
@@ -46,6 +54,26 @@ router.post('/atualizartarefa', (req, res) => {
 
 router.get('/editartarefa', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaInicial/paginaEditarTarefa/editarTarefa.html'));
+});
+
+router.post('/editartarefa', (req, res) => {
+    const {id, titulo, dataLimite} = req.body;
+    editarTarefa(id, titulo, dataLimite, (err, result) => {
+        if (err) {
+            return res.status(500).json(err);
+        }
+    res.redirect(`/paginainicial/editartarefa?id=${id}`)
+    });
+});
+
+router.get('/editartarefa/gettarefa', (req, res) => {
+    const {idtarefa} = req.query;
+    consultarTarefa(idtarefa, (err, result) => {
+        if (err) {
+            return res.status(500).json(err);
+        }
+        res.json(result);
+    });
 });
 
 router.post('/deletartarefa', (req, res) => {

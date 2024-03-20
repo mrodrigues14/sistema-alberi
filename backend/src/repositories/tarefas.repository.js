@@ -1,7 +1,7 @@
 const mysqlConn = require('../base/database.js');
 
 function listarTarefas(idcliente, callback){
-    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM tarefas WHERE id_cliente = ?
+    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE id_cliente = ?
                      ORDER BY DATA_LIMITE ASC`, [idcliente], function(err, result, fields) {
         if (err) {
             callback(err, null);
@@ -9,6 +9,17 @@ function listarTarefas(idcliente, callback){
             callback(null, result);
         }
     });
+}
+
+function consultarTarefa(idtarefa, callback){
+    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE idtarefa = ?`, [idtarefa], function(err, result, fields) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+
 }
 
 function adicionarTarefa(tarefa, idcliente, dataLimite, callback) {
@@ -60,4 +71,10 @@ function atualizarStatus(idtarefa, callback){
     });
 }
 
-module.exports = {listarTarefas, adicionarTarefa, atualizarStatus, deletarTarefa};
+function editarTarefa(idtarefa, titulo, dataLimite, callback){
+    mysqlConn.query('UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ? WHERE IDTAREFA = ?', [titulo, dataLimite, idtarefa], function(err, result){
+        callback(err, result);
+    });
+}
+
+module.exports = {listarTarefas, adicionarTarefa, atualizarStatus, deletarTarefa, consultarTarefa, editarTarefa};

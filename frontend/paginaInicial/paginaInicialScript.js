@@ -48,7 +48,6 @@ window.onload = function() {
     fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             if (data && data.length > 0) {
                 const campoOculto = document.getElementById('idcliente')
                 if (campoOculto) {
@@ -67,11 +66,11 @@ window.onload = function() {
                                                </button>`;
                                 row.insertCell().textContent = firstLetterToUpperCase(tarefa.TITULO);
                                 row.insertCell().textContent = formatDate(tarefa.DATA_LIMITE);
-                                row.insertCell().innerHTML = `<button class="edit-button" onclick="" style="width: 2.5vw">
-                                                              <img src="imagens/editar.png" style="width: 100%">
+                                row.insertCell().innerHTML = `<button class="edit-button" onclick="editarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer;">
+                                                              <img src="imagens/editar.png" style="width: 100%;">
                                                               </button>`;
-                                row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw">
-                                                              <img src="imagens/lixeira.png" style="width: 100%">
+                                row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer">
+                                                              <img src="imagens/lixeira.png" style="width: 100%;">
                                                               </button>`;
                             });
                         })
@@ -264,27 +263,18 @@ function completarTarefa(idtarefa) {
 }
 
 function editarTarefa(idAfazer) {
-    const urlDeEdicao = `/paginainicial/editartarefa`;
+    const urlDeEdicao = `/paginainicial/editartarefa?id=${idAfazer}`;
 
     const iframe = document.createElement('iframe');
     iframe.src = urlDeEdicao;
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
+    iframe.style.width = "100%";
+    iframe.style.height = "100%"
 
     const iframeContainer = document.getElementById('iframe-container');
     iframeContainer.innerHTML = '';
     iframeContainer.appendChild(iframe);
 
     iframeContainer.style.display = 'block';
-
-
-}
-
-function fecharIframe() {
-    const iframeContainer = document.getElementById('iframe-container');
-    iframeContainer.style.display = 'none';
-    iframeContainer.innerHTML = '';
 }
 
 function deletarTarefa(idtarefa) {
@@ -303,3 +293,10 @@ function deletarTarefa(idtarefa) {
         })
         .catch(error => console.error('Erro ao deletar a tarefa:', error));
 }
+
+document.addEventListener('message', function(event) {
+    if (event.data === 'recarregarPagina') {
+        window.location.reload();
+    }
+}, false);
+
