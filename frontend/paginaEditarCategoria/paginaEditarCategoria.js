@@ -99,23 +99,8 @@ window.onload = function() {
                 if (campoOculto) {
                     campoOculto.value = data[0].IDCLIENTE;
                     idCliente = data[0].IDCLIENTE;
-                    fetch(`/categoria/dados?idcliente=${encodeURIComponent(idCliente)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const select = document.getElementById('seletorCategoria');
-                        data.forEach(categoria => {
-                            const option = document.createElement('option');
-                            option.value = categoria.IDCATEGORIA;
-                            option.textContent = categoria.NOME;
-                            select.appendChild(option);
-                    });
-            })
-                } else {
-                    console.error('Campo oculto id_empresa não encontrado');
                 }
-            } else {
-                console.error('Dados da empresa não retornados ou vazios');
-            }
+            }    
         })
         .catch(error => {
             console.error('Erro ao carregar dados da empresa:', error);

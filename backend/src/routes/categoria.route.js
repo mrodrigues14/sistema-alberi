@@ -12,7 +12,6 @@ router.get('/', (req, res) => {
 
 router.get('/dados' , (req, res) => {
     const {idcliente} = req.query;
-    console.log(idcliente);
     buscar(idcliente, (err, result) => {
         if (err) {
             console.error(err);
