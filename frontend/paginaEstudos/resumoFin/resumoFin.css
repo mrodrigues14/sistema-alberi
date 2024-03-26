@@ -2,18 +2,25 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.ano{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 h1 {
     text-align: center;
+    color: #333;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 table, th, td {
-    border: 1px solid #000;
+    border: 1px solid #ddd;
 }
 
 th, td {
@@ -22,12 +29,58 @@ th, td {
 }
 
 th {
-    background-color: #4CAF50;
+    background-color: #8BACAF;
     color: white;
 }
 
 tfoot td {
     font-weight: bold;
+    background-color: #e7f3fe;
+}
+
+button {
+    background-color: #8BACAF;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #9ab7ba;
+}
+
+#categoryModal {
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+#categoryModal > div {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 5px;
+    width: 80%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2), 0 6px 20px rgba(0,0,0,0.19);
+}
+
+label {
+    margin-right: 10px;
+}
+
+select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 16px;
 }
 
 

@@ -1,240 +1,115 @@
-.container{
-    display: flex;
-    margin-top: 0.5vw;
-    margin-left: auto;
-    margin-right: auto;
-    justify-content: center;
-    width: 100%;
-}
-
-.container h1{
-    text-align: center;
-    font-size: 1.1vw;
-    color: #ffffff;
+/* resumoMensal.css */
+body {
     font-family: 'DM Sans', sans-serif;
-    font-weight: lighter;
-    background-color: #8BACAF;
-    padding: 0.5vw;
-    margin-bottom:0px;
-    border: 1px solid #000000;
-    border-bottom: 0px;
+    background-color: #e7eff6;
+    color: #333;
+    margin: 0;
+    padding: 0;
 }
 
-#saldoInicialTable {
-    font-family: Arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 0px;
-}
-#saldoInicialTable th, #saldoInicialTable td {
-    border: 1px solid #000;
-    padding: 8px;
-}
-#saldoInicialTable th {
-    background-color: #8BACAF;
-    color: white;
-}
-#saldoInicialTable tfoot td {
-    background-color: #8BACAF;
-    color: white;
-    font-weight: bold;
-}
-
-.left-align{
-    text-align: left;
-}
-
-.right-align{
-    text-align: right;
-}
-
-#saldoInicial{
-    margin-left: 3vw;
-}
-
-.hide-calendar .ui-datepicker-calendar {
-    display: none;
-}
-
-.ui-datepicker-buttonpane .ui-datepicker-current {
-    display: none !important;
-}
-
-.ui-datepicker-buttonpane {
-    text-align: center;
+.container {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-}
-
-.ui-datepicker-buttonpane .ui-datepicker-close {
-    text-align: center;
-    padding: 6px 12px;
     margin: 0 auto;
-    display: block;
+    padding: 20px;
 }
 
-.ui-datepicker-buttonpane .ui-datepicker-close:hover {
+.container div {
+    margin: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.container h1 {
+    font-size: 1.2em;
+    color: #ffffff;
     background-color: #8BACAF;
-    color: #fff;
-}
-
-.ui-datepicker {
-    width: 100%;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: lighter;
-    font-size: 16px;
-    text-align: center;
-}
-
-#seletorMesAno {
-    text-align: center;
+    padding: 10px;
+    margin: 0;
+    border-bottom: 1px solid #000000;
 }
 
 #containerData {
-    display: block;
-    width: 15%;
-    margin-top: 3vw;
-    border-radius: 5px;
-    padding: 10px;
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto;
     background-color: #FFFFFF;
-    color: black;
-    cursor: pointer;
-    font-size: 16px;
-    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
-    margin-left: auto;
-    margin-right: auto;
-    align-items: center;
-    justify-content: center;
-}
-
-#containerData div{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#containerData:hover{
-    background-color: #8BACAF;
-    color: #FFFFFF;
-}
-
-#containerData label{
-    margin-left: 5%;
-    margin-right: 5%;
-}
-
-#containerData input{
-    margin-left: 5%;
-    margin-right: 5%;
-}
-
-#EntradaCategoria{
-    margin-left: 3vw;
-}
-
-#EntradaCategoriaTable{
-    font-family: Arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 0px;
-
-}
-
-#EntradaCategoriaTable th, #EntradaCategoriaTable td {
-    border: 1px solid #000;
-    padding: 8px;
-}
-
-#EntradaCategoriaTable th {
-    background-color: #8BACAF;
-    color: white;
-}
-
-#EntradaCategoriaTable tfoot td {
-    background-color: #8BACAF;
-    color: white;
-    font-weight: bold;
-}
-
-#saidaCategoria{
-    margin-left: 3vw;
-}
-
-#saidaCategoriaTable {
-    font-family: Arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 0px;
-}
-
-.centro{
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    padding: 10px;
     text-align: center;
 }
 
-#saidaCategoriaTable th, #saidaCategoriaTable td {
-    border: 1px solid #000;
-    padding: 8px;
+#containerData label {
+    display: block;
+    margin-bottom: 5px;
 }
 
-#saidaCategoriaTable th {
+#seletorMesAno {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+}
+
+table th, table td {
+    text-align: left;
+    padding: 8px;
+    border: 1px solid #000;
+}
+
+table th {
     background-color: #8BACAF;
     color: white;
 }
 
-#saidaCategoriaTable tfoot td {
+table tfoot td {
     background-color: #8BACAF;
     color: white;
     font-weight: bold;
 }
 
-#saldoDoMes{
-    margin-left: 3vw;
+#botao-voltar-container {
+    margin-top: 30px;
+    text-align: center;
 }
 
-#saldoDoMesTable {
-    font-family: Arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 0px;
-}
-
-#saldoDoMesTable th, #saldoDoMesTable td {
-    border: 1px solid #000;
-    border-top: 0px;
-    padding: 8px;
-}
-
-#saldoDoMesTable th {
-    background-color: #8BACAF;
-    color: white;
-}
-
-#botao-voltar{
-    width: 100%;
+#botao-voltar {
     background-color: #8BACAF;
     color: white;
     border: none;
     padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 16px;
+    font-size: 1em;
     cursor: pointer;
     border-radius: 5px;
-    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
 }
 
-#botao-voltar:hover{
+#botao-voltar:hover {
     background-color: #6D8A8D;
 }
 
-#botao-voltar-container{
-    margin-top: 3vw;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .container div {
+        width: 90%;
+    }
+
+    #containerData {
+        width: 90%;
+    }
 }
 
-#h1saldomes{
-    border-bottom: 1px solid #000000;
-}
+/* Additional specific styles

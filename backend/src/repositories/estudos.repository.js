@@ -162,7 +162,7 @@ function getNomeMesPortugues(mesNumero) {
         "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
         "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ];
-    return meses[mesNumero - 1]; // Ajuste para base-0 do array
+    return meses[mesNumero - 1];
 }
 
 
@@ -200,7 +200,7 @@ function getReceitaLiquida(mesNome, ano, empresaNome, callback) {
 function getValoresCategoria(categoria, mesNome, ano, empresaNome, callback) {
     const mes = getNumeroMesPortugues(mesNome);
     const dataInicio = `${ano}-${mes.toString().padStart(2, '0')}-01`;
-    const dataFim = new Date(ano, mes, 0).toISOString().split('T')[0]; // O dia 0 do próximo mês é o último dia do mês atual
+    const dataFim = new Date(ano, mes, 0).toISOString().split('T')[0];
 
     mysqlConn.query(`
         SELECT IDCLIENTE FROM cliente WHERE NOME = ?

@@ -1,16 +1,71 @@
-table {
-    width: 100%;
-    border-collapse: collapse;
+/* metas.css */
+body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #e7eff6;
+    color: #333;
+    margin: 0;
+    padding: 0;
 }
-table, th, td {
-    border: 1px solid black;
+
+#menu-container-estudos,
+#menu-container {
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0; /* Ensure there is no gap causing a stripe */
 }
-th, td {
-    padding: 5px;
+
+h2 {
     text-align: center;
+    color: #333333;
+    margin: 20px 0;
 }
-input {
-    width: 100%;
-    border: none;
-    text-align: right;
+
+table#costsTable {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+table#costsTable th, table#costsTable td {
+    border: 1px solid #ddd;
+    padding: 0.8rem;
+    text-align: center;
+    font-size: 0.95em;
+}
+
+table#costsTable th {
+    background-color: #8BACAF;
+    color: white;
+}
+
+table#costsTable input {
+    padding: 5px;
+    margin-top: 3px; /* Slight space for visual comfort */
+    border: 1px solid #ccc; /* Subtle border for inputs */
+    border-radius: 4px;
+    width: calc(100% - 10px); /* Adjust width considering padding */
+    text-align: right; /* Align text to the right for numbers */
+}
+
+table#costsTable input:focus {
+    outline: 2px solid #8BACAF;
+    outline-offset: -1px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    table#costsTable {
+        width: 100%;
+    }
+
+    table#costsTable th, table#costsTable td {
+        padding: 0.5rem;
+    }
+
+    table#costsTable input {
+        width: 90%; /* Adjust width for smaller screens */
+    }
 }

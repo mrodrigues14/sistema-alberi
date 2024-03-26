@@ -6,10 +6,11 @@
     <link rel="stylesheet" href="/paginaEstudos/resumoFin/resumoFin.css">
 </head>
 <body>
+<div id="menu-container-estudos"></div>
 <div id="menu-container"></div>
 
 <h1>Resumo Financeiro 2024</h1>
-<div>
+<div class="ano">
     <label for="yearSelector">Escolha o ano:</label>
     <select id="yearSelector">
         <option value="2024" selected>2024</option>
@@ -21,21 +22,25 @@
     <thead>
     <tr>
         <th>Mês</th>
-        <th>Receita</th>
+        <th>Receita Bruta</th>
+        <th>Receita Liquida</th>
+        <th>Desconto</th>
         <th>Custo Operacional</th>
         <th>Lucro Operacional</th>
         <th>Custos Não Operacionais</th>
         <th>Custo Total</th>
         <th>Lucro Total</th>
+
     </tr>
     </thead>
     <tbody>
-    <!-- As linhas da tabela serão inseridas aqui pelo JavaScript -->
     </tbody>
     <tfoot>
     <tr>
         <td>Total</td>
         <td id="totalRevenue"></td>
+        <td id="totalLiquido"></td>
+        <td id="desconto"></td>
         <td id="totalOperationalCost"></td>
         <td id="totalOperationalProfit"></td>
         <td id="totalNonOperationalCost"></td>
@@ -45,6 +50,8 @@
     <tr>
         <td>Média</td>
         <td id="averageRevenue"></td>
+        <td id="totalLiquidoMedia"></td>
+        <td id="descontoMedia"></td>
         <td id="averageOperationalCost"></td>
         <td id="averageOperationalProfit"></td>
         <td id="averageNonOperationalCost"></td>
@@ -61,7 +68,6 @@
     <div>
         <h2>Escolha as Categorias</h2>
         <div id="categoryCheckboxes">
-            <!-- Checkbox serão adicionados aqui -->
         </div>
         <button id="saveCategorySelection">Salvar Seleção</button>
         <button onclick="document.getElementById('categoryModal').style.display='none'">Fechar</button>
@@ -72,14 +78,11 @@
     <table id="categoryCostsTable">
         <thead>
         <tr id="categoryHeaders">
-            <!-- Cabeçalhos das categorias serão inseridos aqui -->
         </tr>
         </thead>
         <tbody id="categoryBody">
-        <!-- Linhas para cada mês com custos de cada categoria serão inseridas aqui -->
         </tbody>
         <tfoot id="categoryFooter">
-        <!-- Totais e médias para cada categoria serão inseridos aqui -->
         </tfoot>
     </table>
 </div>

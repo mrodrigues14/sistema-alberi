@@ -30,6 +30,10 @@ router.get('/resumoFin', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/resumoFin/resumoFin.html'));
 })
 
+router.get('/metas', (req, res)=>{
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/metas/metas.html'))
+})
+
 router.get('/resumoMensal/saldoinicial', (req, res) => {
     const {empresa, data} = req.query;
     saldoInicial(empresa, data, (err, result) => {
@@ -117,4 +121,6 @@ router.get('/resumoFin/categorias', (req, res) => {
         }
     });
 });
+
+router.get('/resumoFin/')
 module.exports = router;

@@ -1,17 +1,69 @@
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-th, td {
-    padding: 0.5rem;
-    text-align: left;
-    border-bottom: 1px solid #ccc;
-}
-th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-tr:nth-child(even) {
-    background-color: #f9f9f9;
+/* resumoAnual.css */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #eaeef1;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
 }
 
+#menu-container {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+table#tabelaResumo {
+    width: 80%;
+    margin: 2rem auto;
+    border-collapse: collapse;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table#tabelaResumo thead th {
+    background-color: #4e73df;
+    color: #ffffff;
+    padding: 1rem;
+    text-align: left;
+    font-size: 1em;
+}
+
+table#tabelaResumo tbody td {
+    padding: 0.8rem;
+    text-align: left;
+    font-size: 0.95em;
+    border-bottom: 1px solid #ddd;
+}
+
+table#tabelaResumo tbody tr:hover {
+    background-color: #f8f9fc;
+}
+
+table#tabelaResumo tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table#tabelaResumo tfoot tr td {
+    padding: 1rem;
+    text-align: left;
+    background-color: #4e73df;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* For smaller screens, ensure table is responsive */
+@media screen and (max-width: 768px) {
+    table#tabelaResumo {
+        width: 95%;
+        margin: 1rem auto;
+    }
+
+    table#tabelaResumo thead th,
+    table#tabelaResumo tbody td {
+        padding: 0.5rem;
+    }
+}
