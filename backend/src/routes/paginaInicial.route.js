@@ -58,6 +58,8 @@ router.get('/editartarefa', (req, res) => {
 
 router.post('/editartarefa', (req, res) => {
     const {id, titulo, dataLimite} = req.body;
+    if(!titulo || !id || !dataLimite)
+        res.redirect(`/paginainicial/editartarefa?id=${id}`);
     editarTarefa(id, titulo, dataLimite, (err, result) => {
         if (err) {
             return res.status(500).json(err);

@@ -157,13 +157,38 @@ function atualizarTabela(dados) {
 
 function gerarPDF() {
     var { jsPDF } = window.jspdf;
-    var doc = new jsPDF();
-    var fillColor = [139,172,175];
+    var doc = new jsPDF('l', 'mm', 'a4');
+
+    var fillColor = [139, 172, 175];
     var textColor = [0, 0, 0];
 
+    var dadosTabela = [];
+    $('#consulta thead tr').each(function() {
+        var linha = [];
+        $('th', this).each(function(index) {
+            if (index !== 7) {
+                linha.push($(this).text());
+            }
+        });
+        dadosTabela.push(linha);
+    });
+
+    $('#consulta tbody tr').each(function() {
+        var linha = [];
+        $('td', this).each(function(index) {
+            if (index !== 7) {
+                linha.push($(this).text());
+            }
+        });
+        dadosTabela.push(linha);
+    });
+
     doc.autoTable({
-        html: '#consulta',
-        didParseCell: function (data) {
+        head: [dadosTabela[0]],
+        body: dadosTabela.slice(1),
+        startY: 10,
+        margin: { horizontal: 10 },
+        didParseCell: function(data) {
             if (data.cell.section === 'head') {
                 data.cell.styles.fillColor = fillColor;
                 data.cell.styles.textColor = textColor;
@@ -180,6 +205,7 @@ function gerarPDF() {
 
     doc.save(nomeArquivo);
 }
+
 
 function gerarExcel() {
     var wb = XLSX.utils.table_to_book(document.getElementById('consulta'), { sheet: "Sheet1" });
