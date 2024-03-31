@@ -50,13 +50,14 @@ window.onload = function() {
                 row.insertCell().textContent = insercao.CATEGORIA;
                 row.insertCell().textContent = insercao.DESCRICAO;
                 row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
+                row.insertCell().textContent = insercao.NOME_BANCO;
+                row.insertCell().textContent = insercao.NOME_FORNECEDOR;
                 row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
                 row.insertCell().textContent = insercao.VALOR;
-                row.insertCell().textContent = insercao.NOME_BANCO;
                 const deleteCell = row.insertCell();
                 deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
                                         <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
-                                        <button type="submit" class="delete-btn">Deletar</button>
+                                        <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
                                         </form>`;
             });
         })
@@ -107,6 +108,27 @@ window.onload = function() {
                         option.value = banco.IDBANCO;
                         IDBANCO = option.value
                         option.textContent = banco.NOME_TIPO;
+                        select.appendChild(option);
+                    });
+                })
+        })
+
+    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+        .then(response => response.json())
+        .then(data => {
+            let idcliente = data[0].IDCLIENTE;
+            fetch(`/fornecedor/listar?idcliente=${idcliente}`)
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('seletorFornecedor');
+                    const semFornecedor = document.createElement('option');
+                    semFornecedor.value = '';
+                    semFornecedor.textContent = 'Sem fornecedor';
+                    select.appendChild(semFornecedor);
+                    data.forEach(fornecedor => {
+                        const option = document.createElement('option');
+                        option.value = fornecedor.IDFORNECEDOR;
+                        option.textContent = fornecedor.NOME;
                         select.appendChild(option);
                     });
                 })

@@ -136,12 +136,12 @@ function atualizarTabela(dados) {
         row.insertCell().textContent = item.CATEGORIA;
         row.insertCell().textContent = item.DESCRICAO;
         row.insertCell().textContent = item.NOME_NO_EXTRATO;
-        if(item.TIPO_DE_TRANSACAO == 'ENTRADA'){
+        row.insertCell().textContent = item.NOME_FORNECEDOR;
+        if (item.TIPO_DE_TRANSACAO == 'ENTRADA') {
             row.insertCell().textContent = item.VALOR.toFixed(2)
             row.insertCell().textContent = ""
             saldo += parseFloat(item.VALOR);
-        }
-        else{
+        } else {
             row.insertCell().textContent = ""
             row.insertCell().textContent = item.VALOR.toFixed(2);
             saldo -= parseFloat(item.VALOR);
@@ -150,20 +150,113 @@ function atualizarTabela(dados) {
         const deleteCell = row.insertCell();
         deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
                                         <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
-                                        <button type="submit" class="delete-btn">Deletar</button>
-                                        </form>`;
+                                        <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                                        </form>
+
+                                <button onclick="editarExtrato(${item.IDEXTRATO})">EDITAR</button>
+                                <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
+                                `;
     });
+
+    let saldoinicial = 0;
+    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${formatDateToFirstOfMonth($('#seletorMesAno').val())}`)
+        .then(response => response.json())
+        .then(data => {
+            const table = document.getElementById('saldoInicialTable');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                const row = tbody.insertRow();
+                saldoinicial += parseFloat(item.saldo);
+                row.insertCell().textContent = item.saldo.toFixed(2);
+
+            });
+            const saldoFinal = saldo + saldoinicial;
+            const table2 = document.getElementById('saldoFinalTable')
+            const tbodysaldofinal = table2.querySelector('tbody');
+            tbodysaldofinal.innerHTML = '';
+            const row = tbodysaldofinal.insertRow();
+            row.insertCell().textContent = saldoFinal.toFixed(2);
+        })
+
+
+
 }
+
+let linhasSelecionadas = [];
+function selecionarLinha(buttonElement) {
+    const idExtrato = buttonElement.getAttribute('data-idextrato');
+    if (linhasSelecionadas.includes(idExtrato)) {
+        const index = linhasSelecionadas.indexOf(idExtrato);
+        linhasSelecionadas.splice(index, 1);
+        buttonElement.classList.remove('selecionado');
+    } else {
+        linhasSelecionadas.push(idExtrato);
+        buttonElement.classList.add('selecionado');
+    }
+}
+
+function deletarSelecionados() {
+    if (linhasSelecionadas.length === 0) {
+        alert('Selecione ao menos uma linha para deletar');
+        return;
+    }
+
+    if (!confirm('Tem certeza que deseja deletar as linhas selecionadas?')) {
+        return;
+    }
+
+    const form = document.createElement('form');
+    form.action = '/insercao/deletar-extrato';
+    form.method = 'post';
+
+    linhasSelecionadas.forEach(idExtrato => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'idExtrato';
+        input.value = idExtrato;
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
 
 function gerarPDF() {
     var { jsPDF } = window.jspdf;
-    var doc = new jsPDF();
-    var fillColor = [139,172,175];
+    var doc = new jsPDF('l', 'mm', 'a4');
+
+    var fillColor = [139, 172, 175];
     var textColor = [0, 0, 0];
 
+    var dadosTabela = [];
+    $('#consulta thead tr').each(function() {
+        var linha = [];
+        $('th', this).each(function(index) {
+            if (index !== 8) {
+                linha.push($(this).text());
+            }
+        });
+        dadosTabela.push(linha);
+    });
+
+    $('#consulta tbody tr').each(function() {
+        var linha = [];
+        $('td', this).each(function(index) {
+            if (index !== 8) {
+                linha.push($(this).text());
+            }
+        });
+        dadosTabela.push(linha);
+    });
+
     doc.autoTable({
-        html: '#consulta',
-        didParseCell: function (data) {
+        head: [dadosTabela[0]],
+        body: dadosTabela.slice(1),
+        startY: 10,
+        margin: { horizontal: 10 },
+        didParseCell: function(data) {
             if (data.cell.section === 'head') {
                 data.cell.styles.fillColor = fillColor;
                 data.cell.styles.textColor = textColor;
@@ -181,9 +274,25 @@ function gerarPDF() {
     doc.save(nomeArquivo);
 }
 
+
 function gerarExcel() {
     var wb = XLSX.utils.table_to_book(document.getElementById('consulta'), { sheet: "Sheet1" });
     wb.Sheets['Sheet1']['A2'].z = 'yyyy-mm-dd';
     XLSX.writeFile(wb, 'tabela.xlsx');
+}
+
+function editarExtrato(idExtrato) {
+    const urlDeEdicao = `/consulta/editar?id=${idExtrato}`;
+
+    const iframe = document.createElement('iframe');
+    iframe.src = urlDeEdicao;
+    iframe.style.width = "100%";
+    iframe.style.height = "100%"
+
+    const iframeContainer = document.getElementById('iframe-container');
+    iframeContainer.innerHTML = '';
+    iframeContainer.appendChild(iframe);
+
+    iframeContainer.style.display = 'block';
 }
 

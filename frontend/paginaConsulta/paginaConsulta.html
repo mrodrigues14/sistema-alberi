@@ -31,7 +31,7 @@
         <a href="/insercao"><button class="buttonMenu" id="inserirButton">Inserir extrato</button></a>
         <a href="/consulta"><button class="buttonMenu" id="consultaButton">Consultar extrato</button></a>
         <button class="buttonMenu">Rubricas</button>
-        <button class="buttonMenu">Adicionar fornecedor</button>
+        <a href="/fornecedor"><button class="buttonMenu">Adicionar fornecedor</button></a>
         <div></div>
     </div>
     <hr>
@@ -53,6 +53,35 @@
         <button onclick="gerarExcel()">Gerar Excel</button>
     </div>
 
+
+    <div id="saldoinicial">
+        <table id="saldoInicialTable">
+            <thead>
+            <tr>
+                <th>Saldo Inicial</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+
+        <table id="saldoFinalTable">
+            <thead>
+            <tr>
+                <th>Saldo Final</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+    <div id="botão-deletar">
+        <button onclick="deletarSelecionados()">Deletar Selecionados</button>
+    </div>
+
+
     <table id="consulta">
         <thead>
             <tr>
@@ -60,17 +89,18 @@
                 <th>Categoria</th>
                 <th>Descrição</th>
                 <th>Nome no Extrato</th>
+                <th>Fornecedor</th>
                 <th>Entrada</th>
                 <th>Saída</th>
                 <th>Saldo</th>
-                <th>Deletar Extrato</th>
+                <th>Ferramentas</th>
             </tr>
         </thead>
         <tbody>
 
         </tbody>
     </table>
-
+    <div id="iframe-container"></div>
     <script src="/paginaConsulta/paginaConsulta.js"></script>
 </body>
 </html>
