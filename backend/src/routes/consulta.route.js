@@ -4,6 +4,7 @@ const path = require('path');
 const {buscar} = require('../repositories/consulta.repository');
 const {extratoAEditar} = require('../repositories/consulta.repository');
 const {editarExtrato} = require('../repositories/consulta.repository');
+const {buscarSaldoInicial} = require('../repositories/consulta.repository');
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaConsulta/paginaConsulta.html'));
@@ -42,6 +43,17 @@ router.get('/dados', (req, res) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");
+        }
+        res.json(result);
+    });
+});
+
+router.get('/saldoinicial', (req, res) => {
+    const {banco, data} = req.query;
+    buscarSaldoInicial(banco, data, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao buscar saldo inicial");
         }
         res.json(result);
     });

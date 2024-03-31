@@ -283,3 +283,47 @@ iframe {
     border: 1px solid black;
     box-sizing: border-box;
 }
+
+#saldoinicial{
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    margin-top: 1vw;
+    margin-right: 8.5vw;
+    box-sizing: border-box;
+}
+
+#saldoinicial table{
+
+}
+
+#saldoinicial table thead {
+    background-color: #8BACAF;
+    color: #000000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+}
+
+#saldoinicial table tbody {
+    background-color: #FFFFFF;
+    color: #000000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+    text-align: center;
+}
+
+#saldoinicial table td, #saldoinicial table th {
+    padding: 5px;
+}
+
+#saldoinicial table td {
+    border-bottom: 1px solid #ddd;
+}
+
+#saldoInicialTable{
+    border-radius: 5px;
+}
+
+#saldoFinalTable{
+    border-radius: 5px;
+}

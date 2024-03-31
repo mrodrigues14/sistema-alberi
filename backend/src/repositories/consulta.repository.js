@@ -51,4 +51,18 @@ function editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, va
     });
 }
 
-module.exports = {buscar, extratoAEditar, editarExtrato};
+function buscarSaldoInicial(banco, data, callback) {
+    mysqlConn.query(`SELECT SUM(CASE WHEN TIPO_DE_TRANSACAO = 'ENTRADA' THEN VALOR ELSE 0 END) - 
+                            SUM(CASE WHEN TIPO_DE_TRANSACAO = 'SAIDA' THEN VALOR ELSE 0 END) AS saldo 
+                            FROM EXTRATO WHERE ID_BANCO = ? AND DATA < ?`,
+        [banco, data],
+        function(err, result, fields) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+module.exports = {buscar, extratoAEditar, editarExtrato, buscarSaldoInicial};

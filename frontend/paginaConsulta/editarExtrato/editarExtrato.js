@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                                     <option value="entrada">Entrada</option>
                                                     <option value="saida">Saída</option>
                                               </select>`;
-            editRow.insertCell().innerHTML = `<input type="text" value="${dados[0].VALOR}">`;
+            editRow.insertCell().innerHTML = `<input type="text" value="${dados[0].VALOR}" name="valor">`;
 
             const update = document.getElementById('update');
             update.innerHTML = `<button onclick="editarExtrato()">Editar</button>`;

@@ -137,12 +137,11 @@ function atualizarTabela(dados) {
         row.insertCell().textContent = item.DESCRICAO;
         row.insertCell().textContent = item.NOME_NO_EXTRATO;
         row.insertCell().textContent = item.NOME_FORNECEDOR;
-        if(item.TIPO_DE_TRANSACAO == 'ENTRADA'){
+        if (item.TIPO_DE_TRANSACAO == 'ENTRADA') {
             row.insertCell().textContent = item.VALOR.toFixed(2)
             row.insertCell().textContent = ""
             saldo += parseFloat(item.VALOR);
-        }
-        else{
+        } else {
             row.insertCell().textContent = ""
             row.insertCell().textContent = item.VALOR.toFixed(2);
             saldo -= parseFloat(item.VALOR);
@@ -158,6 +157,30 @@ function atualizarTabela(dados) {
                                 <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
                                 `;
     });
+
+    let saldoinicial = 0;
+    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${formatDateToFirstOfMonth($('#seletorMesAno').val())}`)
+        .then(response => response.json())
+        .then(data => {
+            const table = document.getElementById('saldoInicialTable');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                const row = tbody.insertRow();
+                saldoinicial += parseFloat(item.saldo);
+                row.insertCell().textContent = item.saldo.toFixed(2);
+
+            });
+            const saldoFinal = saldo + saldoinicial;
+            const table2 = document.getElementById('saldoFinalTable')
+            const tbodysaldofinal = table2.querySelector('tbody');
+            tbodysaldofinal.innerHTML = '';
+            const row = tbodysaldofinal.insertRow();
+            row.insertCell().textContent = saldoFinal.toFixed(2);
+        })
+
+
+
 }
 
 let linhasSelecionadas = [];
