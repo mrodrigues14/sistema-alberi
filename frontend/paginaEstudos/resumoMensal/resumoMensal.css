@@ -82,7 +82,7 @@ table tfoot td {
     text-align: center;
 }
 
-#botao-voltar {
+#pdfButton {
     background-color: #8BACAF;
     color: white;
     border: none;
@@ -93,7 +93,7 @@ table tfoot td {
     transition: background-color 0.3s ease;
 }
 
-#botao-voltar:hover {
+#pdfButton:hover {
     background-color: #6D8A8D;
 }
 

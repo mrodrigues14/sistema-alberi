@@ -2,7 +2,8 @@ const mysqlConn = require("../base/database");
 
 function buscar(banco, data, cliente, callback){
     const dataProximoMes = new Date(data);
-    dataProximoMes.setMonth(dataProximoMes.getMonth() + 1);
+    dataProximoMes.setMonth(dataProximoMes.getMonth() + 2);
+    dataProximoMes.setDate(0);
 
     const parametros = [banco, data, dataProximoMes.toISOString().split('T')[0], cliente];
 
@@ -12,7 +13,8 @@ function buscar(banco, data, cliente, callback){
                     INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
                     INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
                     LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR
-                    WHERE ID_BANCO = ? AND DATA >= ? AND DATA < ? AND ID_CLIENTE = ?`, parametros,
+                    WHERE ID_BANCO = ? AND DATA >= ? AND DATA < ? AND ID_CLIENTE = ?
+                    ORDER BY DATA`, parametros,
         function(err, result, fields) {
         if (err) {
             callback(err, null);

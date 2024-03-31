@@ -1,4 +1,5 @@
 
+
 function formatDate(dateString) {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
@@ -264,6 +265,41 @@ function gerarPDF() {
         }
     });
 
+    ['saldoInicial', 'saldoFinal'].forEach(id => {
+        var saldoTabela = [];
+        $(`#${id}Table thead tr`).each(function() {
+            var linhaCabecalho = [];
+            $('th', this).each(function() {
+                linhaCabecalho.push($(this).text());
+            });
+            saldoTabela.push(linhaCabecalho);
+        });
+
+        $(`#${id}Table tbody tr`).each(function() {
+            var linhaDados = [];
+            $('td', this).each(function() {
+                linhaDados.push($(this).text());
+            });
+            saldoTabela.push(linhaDados);
+        });
+
+        var startY = doc.autoTable.previous ? doc.autoTable.previous.finalY + 10 : 10;
+
+        doc.autoTable({
+            head: [saldoTabela[0]],
+            body: saldoTabela.slice(1),
+            startY: startY,
+            margin: { horizontal: 10 },
+            theme: 'grid',
+            didParseCell: function(data) {
+                if (data.cell.section === 'head') {
+                    data.cell.styles.fillColor = fillColor;
+                    data.cell.styles.textColor = textColor;
+                }
+            }
+        });
+    });
+
     var nomeBanco = document.getElementById('seletorBanco').options[document.getElementById('seletorBanco').selectedIndex].text;
     var nomeEmpresa = getStoredEmpresaName();
     var mesAnoSelecionado = $('#seletorMesAno').val();
@@ -271,8 +307,10 @@ function gerarPDF() {
     var dataFormatada = partesData[1] + '-' + partesData[0];
     var nomeArquivo = `Tabela_${nomeEmpresa}_${nomeBanco}_${dataFormatada}.pdf`;
 
+    // Salva o PDF
     doc.save(nomeArquivo);
 }
+
 
 
 function gerarExcel() {
