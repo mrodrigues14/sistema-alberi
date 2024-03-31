@@ -1,7 +1,11 @@
 const mysqlConn = require("../base/database");
 
 async function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor){
-    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor].map(param => param === undefined ? null : param);
+    if(!id_fornecedor){
+        id_fornecedor = null;
+    }
+    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor];
+    console.log(parameters);
 
     try {
         const result = await mysqlConn.execute(

@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Resumo Financeiro</title>
+    <title>Resumo Mensal</title>
     <link rel="stylesheet" href="/paginaEstudos/resumoMensal/resumoMensal.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="/paginaEstudos/resumoMensal/resumoMensal.js"></script>
 </head>
 <body>
 <div id="menu-container-estudos"></div>
@@ -90,20 +93,18 @@
             </table>
         </div>
 
-        <!-- <div id="estimadoConta">
+        <div id="estimadoConta">
             <h1>Estimado na Conta</h1>
             <table id="saldoContaTable">
                 <tbody>
 
                 </tbody>
             </table>
-        </div> -->
+        </div>
     </div>
 
     <div id="botao-voltar-container">
-        <a href="/estudos">
-            <button id="botao-voltar">Voltar</button>
-        </a>
+        <button id="pdfButton" onclick="gerarPDF()">Gerar PDF</button>
     </div>
 <script src="/paginaEstudos/resumoMensal/resumoMensal.js"></script>
 </body>

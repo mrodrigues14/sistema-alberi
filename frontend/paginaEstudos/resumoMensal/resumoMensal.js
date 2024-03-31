@@ -1,6 +1,9 @@
+const jsPDF = window.jspdf.jsPDF;
+
 let idEmpresa = 0;
 let totalEntrada = 0;
 let totalSaida = 0;
+
 
 function getStoredEmpresaName() {
     return localStorage.getItem('nomeEmpresaSelecionada');
@@ -288,3 +291,58 @@ function atualizarTabelaSaldoConta(){
     celulaSaldo.textContent = saldo.toFixed(2);
     celulaSaldo.className = 'right-align';
 }
+
+function gerarPDF() {
+    var doc = new jsPDF('l', 'mm', 'a4');
+
+    var fillColor = [139, 172, 175];
+    var textColor = [0, 0, 0];
+
+    function adicionarTabelaAoPDF(selector, startX, startY, tableTitle) {
+        var head = [];
+        var body = [];
+
+        $(selector + ' thead th').each(function() {
+            head.push($(this).text());
+        });
+        $(selector + ' tbody tr').each(function() {
+            var dataRow = [];
+            $(this).find('td').each(function() {
+                dataRow.push($(this).text());
+            });
+            body.push(dataRow);
+        });
+
+        if (tableTitle) {
+            doc.text(tableTitle, startX, startY - 5);
+        }
+
+        doc.autoTable({
+            head: [head],
+            body: body,
+            startY: startY,
+            startX: startX,
+            theme: 'grid',
+            styles: {
+                fillColor: fillColor,
+                textColor: textColor
+            }
+        });
+    }
+
+    var margin = 10;
+    var pageWidth = doc.internal.pageSize.width;
+    var middleOfPage = pageWidth / 2;
+
+    adicionarTabelaAoPDF('#saldoInicialTable', margin, 20, 'Saldo Inicial');
+    adicionarTabelaAoPDF('#EntradaCategoriaTable', middleOfPage + margin, 20, 'Entrada por Categoria');
+
+    var currentY = doc.autoTable.previous.finalY + margin;
+    adicionarTabelaAoPDF('#saidaCategoriaTable', margin, currentY, 'Saída por Categoria');
+    adicionarTabelaAoPDF('#saldoDoMesTable', middleOfPage + margin, currentY, 'Saldo do Mês');
+
+    doc.save('Resumo_Mensal.pdf');
+
+}
+
+

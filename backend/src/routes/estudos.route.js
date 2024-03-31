@@ -4,7 +4,8 @@ const path = require('path');
 const {saldoInicial, entradaCategoria,
     saidaCategoria, totalEntradasPorMes,
     getMeses, getValoresCategoria,
-    getReceitaLiquida, getCategoria} = require('../repositories/estudos.repository.js');
+    getReceitaLiquida, getCategoria,
+    saldoEstimado} = require('../repositories/estudos.repository.js');
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEstudos/paginaEstudos.html'));
@@ -59,6 +60,17 @@ router.get('/resumoMensal/entradacategoria', (req, res) => {
 router.get('/resumoMensal/saidacategoria', (req, res) => {
     const {empresa, data} = req.query;
     saidaCategoria(empresa, data, (err, result) => {
+        if (err) {
+            res.status(500).json(err);
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+router.get('/resumoMensal/saldoestimado', (req, res) => {
+    const {empresa, data} = req.query;
+    saldoEstimado(empresa, data, (err, result) => {
         if (err) {
             res.status(500).json(err);
         } else {

@@ -1,18 +1,9 @@
 const mysqlConn = require('../base/database.js');
 
 function saldoInicial(empresa, data, callback){
-    let dataInicial = new Date(data);
-    dataInicial.setMonth(dataInicial.getMonth(), 1);
-    let ano = dataInicial.getFullYear();
-    let mes = dataInicial.getMonth() + 1;
-    mes = mes < 10 ? '0' + mes : mes;
-    let dia = dataInicial.getDate();
-    dia = dia < 10 ? '0' + dia : dia;
-    let dataMesAnterior = `${ano}-${mes}-${dia}`;
 
     const parametros = [
         empresa,
-        dataMesAnterior,
         data
     ];
 
@@ -24,7 +15,7 @@ function saldoInicial(empresa, data, callback){
                         EXTRATO e
                     INNER JOIN
                         BANCO b ON e.ID_BANCO = b.IDBANCO
-                    WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA < ?
+                    WHERE e.ID_CLIENTE = ? and e.DATA < ?
                     GROUP BY
                         b.nome`, parametros,
         function(err, result, fields) {
@@ -39,21 +30,16 @@ function saldoInicial(empresa, data, callback){
 
 function entradaCategoria(empresa, data, callback){
     let dataFinal = new Date(data);
-    dataFinal.setMonth(dataFinal.getMonth()+2, 1);
-    let ano = dataFinal.getFullYear();
-    let mes = dataFinal.getMonth() + 1;
-    mes = mes < 10 ? '0' + mes : mes;
-    let dia = dataFinal.getDate();
-    dia = dia < 10 ? '0' + dia : dia;
-    let dataProxMes = `${ano}-${mes}-${dia}`;
+    dataFinal.setMonth(dataFinal.getMonth()+2);
+    dataFinal.setDate(0);
     
-    const parametros = [empresa, data, dataProxMes];
+    const parametros = [empresa, data, dataFinal];
     mysqlConn.query(`SELECT
                         e.categoria,
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'ENTRADA' THEN e.VALOR ELSE 0 END) AS valor
                     FROM
                         EXTRATO e
-                    WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA <= ?
+                    WHERE e.ID_CLIENTE = ? AND e.DATA >= ? and e.DATA < ?
                     GROUP BY
                         e.categoria
                     HAVING 
@@ -71,14 +57,9 @@ function entradaCategoria(empresa, data, callback){
 
 function saidaCategoria(empresa, data, callback){
     let dataFinal = new Date(data);
-    dataFinal.setMonth(dataFinal.getMonth()+2, 1);
-    let ano = dataFinal.getFullYear();
-    let mes = dataFinal.getMonth() + 1;
-    mes = mes < 10 ? '0' + mes : mes;
-    let dia = dataFinal.getDate();
-    dia = dia < 10 ? '0' + dia : dia;
-    let dataProxMes = `${ano}-${mes}-${dia}`;
-    const parametros = [empresa, data, dataProxMes];
+    dataFinal.setMonth(dataFinal.getMonth()+2);
+    dataFinal.setDate(0);
+    const parametros = [empresa, data, dataFinal];
     mysqlConn.query(`SELECT
                         e.categoria,
                         SUM(CASE WHEN e.TIPO_DE_TRANSACAO = 'SAIDA' THEN e.VALOR ELSE 0 END) AS valor
@@ -266,7 +247,7 @@ function getCategoria(empresaNome, ano, callback) {
 
         mysqlConn.query(`
             SELECT DISTINCT categoria
-            FROM extrato
+            FROM EXTRATO
             WHERE ID_CLIENTE = ? AND YEAR(DATA) = ?
             ORDER BY categoria;
         `, [idCliente, ano], function(err, result, fields) {
@@ -280,7 +261,27 @@ function getCategoria(empresaNome, ano, callback) {
     });
 }
 
+function saldoEstimado(empresa, data, callback){
+    let ultimoDia = new Date(data);
+    ultimoDia.setMonth(ultimoDia.getMonth() + 1);
+    ultimoDia.setDate(0);
+
+    mysqlConn.query(`
+        SELECT 
+            SUM(CASE WHEN TIPO_DE_TRANSACAO = 'ENTRADA' THEN VALOR ELSE 0 END) - 
+            SUM(CASE WHEN TIPO_DE_TRANSACAO = 'SAIDA' THEN VALOR ELSE 0 END) AS saldo
+        FROM EXTRATO
+        WHERE ID_CLIENTE = ? AND DATA < ?
+        `, [empresa, ultimoDia], function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    }
+    )
+}
 
 
-
-module.exports = {saldoInicial, entradaCategoria, saidaCategoria, totalEntradasPorMes, getMeses, getValoresCategoria, getReceitaLiquida, getCategoria};
+module.exports = {saldoInicial, entradaCategoria, saidaCategoria, totalEntradasPorMes, getMeses, getValoresCategoria,
+                  getReceitaLiquida, getCategoria, saldoEstimado};
