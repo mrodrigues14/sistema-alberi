@@ -154,7 +154,9 @@ function atualizarTabela(dados) {
                                         <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
                                         </form>
 
-                                <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>`;
+                                <button onclick="editarExtrato(${item.IDEXTRATO})">EDITAR</button>
+                                <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
+                                `;
     });
 }
 
@@ -209,7 +211,7 @@ function gerarPDF() {
     $('#consulta thead tr').each(function() {
         var linha = [];
         $('th', this).each(function(index) {
-            if (index !== 7) {
+            if (index !== 8) {
                 linha.push($(this).text());
             }
         });
@@ -219,7 +221,7 @@ function gerarPDF() {
     $('#consulta tbody tr').each(function() {
         var linha = [];
         $('td', this).each(function(index) {
-            if (index !== 7) {
+            if (index !== 8) {
                 linha.push($(this).text());
             }
         });
@@ -254,5 +256,20 @@ function gerarExcel() {
     var wb = XLSX.utils.table_to_book(document.getElementById('consulta'), { sheet: "Sheet1" });
     wb.Sheets['Sheet1']['A2'].z = 'yyyy-mm-dd';
     XLSX.writeFile(wb, 'tabela.xlsx');
+}
+
+function editarExtrato(idExtrato) {
+    const urlDeEdicao = `/consulta/editar?id=${idExtrato}`;
+
+    const iframe = document.createElement('iframe');
+    iframe.src = urlDeEdicao;
+    iframe.style.width = "100%";
+    iframe.style.height = "100%"
+
+    const iframeContainer = document.getElementById('iframe-container');
+    iframeContainer.innerHTML = '';
+    iframeContainer.appendChild(iframe);
+
+    iframeContainer.style.display = 'block';
 }
 

@@ -264,3 +264,22 @@
     font-size: 16px;
     text-align: center;
 }
+
+iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+#iframe-container {
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 7.5%;
+    width: 85%;
+    height: 40%;
+    z-index: 1000;
+    border: 1px solid black;
+    box-sizing: border-box;
+}
