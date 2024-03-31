@@ -25,8 +25,8 @@
     <div class="subnavbar">
         <a href="/insercao"><button class="buttonMenu" id="inserirButton">Inserir extrato</button></a>
         <a href="/consulta"><button class="buttonMenu">Consultar extrato</button></a>
-        <button class="buttonMenu">Rubricas</button>
-        <button class="buttonMenu">Adicionar fornecedor</button>
+        <a><button class="buttonMenu">Rubricas</button></a>
+        <a href="/fornecedor"><button class="buttonMenu">Adicionar fornecedor</button></a>
         <div></div>
     </div>
     <hr>
@@ -71,6 +71,7 @@
                     <th>Categoria</th>
                     <th>Descrição</th>
                     <th>Nome no Extrato</th>
+                    <th>Fornecedor</th>
                     <th>Tipo de Transação</th>
                     <th>Valor</th>
                 </tr>
@@ -87,6 +88,13 @@
                     </td>
                     <td><input type="text" name="descricao"></td>
                     <td><input type="text" name="nomeExtrato"></td>
+                    <td>
+                        <label>
+                            <select name="fornecedor" id="seletorFornecedor">
+
+                            </select>
+                        </label>
+                    </td>
                     <td>
                         <label>
                             <select name="tipo">
@@ -112,9 +120,10 @@
             <th>Categoria</th>
             <th>Descrição</th>
             <th>Nome no Extrato</th>
+            <th>Banco</th>
+            <th>Fornecedor</th>
             <th>Tipo</th>
             <th>Valor</th>
-            <th>Banco</th>
             <th>Deletar extrato</th>
         </tr>
         </thead>

@@ -61,10 +61,10 @@ router.get('/dados-categoria', (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const { Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa } = req.body;
+        const { Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa, fornecedor } = req.body;
         console.log(req.body);
 
-        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa);
+        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa, fornecedor);
 
         res.redirect('/insercao');
     } catch (error) {
@@ -96,7 +96,8 @@ router.post('/deletar-extrato', (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao deletar extrato");
         }
-        res.redirect('/insercao');
+        const currentUrl = req.headers.referer;
+        res.redirect(currentUrl);
     });
 });
 

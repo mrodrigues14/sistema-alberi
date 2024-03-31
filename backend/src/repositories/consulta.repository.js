@@ -7,10 +7,11 @@ function buscar(banco, data, cliente, callback){
     const parametros = [banco, data, dataProximoMes.toISOString().split('T')[0], cliente];
 
     mysqlConn.query(`SELECT IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, 
-                    CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, C.NOME AS NOME_CLIENTE
+                    CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, C.NOME AS NOME_CLIENTE, F.NOME AS NOME_FORNECEDOR
                     FROM EXTRATO
                     INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
                     INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
+                    LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR
                     WHERE ID_BANCO = ? AND DATA >= ? AND DATA < ? AND ID_CLIENTE = ?`, parametros,
         function(err, result, fields) {
         if (err) {

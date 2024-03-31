@@ -136,6 +136,7 @@ function atualizarTabela(dados) {
         row.insertCell().textContent = item.CATEGORIA;
         row.insertCell().textContent = item.DESCRICAO;
         row.insertCell().textContent = item.NOME_NO_EXTRATO;
+        row.insertCell().textContent = item.NOME_FORNECEDOR;
         if(item.TIPO_DE_TRANSACAO == 'ENTRADA'){
             row.insertCell().textContent = item.VALOR.toFixed(2)
             row.insertCell().textContent = ""
@@ -150,10 +151,52 @@ function atualizarTabela(dados) {
         const deleteCell = row.insertCell();
         deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
                                         <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
-                                        <button type="submit" class="delete-btn">Deletar</button>
-                                        </form>`;
+                                        <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                                        </form>
+
+                                <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>`;
     });
 }
+
+let linhasSelecionadas = [];
+function selecionarLinha(buttonElement) {
+    const idExtrato = buttonElement.getAttribute('data-idextrato');
+    if (linhasSelecionadas.includes(idExtrato)) {
+        const index = linhasSelecionadas.indexOf(idExtrato);
+        linhasSelecionadas.splice(index, 1);
+        buttonElement.classList.remove('selecionado');
+    } else {
+        linhasSelecionadas.push(idExtrato);
+        buttonElement.classList.add('selecionado');
+    }
+}
+
+function deletarSelecionados() {
+    if (linhasSelecionadas.length === 0) {
+        alert('Selecione ao menos uma linha para deletar');
+        return;
+    }
+
+    if (!confirm('Tem certeza que deseja deletar as linhas selecionadas?')) {
+        return;
+    }
+
+    const form = document.createElement('form');
+    form.action = '/insercao/deletar-extrato';
+    form.method = 'post';
+
+    linhasSelecionadas.forEach(idExtrato => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'idExtrato';
+        input.value = idExtrato;
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
 
 function gerarPDF() {
     var { jsPDF } = window.jspdf;

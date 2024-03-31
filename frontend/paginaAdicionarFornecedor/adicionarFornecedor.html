@@ -4,11 +4,68 @@
     <meta charset="UTF-8">
     <title>Adicionar Fornecedor</title>
     <style>
+        #extratoButton{
+            background-color: #8BACAF;
+        }
+        #fornecedorButton{
+            background-color: #8BACAF;
+        }
+        hr{
+            margin: 0;
+            border-color: #adadad;
+            border-top: 0px;
+        }
     </style>
+    <link rel="stylesheet" href="/paginaAdicionarFornecedor/adicionarFornecedor.css">
 </head>
 <body>
     <div id="menu-container"></div>
+    <hr>
+    <div class="subnavbar">
+        <a href="/insercao"><button class="buttonMenu" id="inserirButton">Inserir extrato</button></a>
+        <a href="/consulta"><button class="buttonMenu" id="consultaButton">Consultar extrato</button></a>
+        <button class="buttonMenu">Rubricas</button>
+        <a href="/fornecedor"><button class="buttonMenu" id="fornecedorButton">Adicionar fornecedor</button></a>
+        <div></div>
+    </div>
+    <hr>
+    <div class="main">
+        <div id="Adicionar-cliente">
+            <h1>Adicionar Fornecedor</h1>
+            <form id="formAdd" action="/fornecedor/adicionar" method="post">
+                <label for="nomeEmpresa">
+                    Nome do Fornecedor:
+                    <input type="text" id="nomeEmpresa" name="nomeFornecedor">
+                </label>
+                <select id="seletorCNPJ">
+                    <option value="0">CPF</option>
+                    <option value="1">CNPJ</option>
+                </select>
+                <input type="text" id="cpf" name="cpf" placeholder="CPF" class="cpf/cnpj">
+                <input type="text" id="cnpj" name="cnpj" placeholder="CNPJ" class="cpf/cnpj">
+                <label for="telefone">
+                    Tipo de Produto:
+                    <input type="text" id="telefone" name="tipoProduto">
+                </label>
+                <input type="hidden" name="idcliente">
+                <input type="submit" value="Adicionar" id="addButton">
+            </form>
+        </div>
 
+        <div id="Remover Conta">
+            <h1>Remover Empresa</h1>
+            <form id="formRemove" action="/fornecedor/remover" method="post">
+                <label for="selectBanco">
+                    Nome do fornecedor a ser removido:
+                    <select id="selectBanco" name="selectNomeEmpresa">
+
+                    </select>
+                </label>
+                <input type="hidden" name="idcliente2" id="idcliente2">
+                <input type="submit" value="Remover" id="removeButton">
+            </form>
+        </div>
+    </div>
     <script src="/paginaAdicionarFornecedor/adicionarFornecedor.js"></script>
 </body>
 </html>

@@ -1,11 +1,12 @@
 const mysqlConn = require("../base/database");
 
-async function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa){
-    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa].map(param => param === undefined ? null : param);
+async function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor){
+    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor].map(param => param === undefined ? null : param);
 
     try {
         const result = await mysqlConn.execute(
-            `INSERT INTO EXTRATO (IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE) VALUES (null,?,?,?,?,?,?,?,?)`,
+            `INSERT INTO EXTRATO (IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE, ID_FORNECEDOR)
+             VALUES (null,?,?,?,?,?,?,?,?,?)`,
             parameters
         );
 
@@ -29,10 +30,12 @@ function buscarBanco(idcliente, callback){
 
 function buscarUltimasInsercoes(callback) {
     const query = `
-        SELECT IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, C.NOME AS NOME_CLIENTE
+        SELECT IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, C.NOME AS NOME_CLIENTE,
+        F.NOME AS NOME_FORNECEDOR
         FROM EXTRATO
         INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
         INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
+        LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR
         ORDER BY EXTRATO.IDEXTRATO DESC LIMIT 6`;
 
     mysqlConn.query(query, function(err, result, fields) {
@@ -76,18 +79,25 @@ function buscarCategorias(IDCLIENTE, callback) {
 }
 
 function deletarExtrato(idExtrato, callback) {
-    mysqlConn.query(
-        `DELETE FROM EXTRATO WHERE IDEXTRATO = ?`,
-        [idExtrato],
-        function(err, result, fields) {
-            if (err) {
-                callback(err, null);
-            } else {
-                callback(null, result);
-            }
-        }
-    );
+    let query;
+    let params;
 
+    if (Array.isArray(idExtrato) && idExtrato.length > 0) {
+        const placeholders = idExtrato.map(() => '?').join(', ');
+        query = `DELETE FROM EXTRATO WHERE IDEXTRATO IN (${placeholders})`;
+        params = idExtrato;
+    } else {
+        query = `DELETE FROM EXTRATO WHERE IDEXTRATO = ?`;
+        params = [idExtrato];
+    }
+
+    mysqlConn.query(query, params, function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
 }
 
 module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato };
