@@ -3,7 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-const port = 3000;
+const port = 8080;
 const routing = require('../routing');
 const session = require('express-session');
 
