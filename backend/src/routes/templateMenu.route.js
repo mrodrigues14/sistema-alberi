@@ -11,7 +11,7 @@ router.get('/logout', function(req, res){
         if(err) {
             console.log(err);
         } else {
-            res.redirect('/api/login');
+            res.redirect('/login');
         }
     });
 });
