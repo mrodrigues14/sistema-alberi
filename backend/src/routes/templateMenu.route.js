@@ -6,7 +6,7 @@ router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/templateMenu/template.html'));
 });
 
-app.get('/logout', function(req, res){
+router.get('/logout', function(req, res){
     req.session.destroy(function(err) {
         if(err) {
             console.log(err);
