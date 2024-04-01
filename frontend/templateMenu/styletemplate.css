@@ -4,11 +4,10 @@
 body {
     background: #eeee;
     margin: 0;
-
+    font-family: 'DM Sans', sans-serif; /* Aplicando a fonte em todo o corpo do documento */
 }
 
 .navbar {
-    font-family: 'DM Sans', sans-serif;
     background-color: #FFFFFF;
     color: white;
     padding: 1vw;
@@ -17,7 +16,6 @@ body {
     justify-content: space-between;
     align-items: center;
     text-align: center;
-
 }
 .navbar button {
     font-family: 'DM Sans', sans-serif;
@@ -140,5 +138,88 @@ body {
     color: #000;
     text-decoration: none;
     cursor: pointer;
+}
+
+.dropbtn {
+    width: auto;
+    border-radius: 5px 5px 0 0;
+}
+
+.buttonMenu {
+    margin: 0 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+    width: auto;
+}
+
+/* Estilos da caixa de busca */
+.search-box-empresa {
+    display: inline-flex; /* Keeps the search box inline */
+    align-items: center;
+    margin-left: 20px; /* Adjust as needed to align with the navbar */
+    position: relative; /* Changed from absolute to relative */
+}
+
+input[type="text"] {
+    padding: 10px;
+    width: 297px; /* Or adjust as needed */
+    border: 2px solid #ccc;
+    border-radius: 5px 0 0 5px;
+    font-size: 1rem;
+    margin-right: -1px;
+    /* Make sure to remove any inline styles that may override these */
+}
+
+.arrow-button {
+    padding: 10px 10px 10px 12px; /* Ajuste o padding conforme necessário */
+    border: 2px solid #ccc;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    background-color: white;
+    cursor: pointer;
+    height: 42px; /* Adjust height to align with the input if needed */
+    margin-left: -3px;
+}
+
+.arrow-button::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #333;
+    margin-right: 5px; /* Adiciona margem à direita da seta, ajuste conforme necessário */
+
+}
+
+/* Ensure that the dropdown appears directly below the search box */
+.name-list {
+    list-style: none;
+    padding: 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    width: calc(300px + 20px); /* Match the width of the input + arrow button */
+    box-sizing: border-box;
+    display: none; /* Hide by default, show it with JavaScript if needed */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 2px;
+}
+
+.name-list li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #000; /* Muda a cor da fonte para preto */
+    background-color: #f2f2f2; /* Um cinza mais escuro para o fundo dos itens */
+}
+
+/* When a list item is hovered over */
+.name-list li:hover {
+    background-color: #f1f1f1;
 }
 

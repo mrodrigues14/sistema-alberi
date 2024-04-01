@@ -20,7 +20,10 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.message === 'Login successful') {
                     localStorage.setItem('username', data.user.username);
-                    window.location.href = '/seletorEmpresa';
+                    localStorage.setItem('userRole', data.user.role);
+                    localStorage.setItem('idusuario', data.user.idusuario);
+
+                    window.location.href = '/paginaInicial';
                 } else {
                     alert(data.message);
                 }

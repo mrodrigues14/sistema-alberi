@@ -1,8 +1,20 @@
 const mysqlConn = require('../base/database.js');
 
-function listarTarefas(idcliente, callback){
-    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE id_cliente = ?
-                     ORDER BY DATA_LIMITE ASC`, [idcliente], function(err, result, fields) {
+function listarTarefas(idcliente, idusuario, isAdmin, callback){
+    let query = '';
+    let params = [];
+
+    if (isAdmin) {
+        query = `
+    SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.ID_CLIENTE, U.NOME_DO_USUARIO 
+    FROM TAREFAS AS T
+    INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
+    ORDER BY T.DATA_LIMITE ASC
+`;    } else {
+        query = `SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE id_cliente = ? AND ID_USUARIO = ? ORDER BY DATA_LIMITE ASC`;
+        params = [idcliente, idusuario];
+    }
+    mysqlConn.query(query, params, function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
@@ -11,8 +23,8 @@ function listarTarefas(idcliente, callback){
     });
 }
 
-function consultarTarefa(idtarefa, callback){
-    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE idtarefa = ?`, [idtarefa], function(err, result, fields) {
+function consultarTarefa(idtarefa, idusuario, callback){
+    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE idtarefa = ? AND ID_USUARIO =?`, [idtarefa], function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
@@ -22,8 +34,8 @@ function consultarTarefa(idtarefa, callback){
 
 }
 
-function adicionarTarefa(tarefa, idcliente, dataLimite, callback) {
-    mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE) VALUES (NULL, ?, ?, ?, ?)`,
+function adicionarTarefa(tarefa, idcliente, dataLimite, idusuario, callback) {
+    mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE,ID_USUARIO) VALUES (NULL, ?, ?, ?, ?, ?)`,
         [tarefa, "NÃO FOI INICIADO", dataLimite, idcliente],
         (err, result, fields) => {
             callback(err, result);

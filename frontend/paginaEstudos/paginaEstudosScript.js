@@ -22,3 +22,15 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Erro ao carregar o template:', error);
         });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    var buttons = document.querySelectorAll('.buttonMenu');
+
+    buttons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            buttons.forEach(btn => btn.classList.remove('activeButton'));
+            button.classList.add('activeButton');
+        });
+    });
+});
+

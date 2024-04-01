@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exemplo de Interface</title>
+    <link rel="stylesheet" href="styletemplate.css">
 </head>
 <body>
 <div class="navbar">
@@ -12,6 +13,14 @@
     <a href="/insercao"><button class="buttonMenu" id="extratoButton">Extrato bancário</button></a>
     <a href="/cadastro"><button class="buttonMenu" id="cadastroButton">Cadastro de informações</button></a>
     <a href="/dados"><button class="buttonMenu" id="dadosButton">Dados do cliente</button></a>
+
+    <div class="search-box-empresa" style="display: inline-block;">
+        <label for="searchInput"></label><input type="text" id="searchInput" placeholder="Selecione uma empresa">
+        <button onclick="loadNomeEmpresa()" class="arrow-button"></button>
+        <div>
+            <ul id="nameList" class="name-list"></ul>
+        </div>
+    </div>
 
     <div class="dropdown">
         <button onclick="myFunction()" class="dropbtn usernameDisplay"></button></br>

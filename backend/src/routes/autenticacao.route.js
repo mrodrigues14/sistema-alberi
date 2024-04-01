@@ -16,11 +16,16 @@ router.post('/login', (req, res) => {
             }
 
             if (results.length > 0) {
-
                 req.session.username = results[0].NOME_DO_USUARIO;
-                return res.status(200).send({ message: 'Login successful', user: results[0] });
-            } else {
-                return res.status(401).send({ message: 'Invalid credentials' });
+                req.session.role = results[0].ROLE;
+                return res.status(200).send({
+                    message: 'Login successful',
+                    user: {
+                        username: results[0].NOME_DO_USUARIO,
+                        role: results[0].ROLE,
+                        idusuario: results[0].IDUSUARIOS
+                    }
+                });
             }
         });
     } else {

@@ -1,3 +1,6 @@
+const userRole = localStorage.getItem('userRole');
+const idusuario = localStorage.getItem('idusuario');
+
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/templateMenu/template.html')
         .then(response => response.text())
@@ -53,28 +56,18 @@ window.onload = function() {
                 if (campoOculto) {
                     campoOculto.value = data[0].IDCLIENTE;
                     IDCLIENTE = data[0].IDCLIENTE;
-                    fetch(`/paginainicial/tarefas?idcliente=${IDCLIENTE}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            const table = document.getElementById('todo-table');
-                            const tbody = table.querySelector('tbody');
-                            tbody.innerHTML = '';
-                            data.forEach(tarefa => {
-                                const row = tbody.insertRow();
-                                row.insertCell().innerHTML = `<button class="${getStatusClass(tarefa.STATUS)}" onclick="completarTarefa(${tarefa.IDTAREFA})">
-                                               ${toTitleCase(tarefa.STATUS)}
-                                               </button>`;
-                                row.insertCell().textContent = firstLetterToUpperCase(tarefa.TITULO);
-                                row.insertCell().textContent = formatDate(tarefa.DATA_LIMITE);
-                                row.insertCell().innerHTML = `<button class="edit-button" onclick="editarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer;">
-                                                              <img src="imagens/editar.png" style="width: 100%;">
-                                                              </button>`;
-                                row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer">
-                                                              <img src="imagens/lixeira.png" style="width: 100%;">
-                                                              </button>`;
-                            });
-                        })
-                        .catch(error => console.error('Erro ao buscar as tarefas:', error));
+                    if (userRole === 'admin') {
+                        fetch(`/paginainicial/tarefas?isAdmin=true&idusuario=${idusuario}`)
+                            .then(handleResponse)
+                            .then(displayTarefas)
+                            .catch(handleError);
+                    } else {
+                        // Se não for admin, busca tarefas com base no ID do cliente.
+                        fetch(`/paginainicial/tarefas?idcliente=${IDCLIENTE}&idusuario=${idusuario}`)
+                            .then(handleResponse)
+                            .then(displayTarefas)
+                            .catch(handleError);
+                    }
                 }
             }
         })
@@ -83,6 +76,36 @@ window.onload = function() {
         });
 }
 
+function handleResponse(response) {
+    if (!response.ok) {
+        throw new Error('Erro ao buscar as tarefas');
+    }
+    return response.json();
+}
+
+function displayTarefas(data) {
+        const table = document.getElementById('todo-table');
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
+        data.forEach(tarefa => {
+            const row = tbody.insertRow();
+            row.insertCell().innerHTML = `<button class="${getStatusClass(tarefa.STATUS)}" onclick="completarTarefa(${tarefa.IDTAREFA})">
+                                                   ${toTitleCase(tarefa.STATUS)}
+                                                   </button>`;
+            row.insertCell().textContent = firstLetterToUpperCase(tarefa.TITULO);
+            row.insertCell().textContent = formatDate(tarefa.DATA_LIMITE);
+            row.insertCell().innerHTML = `<button class="edit-button" onclick="editarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer;">
+                                                                  <img src="imagens/editar.png" style="width: 100%;">
+                                                                  </button>`;
+            row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer">
+                                                                  <img src="imagens/lixeira.png" style="width: 100%;">
+                                                                  </button>`;
+    });
+}
+
+function handleError(error) {
+    console.error('Erro na requisição:', error);
+}
 function loadAndDisplayUsername() {
     fetch('/api/usuario-logado')
         .then(response => {
