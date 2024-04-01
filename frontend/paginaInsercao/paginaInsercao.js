@@ -38,63 +38,59 @@ window.onload = function() {
         });
 
 
-    const nomeEmpresa = getStoredEmpresaName();
-    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+    fetch(`/insercao/dados-empresa?nomeEmpresa=${getStoredEmpresaName()}`)
     .then(response => response.json())
     .then(data => {
-        if (data && data.length > 0) {
-            const campoOculto = document.querySelector('input[name="id_empresa"]');
-            if (campoOculto) {
-                campoOculto.value = data[0].IDCLIENTE;
-                IDCLIENTE = data[0].IDCLIENTE;
-                fetch(`/insercao/dados-categoria?IDCLIENTE=${encodeURIComponent(IDCLIENTE)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const select = document.getElementById('seletorCategoria');
-                        const categorias = construirArvoreDeCategorias(data);
-                        adicionarCategoriasAoSelect(select, categorias);
-                    })
-                    .catch(error => {
-                        console.error('Erro ao carregar os dados:', error);
-                    });
+        IDCLIENTE = data[0].IDCLIENTE;
+        fetch(`/insercao/ultimas-insercoes?idcliente=${IDCLIENTE}`)
+            .then(response => response.json())
+            .then(data => {
+                const table = document.getElementById('ultimasInsercoes');
+                const tbody = table.querySelector('tbody');
+                tbody.innerHTML = '';
 
-                fetch(`/insercao/ultimas-insercoes?idcliente=${IDCLIENTE}`)
-                .then(response => response.json())
-                .then(data => {
-                    const table = document.getElementById('ultimasInsercoes');
-                    const tbody = table.querySelector('tbody');
-                    tbody.innerHTML = '';
-        
-                    data.forEach(insercao => {
-                        const row = tbody.insertRow();
-                        row.insertCell().textContent = formatDate(insercao.DATA);
-                        row.insertCell().textContent = insercao.CATEGORIA;
-                        row.insertCell().textContent = insercao.DESCRICAO;
-                        row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
-                        row.insertCell().textContent = insercao.NOME_BANCO;
-                        row.insertCell().textContent = insercao.NOME_FORNECEDOR;
-                        row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
-                        row.insertCell().textContent = insercao.VALOR;
-                        const deleteCell = row.insertCell();
-                        deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
-                                                <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
-                                                <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-                                                </form>`;
-                    });
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar os dados:', error);
-                });    
-            } else {
-                console.error('Campo oculto id_empresa não encontrado');
-            }
-        } else {
-            console.error('Dados da empresa não retornados ou vazios');
-        }
-    })
-    .catch(error => {
-        console.error('Erro ao carregar dados da empresa:', error);
-    });
+                data.forEach(insercao => {
+                    const row = tbody.insertRow();
+                    row.insertCell().textContent = formatDate(insercao.DATA);
+                    row.insertCell().textContent = insercao.CATEGORIA;
+                    row.insertCell().textContent = insercao.DESCRICAO;
+                    row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
+                    row.insertCell().textContent = insercao.NOME_BANCO;
+                    row.insertCell().textContent = insercao.NOME_FORNECEDOR;
+                    row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
+                    row.insertCell().textContent = insercao.VALOR;
+                    const deleteCell = row.insertCell();
+                    deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
+                                            <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
+                                            <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                                            </form>`;
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar os dados:', error);
+            });
+        })
+
+    const nomeEmpresa = getStoredEmpresaName();
+    fetch(`insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+        .then(response => response.json())
+        .then(data => {
+            let idCliente = data[0].IDCLIENTE;
+            fetch(`/insercao/dados-categoria?IDCLIENTE=${encodeURIComponent(idCliente)}`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('seletorCategoria');
+                data.forEach(categoria => {
+                    const option = document.createElement('option');
+                    option.value = categoria.IDCATEGORIA;
+                    option.textContent = categoria.NOME;
+                    select.appendChild(option);
+                });
+            })
+        })
+        .catch(error => {
+            console.error('Erro ao carregar dados da empresa:', error);
+        });
 
     fetch(`insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
         .then(response => response.json())
