@@ -37,33 +37,6 @@ window.onload = function() {
             console.error('Erro ao carregar o template:', error);
         });
 
-    fetch('/insercao/ultimas-insercoes')
-        .then(response => response.json())
-        .then(data => {
-            const table = document.getElementById('ultimasInsercoes');
-            const tbody = table.querySelector('tbody');
-            tbody.innerHTML = '';
-
-            data.forEach(insercao => {
-                const row = tbody.insertRow();
-                row.insertCell().textContent = formatDate(insercao.DATA);
-                row.insertCell().textContent = insercao.CATEGORIA;
-                row.insertCell().textContent = insercao.DESCRICAO;
-                row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
-                row.insertCell().textContent = insercao.NOME_BANCO;
-                row.insertCell().textContent = insercao.NOME_FORNECEDOR;
-                row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
-                row.insertCell().textContent = insercao.VALOR;
-                const deleteCell = row.insertCell();
-                deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
-                                        <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
-                                        <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-                                        </form>`;
-            });
-        })
-        .catch(error => {
-            console.error('Erro ao carregar os dados:', error);
-        });
 
     const nomeEmpresa = getStoredEmpresaName();
     fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
@@ -84,6 +57,34 @@ window.onload = function() {
                     .catch(error => {
                         console.error('Erro ao carregar os dados:', error);
                     });
+
+                fetch(`/insercao/ultimas-insercoes?idcliente=${IDCLIENTE}`)
+                .then(response => response.json())
+                .then(data => {
+                    const table = document.getElementById('ultimasInsercoes');
+                    const tbody = table.querySelector('tbody');
+                    tbody.innerHTML = '';
+        
+                    data.forEach(insercao => {
+                        const row = tbody.insertRow();
+                        row.insertCell().textContent = formatDate(insercao.DATA);
+                        row.insertCell().textContent = insercao.CATEGORIA;
+                        row.insertCell().textContent = insercao.DESCRICAO;
+                        row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
+                        row.insertCell().textContent = insercao.NOME_BANCO;
+                        row.insertCell().textContent = insercao.NOME_FORNECEDOR;
+                        row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
+                        row.insertCell().textContent = insercao.VALOR;
+                        const deleteCell = row.insertCell();
+                        deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
+                                                <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
+                                                <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                                                </form>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar os dados:', error);
+                });    
             } else {
                 console.error('Campo oculto id_empresa não encontrado');
             }

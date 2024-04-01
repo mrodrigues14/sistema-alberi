@@ -28,7 +28,8 @@ router.get('/dados', (req, res) => {
 });
 
 router.get('/ultimas-insercoes', async (req, res) => {
-    buscarUltimasInsercoes((err, result) => {
+    const { idcliente } = req.query;
+    buscarUltimasInsercoes(idcliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");

@@ -32,7 +32,8 @@ function buscarBanco(idcliente, callback){
     });
 }
 
-function buscarUltimasInsercoes(callback) {
+function buscarUltimasInsercoes(idcliente, callback) {
+    console.log(idcliente);
     const query = `
         SELECT IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, C.NOME AS NOME_CLIENTE,
         F.NOME AS NOME_FORNECEDOR
@@ -40,9 +41,10 @@ function buscarUltimasInsercoes(callback) {
         INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
         INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
         LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR
+        WHERE EXTRATO.ID_CLIENTE = ?
         ORDER BY EXTRATO.IDEXTRATO DESC LIMIT 6`;
 
-    mysqlConn.query(query, function(err, result, fields) {
+    mysqlConn.query(query, idcliente,function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
