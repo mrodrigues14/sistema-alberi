@@ -36,7 +36,7 @@ function consultarTarefa(idtarefa, idusuario, callback){
 
 function adicionarTarefa(tarefa, idcliente, dataLimite, idusuario, callback) {
     mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE,ID_USUARIO) VALUES (NULL, ?, ?, ?, ?, ?)`,
-        [tarefa, "NÃO FOI INICIADO", dataLimite, idcliente],
+        [tarefa, "NÃO FOI INICIADO", dataLimite, idcliente, idusuario],
         (err, result, fields) => {
             callback(err, result);
         });
