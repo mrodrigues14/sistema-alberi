@@ -6,13 +6,14 @@ const app = express();
 const port = 8080;
 const routing = require('../routing');
 const session = require('express-session');
+const {createServer} = require("http");
 
 // Localização dos arquivos de certificado
-const options = {
-
-    key: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/fullchain.pem'),
-};
+// const options = {
+//
+//     key: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/privkey.pem'),
+//     cert: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/fullchain.pem'),
+// };
 
 // Configuração do express-session
 app.use(session({
@@ -31,6 +32,6 @@ app.use(express.json({limit: '50mb'}));
 routing(app);
 
 // Criando um servidor HTTPS em vez de usar app.listen
-https.createServer(options, app).listen(port, () => {
+createServer(app).listen(port, () => {
     console.log(`Server running on https://localhost:${port}`);
 });

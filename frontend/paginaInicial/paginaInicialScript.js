@@ -47,7 +47,6 @@ window.onclick = function(event) {
 
 window.onload = function() {
     const nomeEmpresa = localStorage.getItem('nomeEmpresaSelecionada');
-    console.log(nomeEmpresa);
     fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
         .then(response => response.json())
         .then(data => {
@@ -62,7 +61,6 @@ window.onload = function() {
                             .then(displayTarefas)
                             .catch(handleError);
                     } else {
-                        // Se não for admin, busca tarefas com base no ID do cliente.
                         fetch(`/paginainicial/tarefas?idcliente=${IDCLIENTE}&idusuario=${idusuario}`)
                             .then(handleResponse)
                             .then(displayTarefas)

@@ -12,7 +12,7 @@
 </head>
 <body>
     <div id="menu-container"></div>
-    <div class="main">
+    <div class="adicionar-e-remover">
         <div id="Adicionar-cliente">
             <h1>Adicionar Cliente</h1>
             <form id="formAdd" action="/cadastro" method="post">
@@ -39,7 +39,7 @@
         </div>
 
         <div id="Remover Conta">
-            <h1>Remover Empresa</h1>
+            <h1>Remover Cliente</h1>
             <form id="formRemove" action="/cadastro/remover" method="post">
                 <label for="selectBanco">
                     Nome da Empresa a ser removida:
@@ -51,6 +51,23 @@
                 <input type="submit" value="Remover" id="removeButton">
             </form>
         </div>
+    </div>
+
+    <div id="editar cliente">
+        <h1>Editar Cliente</h1>
+        <form id="formEdit" action="/cadastro/editar" method="post">
+            <label for="selectEmpresa">
+                Nome da Empresa a ser editada:
+                <select id="selectEmpresa" name="selectEmpresa">
+
+                </select>
+            </label>
+            <label for="nomeEmpresaEdit">
+                Novo Nome da Empresa:
+                <input type="text" id="nomeEmpresaEdit" name="nomeEmpresaEdit">
+            </label>
+        </form>
+    </div>
     </div>
     <script src="/paginaCadastro/paginaCadastro.js"></script>
 </body>

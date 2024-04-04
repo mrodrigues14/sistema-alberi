@@ -31,4 +31,14 @@ function remover(nome, callback){
     });
 }
 
-module.exports = {adicionar, listar, remover};
+function editar(nomeAntigo, nomeNovo, callback){
+    mysqlConn.query('UPDATE CLIENTE SET NOME = ? WHERE NOME = ?', [nomeNovo, nomeAntigo], (error, results, fields) => {
+        if(error){
+            console.error('Erro ao editar o cadastro:', error);
+            return callback(error, null);
+        }
+        callback(null, results);
+    });
+}
+
+module.exports = {adicionar, listar, remover, editar};

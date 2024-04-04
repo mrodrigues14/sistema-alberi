@@ -50,9 +50,8 @@ router.get('/dados-empresa', (req, res) => {
 });
 
 router.get('/dados-categoria', (req, res) => {
-    const { IDCLIENTE } = req.query;
-    console.log(IDCLIENTE);
-    buscarCategorias(IDCLIENTE, (err, result) => {
+    const { idcliente } = req.query;
+    buscarCategorias(idcliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");
