@@ -51,10 +51,8 @@ function adicionarFornecedor(nomeFornecedor, cnpjFornecedor, cpfFornecedor, tipo
     });
 }
 
-
-
 function listarFornecedor(idcliente, callback) {
-    const query = `SELECT * FROM FORNECEDOR
+    const query = `SELECT IDFORNECEDOR, CONCAT(NOME, ' - ', TIPO_DE_PRODUTO) AS NOME_TIPO FROM FORNECEDOR
                           INNER JOIN RELACAOCLIENTEFORNECEDOR ON FORNECEDOR.IDFORNECEDOR = RELACAOCLIENTEFORNECEDOR.ID_FORNECEDOR
                           WHERE ID_CLIENTE = ?`;
     mysqlConn.query(query, [idcliente], callback);

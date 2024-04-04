@@ -69,16 +69,16 @@
                 <tr>
                     <th>Data</th>
                     <th>Categoria</th>
-                    <th>Descrição</th>
-                    <th>Nome no Extrato</th>
                     <th>Fornecedor</th>
+                    <th>Observação</th>
+                    <th>Nome no Extrato</th>
                     <th>Tipo de Transação</th>
                     <th>Valor</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td><input type="date" name="Data"></td>
+                    <td><input type="date" name="Data" id="datepicker"></td>
                     <td>
                         <label>
                             <select name="categoria" id="seletorCategoria">
@@ -86,8 +86,6 @@
                             </select>
                         </label>
                     </td>
-                    <td><input type="text" name="descricao"></td>
-                    <td><input type="text" name="nomeExtrato"></td>
                     <td>
                         <label>
                             <select name="fornecedor" id="seletorFornecedor">
@@ -95,15 +93,17 @@
                             </select>
                         </label>
                     </td>
+                    <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="textos"></td>
+                    <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="textos"></td>
                     <td>
                         <label>
-                            <select name="tipo">
+                            <select name="tipo" id="tipo">
                                 <option value="entrada">Entrada</option>
                                 <option value="saida">Saída</option>
                             </select>
                         </label>
                     </td>
-                    <td><input type="number" name="valor" step="0.01"></td>
+                    <td><input type="number" name="valor" step="0.01" id="valor"></td>
                 </tr>
                 </tbody>
             </table>
@@ -118,10 +118,10 @@
         <tr>
             <th>Data</th>
             <th>Categoria</th>
-            <th>Descrição</th>
+            <th>Fornecedor</th>
+            <th>Observação</th>
             <th>Nome no Extrato</th>
             <th>Banco</th>
-            <th>Fornecedor</th>
             <th>Tipo</th>
             <th>Valor</th>
             <th>Deletar extrato</th>

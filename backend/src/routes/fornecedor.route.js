@@ -24,6 +24,7 @@ router.get('/listar', (req, res) => {
 
 router.post('/adicionar', (req, res) => {
     const {nomeFornecedor, cnpj, cpf, tipoProduto, idcliente} = req.body;
+    console.log(nomeFornecedor, cnpj, cpf, tipoProduto, idcliente);
     adicionarFornecedor(nomeFornecedor, cnpj, cpf, tipoProduto, idcliente,(err, result) => {
         if(err) {
             console.error(err);

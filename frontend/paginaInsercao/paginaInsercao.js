@@ -54,9 +54,9 @@ window.onload = function() {
                     row.insertCell().textContent = formatDate(insercao.DATA);
                     row.insertCell().textContent = insercao.CATEGORIA;
                     row.insertCell().textContent = insercao.DESCRICAO;
+                    row.insertCell().textContent = insercao.NOME_FORNECEDOR;
                     row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
                     row.insertCell().textContent = insercao.NOME_BANCO;
-                    row.insertCell().textContent = insercao.NOME_FORNECEDOR;
                     row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
                     row.insertCell().textContent = insercao.VALOR;
                     const deleteCell = row.insertCell();
@@ -72,21 +72,30 @@ window.onload = function() {
         })
 
     const nomeEmpresa = getStoredEmpresaName();
-    fetch(`insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
         .then(response => response.json())
         .then(data => {
-            let idCliente = data[0].IDCLIENTE;
-            fetch(`/insercao/dados-categoria?IDCLIENTE=${encodeURIComponent(idCliente)}`)
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById('seletorCategoria');
-                data.forEach(categoria => {
-                    const option = document.createElement('option');
-                    option.value = categoria.IDCATEGORIA;
-                    option.textContent = categoria.NOME;
-                    select.appendChild(option);
-                });
-            })
+            if (data && data.length > 0) {
+                const campoOculto = document.querySelector('input[name="id_empresa"]');
+                if (campoOculto) {
+                    campoOculto.value = data[0].IDCLIENTE;
+                    IDCLIENTE = data[0].IDCLIENTE;
+                    fetch(`/insercao/dados-categoria?idcliente=${encodeURIComponent(IDCLIENTE)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const select = document.getElementById('seletorCategoria');
+                            const categorias = construirArvoreDeCategorias(data);
+                            adicionarCategoriasAoSelect(select, categorias);
+                        })
+                        .catch(error => {
+                            console.error('Erro ao carregar os dados:', error);
+                        });
+                } else {
+                    console.error('Campo oculto id_empresa não encontrado');
+                }
+            } else {
+                console.error('Dados da empresa não retornados ou vazios');
+            }
         })
         .catch(error => {
             console.error('Erro ao carregar dados da empresa:', error);
@@ -125,7 +134,7 @@ window.onload = function() {
                     data.forEach(fornecedor => {
                         const option = document.createElement('option');
                         option.value = fornecedor.IDFORNECEDOR;
-                        option.textContent = fornecedor.NOME;
+                        option.textContent = fornecedor.NOME_TIPO;
                         select.appendChild(option);
                     });
                 })
@@ -147,11 +156,11 @@ function construirArvoreDeCategorias(categorias) {
             arvore.push(categoria);
         }
     });
-
     return arvore;
 }
 
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
+    console.log(categorias);
     categorias.forEach(categoria => {
         const option = document.createElement('option');
         option.value = categoria.NOME;

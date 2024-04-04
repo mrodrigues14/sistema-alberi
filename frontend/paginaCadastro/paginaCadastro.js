@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Seleciona o seletor e os inputs
     var seletor = document.getElementById('seletorCNPJ');
     var cpfInput = document.getElementById('cpf');
     var cnpjInput = document.getElementById('cnpj');
@@ -79,6 +78,20 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             let empresas =  document.getElementById('selectBanco');
+            data.forEach(empresa => {
+                let option = document.createElement('option');
+                option.value = empresa.NOME;
+                option.text = empresa.NOME;
+                empresas.appendChild(option);
+            });
+        })
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/cadastro/empresas')
+        .then(response => response.json())
+        .then(data => {
+            let empresas =  document.getElementById('selectEmpresa');
             data.forEach(empresa => {
                 let option = document.createElement('option');
                 option.value = empresa.NOME;

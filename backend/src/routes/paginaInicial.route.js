@@ -29,7 +29,8 @@ router.get('/tarefas', (req, res) => {
 });
 
 router.post('/adicionartarefa', (req, res) => {
-    const {titulo, idcliente, dataLimite,idusuario} = req.body;
+    const {titulo, idcliente, dataLimite, idusuario} = req.body;
+    console.log(titulo, idcliente, dataLimite, idusuario);
     if(!titulo || !idcliente || !dataLimite)
         return res.redirect(`/paginainicial/erro`);
     adicionarTarefa(titulo, idcliente, dataLimite, idusuario, (err, result) => {

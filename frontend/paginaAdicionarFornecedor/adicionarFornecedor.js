@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             data.forEach(banco => {
                                 const option = document.createElement('option');
                                 option.value = banco.IDFORNECEDOR;
-                                option.text = banco.NOME;
+                                option.text = banco.NOME_TIPO;
                                 selectBanco.appendChild(option);
                             });
                         })
