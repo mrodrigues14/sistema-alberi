@@ -6,32 +6,22 @@
     <link rel="stylesheet" href="paginaEditarTarefa/editarTarefa.css">
 </head>
 <body>
-    <button id="closeButton" onclick="fecharIframe()">X</button>
-    <div id="EditandoTarefa">
-        <div id="tabela">
-            <table id="todo-table">
-                <thead>
-                    <tr>
-                        <th>Tarefa</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                <tbody id="todo-tbody">
+<button id="closeButton" onclick="fecharIframe()">X</button>
+<div id="alinhadorTarefa">
+    <div id="tarefa">
+        <form id="editar-tarefa-form" action="/paginainicial/editartarefa" method="post">
+            <label for="todo-input">Insira o novo nome da tarefa:</label>
+            <input type="text" id="todo-input" name="titulo">
 
-                </tbody>
-            </table>
-        </div>
+            <label for="todo-date">Insira a nova data:</label>
+            <input type="date" id="todo-date" name="dataLimite">
+
+            <input type="hidden" id="todo-id" name="id">
+            <input type="submit" value="Enviar">
+        </form>
     </div>
-    <div id="alinhadorTarefa">
-        <div id="tarefa">
-            <form id="editar-tarefa-form" action="/paginainicial/editartarefa" method="post">
-                <input type="text" id="todo-input" name="titulo">
-                <input type="date" id="todo-date" name="dataLimite">
-                <input type="hidden" id="todo-id" name="id">
-                <input type="submit" value="Enviar">
-            </form>
-        </div>
-    </div>
-    <script src="paginaEditarTarefa/editarTarefa.js"></script>
+</div>
+
+<script src="paginaEditarTarefa/editarTarefa.js"></script>
 </body>
 </html>

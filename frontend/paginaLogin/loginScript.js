@@ -25,11 +25,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     window.location.href = '/paginaInicial';
                 } else {
-                    alert(data.message);
+                    showModalError(data.message);
                 }
             })
             .catch((error) => {
                 console.error('Error:', error);
+                showModalError('Ocorreu um erro ao tentar fazer login. Por favor, tente novamente mais tarde.');
             });
     });
 });
+
+function showModalError(message) {
+    const modal = document.getElementById('errorModal');
+    const span = document.getElementsByClassName('close')[0];
+    const errorMessage = document.getElementById('errorMessage');
+
+    errorMessage.textContent = message;
+
+    modal.style.display = "block";
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}

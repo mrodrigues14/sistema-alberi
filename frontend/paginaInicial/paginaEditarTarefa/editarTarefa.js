@@ -34,8 +34,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function fecharIframe() {
-    const iframeContainer = parent.document.getElementById('iframe-container');
+    // Primeiro recarrega a página pai
     parent.location.reload();
-    iframeContainer.style.display = 'none';
-    iframeContainer.innerHTML = '';
+
+    // Então, define um curto atraso para esconder e limpar o iframe
+    // isso dá tempo para a página recarregar antes de mudar o estado do iframe
+    setTimeout(() => {
+        const iframeContainer = parent.document.getElementById('iframe-container');
+        if (iframeContainer) {
+            iframeContainer.style.display = 'none';
+            iframeContainer.innerHTML = '';
+        }
+    }, 100); // Atraso de 100ms. Ajuste conforme necessário.
 }
+

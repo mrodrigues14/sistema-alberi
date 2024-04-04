@@ -16,7 +16,7 @@ const templateMenu = require('./routes/templateMenu.route')
 function routing(app){
     app.use('/api', autenticacaoRouter);
     app.use('/insercao', insercaoRouter);
-    app.use('/paginainicial', paginaInicialRouter);
+    app.use('/paginaInicial', paginaInicialRouter);
     app.use('/estudos', estudosRouter);
     app.use('/consulta', consultaRouter);
     app.use('/rubricas', rubricasRouter);

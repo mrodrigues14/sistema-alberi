@@ -20,26 +20,28 @@ router.get('/erro', (req, res) => {
 router.get('/tarefas', (req, res) => {
     const {idcliente, idusuario, isAdmin} = req.query;
     listarTarefas(idcliente, idusuario, isAdmin,(err, result) => {
-         if (err) {
-              res.status(500).json(err);
-         } else {
-              res.status(200).json(result);
-         }
+        if (err) {
+            res.status(500).json(err);
+        } else {
+            res.status(200).json(result);
+        }
     });
 });
 
 router.post('/adicionartarefa', (req, res) => {
     const {titulo, idcliente, dataLimite, idusuario} = req.body;
     console.log(titulo, idcliente, dataLimite, idusuario);
-    if(!titulo || !idcliente || !dataLimite)
-        return res.redirect(`/paginainicial/erro`);
+    if (!titulo || !idcliente || !dataLimite) {
+        return res.status(400).json({error: 'Dados incompletos'});
+    }
     adicionarTarefa(titulo, idcliente, dataLimite, idusuario, (err, result) => {
         if (err) {
             return res.status(500).json(err);
         }
-        res.redirect('/paginainicial');
+        res.json({success: true});
     });
 });
+
 
 
 router.post('/atualizartarefa', (req, res) => {
@@ -60,18 +62,18 @@ router.get('/editartarefa', (req, res) => {
 router.post('/editartarefa', (req, res) => {
     const {id, titulo, dataLimite} = req.body;
     if(!titulo || !id || !dataLimite)
-        res.redirect(`/paginainicial/editartarefa?id=${id}`);
+        res.redirect(`/paginaInicial/editartarefa?id=${id}`);
     editarTarefa(id, titulo, dataLimite, (err, result) => {
         if (err) {
             return res.status(500).json(err);
         }
-    res.redirect(`/paginainicial/editartarefa?id=${id}`)
+        res.redirect(`/paginaInicial/editartarefa?id=${id}`)
     });
 });
 
 router.get('/editartarefa/gettarefa', (req, res) => {
-    const {idtarefa, idcliente, idusuario} = req.query;
-    consultarTarefa(idtarefa,idcliente, idusuario, (err, result) => {
+    const {idtarefa, idusuario} = req.query;
+    consultarTarefa(idtarefa, idusuario, (err, result) => {
         if (err) {
             return res.status(500).json(err);
         }
@@ -85,7 +87,7 @@ router.post('/deletartarefa', (req, res) => {
         if (err) {
             return res.status(500).json(err);
         }
-        res.redirect('/paginainicial');
+        res.redirect('/paginaInicial');
     });
 });
 

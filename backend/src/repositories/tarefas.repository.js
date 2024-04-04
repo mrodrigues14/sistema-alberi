@@ -24,7 +24,7 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback){
 }
 
 function consultarTarefa(idtarefa, idusuario, callback){
-    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE idtarefa = ? AND ID_USUARIO =?`, [idtarefa], function(err, result, fields) {
+    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE idtarefa = ? AND ID_USUARIO =?`, [idtarefa, idusuario], function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {

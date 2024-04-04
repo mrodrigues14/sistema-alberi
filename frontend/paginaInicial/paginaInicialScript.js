@@ -25,6 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
+
+    const form = document.getElementById('todo-list-form');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Impede o envio do formulário da maneira tradicional
+        adicionarTarefa(); // Chama a função que irá lidar com a adição da tarefa
+    });
 });
 
 let IDCLIENTE = 0;
@@ -55,7 +61,7 @@ window.onload = function() {
                 if (campoOculto) {
                     campoOculto.value = data[0].IDCLIENTE;
                     IDCLIENTE = data[0].IDCLIENTE;
-                    if (userRole === 'admin') {
+                    if (userRole === 'MUDARDEPOIS') {
                         fetch(`/paginainicial/tarefas?isAdmin=true&idusuario=${idusuario}`)
                             .then(handleResponse)
                             .then(displayTarefas)
@@ -82,20 +88,20 @@ function handleResponse(response) {
 }
 
 function displayTarefas(data) {
-        const table = document.getElementById('todo-table');
-        const tbody = table.querySelector('tbody');
-        tbody.innerHTML = '';
-        data.forEach(tarefa => {
-            const row = tbody.insertRow();
-            row.insertCell().innerHTML = `<button class="${getStatusClass(tarefa.STATUS)}" onclick="completarTarefa(${tarefa.IDTAREFA})">
+    const table = document.getElementById('todo-table');
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
+    data.forEach(tarefa => {
+        const row = tbody.insertRow();
+        row.insertCell().innerHTML = `<button class="${getStatusClass(tarefa.STATUS)}" onclick="completarTarefa(${tarefa.IDTAREFA})">
                                                    ${toTitleCase(tarefa.STATUS)}
                                                    </button>`;
-            row.insertCell().textContent = firstLetterToUpperCase(tarefa.TITULO);
-            row.insertCell().textContent = formatDate(tarefa.DATA_LIMITE);
-            row.insertCell().innerHTML = `<button class="edit-button" onclick="editarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer;">
+        row.insertCell().textContent = firstLetterToUpperCase(tarefa.TITULO);
+        row.insertCell().textContent = formatDate(tarefa.DATA_LIMITE);
+        row.insertCell().innerHTML = `<button class="edit-button" onclick="editarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer;">
                                                                   <img src="imagens/editar.png" style="width: 100%;">
                                                                   </button>`;
-            row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer">
+        row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer">
                                                                   <img src="imagens/lixeira.png" style="width: 100%;">
                                                                   </button>`;
     });
@@ -148,7 +154,7 @@ function addClickEventToListItems() {
 }
 
 function redirecionamentoDePagina() {
-    window.location.href = '../paginaMenuInicial/paginaMenuInicial.html';
+    window.location.href = '/paginaInicial';
 }
 
 function inputNomeEmpresa(names) {
@@ -212,6 +218,37 @@ document.addEventListener('DOMContentLoaded', function() {
     loadNomeEmpresa();
 });
 
+function adicionarTarefa() {
+    const titulo = document.getElementById('todo-input').value;
+    const dataLimite = document.getElementById('todo-date').value;
+    const idcliente = IDCLIENTE;
+
+    fetch('/paginainicial/adicionartarefa', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            titulo,
+            dataLimite,
+            idcliente,
+            idusuario,
+        }),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Falha ao adicionar tarefa');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Tarefa adicionada com sucesso', data);
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Erro ao adicionar tarefa:', error);
+        });
+}
 // Até aqui js matheus edition
 
 function formatDate(dateString) {
@@ -264,7 +301,7 @@ function getStatusClass(status) {
 }
 
 function completarTarefa(idtarefa) {
-    fetch('/paginainicial/atualizartarefa', {
+    fetch('/paginaInicial/atualizartarefa', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -284,7 +321,7 @@ function completarTarefa(idtarefa) {
 }
 
 function editarTarefa(idAfazer) {
-    const urlDeEdicao = `/paginainicial/editartarefa?id=${idAfazer}`;
+    const urlDeEdicao = `/paginaInicial/editartarefa?id=${idAfazer}`;
 
     const iframe = document.createElement('iframe');
     iframe.src = urlDeEdicao;
@@ -299,7 +336,7 @@ function editarTarefa(idAfazer) {
 }
 
 function deletarTarefa(idtarefa) {
-    fetch('/paginainicial/deletartarefa', {
+    fetch('/paginaInicial/deletartarefa', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
