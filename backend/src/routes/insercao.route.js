@@ -62,8 +62,18 @@ router.get('/dados-categoria', (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const { Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa, fornecedor } = req.body;
+        const { Data, categoria, descricao, nomeExtrato, valorEn, valorSa, id_bancoPost, id_empresa, fornecedor } = req.body;
         console.log(req.body);
+        let tipo;
+        let valor = 0;
+        if(valorEn != 0){
+            tipo = "Entrada";
+            valor = valorEn;
+        }
+        else{
+            tipo = "Saída";
+            valor = valorSa;
+        }
 
         await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa, fornecedor);
 

@@ -72,8 +72,8 @@
                     <th>Fornecedor</th>
                     <th>Observação</th>
                     <th>Nome no Extrato</th>
-                    <th>Tipo de Transação</th>
-                    <th>Valor</th>
+                    <th>Entrada</th>
+                    <th>Saida</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -96,14 +96,9 @@
                     <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="textos"></td>
                     <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="textos"></td>
                     <td>
-                        <label>
-                            <select name="tipo" id="tipo">
-                                <option value="entrada">Entrada</option>
-                                <option value="saida">Saída</option>
-                            </select>
-                        </label>
+                        <input type="number" name="valorEn" step="0.01" class="valor">
                     </td>
-                    <td><input type="number" name="valor" step="0.01" id="valor"></td>
+                    <td><input type="number" name="valorSa" step="0.01" class="valor"></td>
                 </tr>
                 </tbody>
             </table>
