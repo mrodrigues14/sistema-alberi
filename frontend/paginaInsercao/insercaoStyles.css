@@ -357,13 +357,13 @@ iframe {
     appearance: none;
 }
 
-#valor{
+.valor{
     padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 5px;
     cursor: text;
     background-color: #fff;
-    text-align-last: center;
+    text-align-last: right;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
