@@ -1,56 +1,48 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const loginForm = document.querySelector('form');
-
-    loginForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const username = document.querySelector('input[name="username"]').value;
-        const password = document.querySelector('input[name="password"]').value;
-
-        fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message === 'Login successful') {
-                    localStorage.setItem('username', data.user.username);
-                    localStorage.setItem('userRole', data.user.role);
-                    localStorage.setItem('idusuario', data.user.idusuario);
-
-                    window.location.href = '/paginaInicial';
-                } else {
-                    showModalError(data.message);
-                }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                showModalError('Ocorreu um erro ao tentar fazer login. Por favor, tente novamente mais tarde.');
-            });
+    const auth0Client = new Auth0Client({
+        domain: 'dev-usjcus5lkrz7ygfy.us.auth0.com',
+        client_id: 'oLGVuEq7pnHrs1WcfZZVXjrpT3y7RonD',
+        redirect_uri: 'http://localhost:8080/paginaInicial'
     });
+
+    auth0Client.isAuthenticated().then(function (isAuthenticated) {
+        if (isAuthenticated) {
+            auth0Client.getIdTokenClaims().then(function(claims) {
+                const username = claims['nickname'];
+                const role = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
+                fetchUserIdFromApi(username, role);
+            });
+        } else {
+            auth0Client.loginWithRedirect();
+        }
+    });
+
+    window.logout = function() {
+        auth0Client.logout({
+            returnTo: window.location.origin
+        });
+    };
 });
 
-function showModalError(message) {
-    const modal = document.getElementById('errorModal');
-    const span = document.getElementsByClassName('close')[0];
-    const errorMessage = document.getElementById('errorMessage');
-
-    errorMessage.textContent = message;
-
-    modal.style.display = "block";
-
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
+function fetchUserIdFromApi(username, role) {
+    fetch('/api/get-user-id', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: username, role: role })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.userId) {
+                localStorage.setItem('userId', data.userId);
+                window.location.href = '/paginaInicial';
+            } else {
+                console.error('Usuário não encontrado ou erro na requisição.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro na requisição para obter o ID do usuário:', error);
+        });
 }
