@@ -1,23 +1,22 @@
-
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Pagina Inicial</title>
+    <title>Página Inicial</title>
     <link rel="stylesheet" href="./seletorEmpresa.css">
-
 </head>
 <body>
 <div id="menu-container"></div>
+
 <div class="search-box">
-    <label for="searchInput"></label><input type="text" id="searchInput" placeholder="Selecione uma empresa" onfocus="loadNomeEmpresa()">
-    <button onclick="loadNomeEmpresa()" class="arrow-button"></button>
+    <label for="searchInput">Selecione uma empresa:</label>
+    <input type="text" id="searchInput" placeholder="Selecione uma empresa" aria-label="Campo de busca de empresa" onfocus="loadNomeEmpresa()">
+    <button onclick="loadNomeEmpresa()" class="arrow-button" aria-label="Buscar empresas">
+    </button>
     <div>
-        <ul id="nameList" class="name-list"></ul>
+        <ul id="nameList" class="name-list" style="display:none;"></ul>
     </div>
-
 </div>
-
-
 
 <script src="./seletorEmpresaScript.js"></script>
 </body>

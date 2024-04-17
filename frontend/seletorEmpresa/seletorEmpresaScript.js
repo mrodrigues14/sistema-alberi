@@ -1,70 +1,36 @@
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('/templateMenu/template.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('menu-container').innerHTML = data;
-
-            var link = document.createElement('link');
-            link.href = '/templateMenu/styletemplate.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
-
-            var script = document.createElement('script');
-            script.src = '/templateMenu/templateScript.js';
-            script.onload = function() {
-                loadAndDisplayUsername();
-                handleEmpresa();
-            };
-            document.body.appendChild(script);
-        })
-        .catch(error => {
-            console.error('Erro ao carregar o template:', error);
-        });
-});
-
 window.onclick = function(event) {
+    var searchInput = document.getElementById('searchInput');
+    var nameList = document.getElementById('nameList');
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var empresaSelecionadaButton = document.querySelector('.empresaSelecionada');
+
+    // Verifica se o clique foi fora da caixa de pesquisa e da lista
+    if (!searchInput.contains(event.target) && !nameList.contains(event.target)) {
+        nameList.style.display = 'none';
+    }
+
+    // Gerencia cliques fora dos botões de dropdown
     if (!event.target.matches('.dropbtn')) {
-        var dropdowns = document.getElementsByClassName("dropdown-content");
-        var i;
-        for (i = 0; i < dropdowns.length; i++) {
+        for (var i = 0; i < dropdowns.length; i++) {
             var openDropdown = dropdowns[i];
             if (openDropdown.classList.contains('show')) {
                 openDropdown.classList.remove('show');
                 document.querySelector('.dropbtn').classList.remove('active');
-                var empresaSelecionada = document.querySelector('.empresaSelecionada');
-                empresaSelecionada.style.borderRadius = '0 0 5px 5px';
+                if (empresaSelecionadaButton) {
+                    empresaSelecionadaButton.style.borderRadius = '0 0 5px 5px';
+                }
             }
         }
     }
 }
-function loadAndDisplayUsername() {
-    fetch('/api/usuario-logado')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Não foi possível obter o nome do usuário logado');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const userButton = document.querySelector('.usernameDisplay');
-            if (userButton && data.username) {
-                userButton.textContent = data.username;
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-        });
-}
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Carrega inicialmente a lista de empresas
+    loadNomeEmpresa();
+});
 
 function loadNomeEmpresa() {
     var list = document.getElementById('nameList');
-    if (list.children.length > 0) {
-        list.style.display = 'block';
-        return;
-    }
-
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => {
             if (!response.ok) {
@@ -75,34 +41,22 @@ function loadNomeEmpresa() {
         .then(data => {
             inputNomeEmpresa(data);
             addClickEventToListItems();
+            list.style.display = 'block';
         })
         .catch(error => {
             console.error('Erro na requisição:', error);
         });
 }
-function addClickEventToListItems() {
-    var listItems = document.querySelectorAll('.name-list li');
-    listItems.forEach(function(item) {
-        item.addEventListener('click', redirecionamentoDePagina);
-    });
-}
-
-function redirecionamentoDePagina() {
-    window.location.href = '/paginaInicial';
-}
 
 function inputNomeEmpresa(names) {
     var input = document.getElementById('searchInput');
     var list = document.getElementById('nameList');
-
-    // Mostra a lista assim que ela é carregada
     list.innerHTML = '';
     names.forEach(function(name) {
         var li = document.createElement('li');
         li.textContent = name;
         list.appendChild(li);
     });
-    list.style.display = 'block';
 
     input.addEventListener('input', function(e) {
         updateList(e.target.value);
@@ -116,18 +70,13 @@ function inputNomeEmpresa(names) {
         if (e.target.tagName === 'LI') {
             input.value = e.target.textContent;
             list.style.display = 'none';
-
             empresaSelecionada(e.target.textContent);
         }
     });
 
     function updateList(filter) {
-        // Ensure filter is not null before converting to lower case
-        var safeFilter = filter ? filter.toLowerCase() : '';
-
         var filteredNames = names.filter(function(name) {
-            // Ensure name is not null before converting to lower case
-            return name && name.toLowerCase().includes(safeFilter);
+            return name && name.toLowerCase().includes(filter ? filter.toLowerCase() : '');
         });
 
         list.innerHTML = '';
@@ -139,6 +88,15 @@ function inputNomeEmpresa(names) {
 
         list.style.display = filteredNames.length ? 'block' : 'none';
     }
+}
+
+function addClickEventToListItems() {
+    var listItems = document.querySelectorAll('.name-list li');
+    listItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            window.location.href = '/paginaInicial';
+        });
+    });
 }
 
 function empresaSelecionada(nomeEmpresa) {
@@ -154,8 +112,3 @@ function updateNomeEmpresa(nomeEmpresa) {
         }
     }, 0);
 }
-
-addClickEventToListItems();
-document.addEventListener('DOMContentLoaded', function() {
-    loadNomeEmpresa();
-});
