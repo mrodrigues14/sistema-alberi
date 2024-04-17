@@ -1,3 +1,5 @@
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const auth0Client = new Auth0Client({
         domain: 'dev-usjcus5lkrz7ygfy.us.auth0.com',
@@ -9,9 +11,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (isAuthenticated) {
             auth0Client.getIdTokenClaims().then(function(claims) {
                 const username = claims['nickname'];
-                const role = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                const userRole = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                localStorage.setItem('userRole', userRole)
 
-                fetchUserIdFromApi(username, role);
+                buscarIdUsuarioApi(username);
             });
         } else {
             auth0Client.loginWithRedirect();
@@ -25,18 +28,18 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 });
 
-function fetchUserIdFromApi(username, role) {
-    fetch('/api/get-user-id', {
+function buscarIdUsuarioApi(username) {
+    fetch('/login/buscarIdUsuario', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username: username, role: role })
+        body: JSON.stringify({ username: username})
     })
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.userId) {
-                localStorage.setItem('userId', data.userId);
+            if (data.success && data.idusuario) {
+                localStorage.setItem('userId', data.idusuario);
                 window.location.href = '/paginaInicial';
             } else {
                 console.error('Usuário não encontrado ou erro na requisição.');
