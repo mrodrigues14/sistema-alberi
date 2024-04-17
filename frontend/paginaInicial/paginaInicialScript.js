@@ -1,6 +1,9 @@
 const userRole = localStorage.getItem('userRole');
 const idusuario = localStorage.getItem('idusuario');
 
+console.log(userRole);
+console.log(idusuario);
+
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/templateMenu/template.html')
         .then(response => response.text())
@@ -62,12 +65,12 @@ window.onload = function() {
                     campoOculto.value = data[0].IDCLIENTE;
                     IDCLIENTE = data[0].IDCLIENTE;
                     if (userRole === 'MUDARDEPOIS') {
-                        fetch(`/paginainicial/tarefas?isAdmin=true&idusuario=${idusuario}`)
+                        fetch(`/paginaInicial/tarefas?isAdmin=true&idusuario=${idusuario}`)
                             .then(handleResponse)
                             .then(displayTarefas)
                             .catch(handleError);
                     } else {
-                        fetch(`/paginainicial/tarefas?idcliente=${IDCLIENTE}&idusuario=${idusuario}`)
+                        fetch(`/paginaInicial/tarefas?idcliente=${IDCLIENTE}&idusuario=${idusuario}`)
                             .then(handleResponse)
                             .then(displayTarefas)
                             .catch(handleError);
@@ -131,7 +134,7 @@ function loadAndDisplayUsername() {
 
 
 function loadNomeEmpresa() {
-    fetch('/paginainicial/consultarEmpresas', { method: 'POST' })
+    fetch('/paginaInicial/consultarEmpresas', { method: 'POST' })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Não foi possível buscar as empresas');
@@ -223,7 +226,7 @@ function adicionarTarefa() {
     const dataLimite = document.getElementById('todo-date').value;
     const idcliente = IDCLIENTE;
 
-    fetch('/paginainicial/adicionartarefa', {
+    fetch('/paginaInicial/adicionartarefa', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -59,6 +59,12 @@ function loadAndDisplayUsername() {
 
 
 function loadNomeEmpresa() {
+    var list = document.getElementById('nameList');
+    if (list.children.length > 0) {
+        list.style.display = 'block';
+        return;
+    }
+
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => {
             if (!response.ok) {
@@ -82,12 +88,21 @@ function addClickEventToListItems() {
 }
 
 function redirecionamentoDePagina() {
-    window.location.href = '/paginainicial';
+    window.location.href = '/paginaInicial';
 }
 
 function inputNomeEmpresa(names) {
     var input = document.getElementById('searchInput');
     var list = document.getElementById('nameList');
+
+    // Mostra a lista assim que ela é carregada
+    list.innerHTML = '';
+    names.forEach(function(name) {
+        var li = document.createElement('li');
+        li.textContent = name;
+        list.appendChild(li);
+    });
+    list.style.display = 'block';
 
     input.addEventListener('input', function(e) {
         updateList(e.target.value);
