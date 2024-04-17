@@ -29,7 +29,6 @@ function loadAndDisplayUsername() {
             console.error('Erro:', error);
         });
 }
-
 function loadNomeEmpresa() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => {
