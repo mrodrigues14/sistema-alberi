@@ -25,7 +25,6 @@ window.onclick = function(event) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Carrega inicialmente a lista de empresas
     loadNomeEmpresa();
 });
 
@@ -41,7 +40,10 @@ function loadNomeEmpresa() {
         .then(data => {
             inputNomeEmpresa(data);
             addClickEventToListItems();
-            list.style.display = 'block';
+            // Somente mostra a lista se o botão de toggle for acionado para mostrar
+            if (list.style.display !== 'block') {
+                list.style.display = 'block';
+            }
         })
         .catch(error => {
             console.error('Erro na requisição:', error);
@@ -103,6 +105,16 @@ function empresaSelecionada(nomeEmpresa) {
     localStorage.setItem('nomeEmpresaSelecionada', nomeEmpresa);
     updateNomeEmpresa(nomeEmpresa);
 }
+function toggleListVisibility() {
+    var list = document.getElementById('nameList');
+    // Se a lista está visível, oculta; se está oculta, carrega e mostra
+    if (list.style.display === 'block') {
+        list.style.display = 'none';
+    } else {
+        loadNomeEmpresa();  // Esta função deve configurar `list.style.display` para 'block'
+    }
+}
+
 
 function updateNomeEmpresa(nomeEmpresa) {
     setTimeout(() => {

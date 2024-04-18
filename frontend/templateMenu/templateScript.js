@@ -30,6 +30,7 @@ function loadAndDisplayUsername() {
         });
 }
 function loadNomeEmpresa() {
+    var list = document.getElementById('nameList');
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => {
             if (!response.ok) {
@@ -40,11 +41,24 @@ function loadNomeEmpresa() {
         .then(data => {
             inputNomeEmpresa(data);
             addClickEventToListItems();
+            if (list.style.display !== 'block') {
+                list.style.display = 'block';
+            }
         })
         .catch(error => {
             console.error('Erro na requisição:', error);
         });
 }
+
+function toggleListVisibility() {
+    var list = document.getElementById('nameList');
+    if (list.style.display === 'block') {
+        list.style.display = 'none';
+    } else {
+        loadNomeEmpresa();
+    }
+}
+
 
 function handleEmpresa() {
     var nomeEmpresa = getStoredEmpresaName();
@@ -158,6 +172,30 @@ window.onclick = function(event) {
         }
     }
 }
+window.onclick = function(event) {
+    var searchInput = document.getElementById('searchInput');
+    var nameList = document.getElementById('nameList');
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var empresaSelecionadaButton = document.querySelector('.empresaSelecionada');
+
+    if (!searchInput.contains(event.target) && !nameList.contains(event.target)) {
+        nameList.style.display = 'none';
+    }
+
+    if (!event.target.matches('.dropbtn')) {
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+                document.querySelector('.dropbtn').classList.remove('active');
+                if (empresaSelecionadaButton) {
+                    empresaSelecionadaButton.style.borderRadius = '0 0 5px 5px';
+                }
+            }
+        }
+    }
+}
+
 addClickEventToListItems();
 document.addEventListener('DOMContentLoaded', function() {
     handleEmpresa()

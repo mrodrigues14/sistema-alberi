@@ -9,10 +9,9 @@
 <div id="menu-container"></div>
 
 <div class="search-box">
-    <label for="searchInput">Selecione uma empresa:</label>
+    <label for="searchInput"></label>
     <input type="text" id="searchInput" placeholder="Selecione uma empresa" aria-label="Campo de busca de empresa" onfocus="loadNomeEmpresa()">
-    <button onclick="loadNomeEmpresa()" class="arrow-button" aria-label="Buscar empresas">
-    </button>
+    <button id="toggleListButton" onclick="toggleListVisibility()" class="arrow-button" aria-label="Alternar visibilidade da lista de empresas"></button>
     <div>
         <ul id="nameList" class="name-list" style="display:none;"></ul>
     </div>
