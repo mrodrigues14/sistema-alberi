@@ -15,10 +15,11 @@
     <a href="/dados"><button class="buttonMenu" id="dadosButton">Cadastro de bancos</button></a>
 
     <div class="search-box-empresa" style="display: inline-block;">
-        <label for="searchInput"></label><input type="text" id="searchInput" placeholder="Selecione uma empresa">
-        <button onclick="loadNomeEmpresa()" class="arrow-button"></button>
+        <label for="searchInput"></label>
+        <input type="text" id="searchInput" placeholder="Selecione uma empresa" onfocus="loadNomeEmpresa()">
+        <button onclick="toggleListVisibility()" class="arrow-button"></button>
         <div>
-            <ul id="nameList" class="name-list"></ul>
+            <ul id="nameList" class="name-list" style="display:none;"></ul>
         </div>
     </div>
 
