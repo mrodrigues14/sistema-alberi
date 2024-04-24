@@ -13,9 +13,10 @@ body {
     padding: 1vw;
     display: flex;
     margin: 0;
-    justify-content: space-between;
-    align-items: center;
     text-align: center;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 .navbar button {
     font-family: 'DM Sans', sans-serif;
@@ -24,15 +25,19 @@ body {
     color: black;
     cursor: pointer;
     font-size: 16px;
-    border: none;
 
 
 }
 
 .dropbtn{
-     width: auto;
+    width: auto;
     border-radius: 5px 5px 0 0;
+    border: none;
 
+}
+
+.empresaSelecionada{
+    border: none;
 }
 
 .buttonMenu{
@@ -55,9 +60,7 @@ body {
     border-radius: 5px;
     position: relative;
     display: inline-block;
-    margin-left: auto;
     box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
-
 }
 
 .dropdown-content {
@@ -152,34 +155,46 @@ body {
     width: auto;
 }
 
-/* Estilos da caixa de busca */
 .search-box-empresa {
-    display: inline-flex; /* Keeps the search box inline */
+    display: flex;
+    justify-content: center;
     align-items: center;
-    margin-left: 20px; /* Adjust as needed to align with the navbar */
-    position: relative; /* Changed from absolute to relative */
+    position: relative;
+    box-sizing: border-box; /* Para incluir a largura do padding e borda */
+    padding: 0 20px; /* Adiciona espaço na horizontal */
 }
+
+.search-box-empresa > * {
+    flex: 0 0 auto; /* Impede que os itens dentro da div se expandam */
+}
+
+
 
 input[type="text"] {
     padding: 10px;
-    width: 297px; /* Or adjust as needed */
+    width: 297px;
     border: 2px solid #ccc;
     border-radius: 5px 0 0 5px;
     font-size: 1rem;
     margin-right: -1px;
-    /* Make sure to remove any inline styles that may override these */
+    position: relative;
+    z-index: 1;
 }
 
 .arrow-button {
-    padding: 10px 10px 10px 12px; /* Ajuste o padding conforme necessário */
+    padding: 10px 10px 10px 12px;
     border: 2px solid #ccc;
     border-left: none;
     border-radius: 0 5px 5px 0;
     background-color: white;
     cursor: pointer;
-    height: 42px; /* Adjust height to align with the input if needed */
+    height: 42px;
     margin-left: -3px;
+    position: relative; /* Adiciona position relative */
+    z-index: 1; /* Adiciona z-index */
+
 }
+
 
 .arrow-button::before {
     content: '';
@@ -193,6 +208,57 @@ input[type="text"] {
 
 }
 
+.name-list {
+    position: absolute; /* Posiciona a lista absolutamente em relação à div pai */
+    top: calc(100% + 5px); /* Coloca a lista abaixo do input */
+    left: 50%; /* Move a lista para o centro */
+    transform: translateX(-50%); /* Centraliza horizontalmente */
+    background-color: #fff; /* Cor de fundo da lista */
+    border: 1px solid #ccc; /* Adiciona uma borda à lista */
+    border-radius: 5px; /* Arredonda os cantos da lista */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona sombra à lista */
+    z-index: 999; /* Garante que a lista esteja sobreposta a outros elementos */
+    width: 297px; /* Largura da lista */
+    padding: 0; /* Remove o preenchimento interno */
+    margin: 0; /* Remove as margens internas */
+    display: none; /* Inicialmente, a lista está oculta */
+}
+
+.name-list li {
+    padding: 10px;
+    font-size: 1.2rem;
+    color: #000;
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #ddd; /* Adiciona uma linha divisória entre os itens */
+}
+
+.name-list li:last-child {
+    border-bottom: none; /* Remove a linha divisória do último item */
+}
+
+.arrow-button {
+    padding: 10px 10px 10px 12px;
+    border: 2px solid #ccc;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    background-color: white;
+    cursor: pointer;
+    height: 42px;
+    position: relative;
+    z-index: 1;
+}
+
+.arrow-button::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #333;
+    margin-right: 5px;
+}
+
 /* Ensure that the dropdown appears directly below the search box */
 .name-list {
     list-style: none;
@@ -200,13 +266,14 @@ input[type="text"] {
     border: 1px solid #ddd;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    width: calc(300px + 20px); /* Match the width of the input + arrow button */
-    box-sizing: border-box;
-    display: none; /* Hide by default, show it with JavaScript if needed */
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 2px;
+    width: 297px; /* Largura da lista */
+    box-sizing: border-box; /* Inclui a largura do padding e borda */
+    display: none; /* Oculta a lista por padrão */
+    position: absolute; /* Posiciona absolutamente em relação ao pai */
+    top: calc(100% + 5px); /* Coloca abaixo do input */
+    left: 50%; /* Move para o centro */
+    transform: translateX(-50%); /* Centraliza horizontalmente */
+    z-index: 999; /* Garante que esteja acima de outros elementos */
 }
 
 .name-list li {
@@ -214,12 +281,114 @@ input[type="text"] {
     border-bottom: 1px solid #ddd;
     cursor: pointer;
     font-size: 1.2rem;
-    color: #000; /* Muda a cor da fonte para preto */
-    background-color: #f2f2f2; /* Um cinza mais escuro para o fundo dos itens */
+    color: #000;
+    background-color: #f2f2f2;
 }
 
-/* When a list item is hovered over */
 .name-list li:hover {
     background-color: #f1f1f1;
 }
 
+
+#menuToggle {
+    display: block;
+    position: relative;
+    z-index: 1;
+    -webkit-user-select: none;
+    user-select: none;
+    margin-left: 20px; /* Adicionando margem à esquerda */
+}
+
+
+#menuToggle a {
+    text-decoration: none;
+    color: #232323;
+    transition: color 0.3s ease;
+}
+
+#menuToggle a:hover {
+    color: tomato;
+}
+
+#menuToggle input {
+    display: block;
+    width: 40px;
+    height: 32px;
+    position: absolute;
+    top: -7px;
+    left: -5px;
+    cursor: pointer;
+    opacity: 0; /* hide this */
+    z-index: 2; /* and place it over the hamburger */
+    -webkit-touch-callout: none;
+}
+
+#menuToggle span {
+    display: block;
+    width: 33px;
+    height: 4px;
+    margin-bottom: 5px;
+    position: relative;
+    background: #cdcdcd;
+    border-radius: 3px;
+    z-index: 1;
+    transform-origin: 4px 0px;
+    transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+    background 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+    opacity 0.55s ease;
+}
+
+#menuToggle span:first-child {
+    transform-origin: 0% 0%;
+}
+
+#menuToggle span:nth-last-child(2) {
+    transform-origin: 0% 100%;
+}
+
+#menuToggle input:checked ~ span {
+    opacity: 1;
+    transform: rotate(45deg) translate(-2px, -1px);
+    background: #232323;
+}
+
+#menuToggle input:checked ~ span:nth-last-child(3) {
+    opacity: 0;
+    transform: rotate(0deg) scale(0.2, 0.2);
+}
+
+#menuToggle input:checked ~ span:nth-last-child(2) {
+    transform: rotate(-45deg) translate(0, -1px);
+}
+
+#menu {
+    position: absolute;
+    width: 200px;
+    height: 100vh;
+    margin: -100px 0 0 -50px;
+    padding: 125px 50px 50px;
+    background: #8BACAF;
+    list-style-type: none;
+    -webkit-font-smoothing: antialiased;
+    transform-origin: 0% 0%;
+    transform: translate(-100%, 0);
+    transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0);
+}
+
+#menu li {
+    padding: 10px 0;
+    font-size: 22px;
+}
+
+#menuToggle input:checked ~ ul {
+    transform: none;
+}
+#menu.show {
+    transform: none;
+}
+
+@media screen and (max-width: 768px) {
+    .navbar {
+        justify-content: flex-start; /* Alinhar à esquerda em telas menores */
+    }
+}

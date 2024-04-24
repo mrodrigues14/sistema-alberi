@@ -90,6 +90,10 @@ function inputNomeEmpresa(names) {
     document.querySelector('.arrow-button').addEventListener('click', function() {
         updateList('');
     });
+    document.getElementById('searchInput').addEventListener('focus', function() {
+        updateList('');
+    });
+
 
     list.addEventListener('click', function(e) {
         if (e.target.tagName === 'LI') {
@@ -101,11 +105,9 @@ function inputNomeEmpresa(names) {
     });
 
     function updateList(filter) {
-        // Ensure filter is not null before converting to lower case
         var safeFilter = filter ? filter.toLowerCase() : '';
 
         var filteredNames = names.filter(function(name) {
-            // Ensure name is not null before converting to lower case
             return name && name.toLowerCase().includes(safeFilter);
         });
 
@@ -136,14 +138,36 @@ function redirecionamentoDePagina() {
     window.location.reload(true);
 }
 
-
-// Evento para fechar o modal se clicado fora dele
-window.onclick = function(event) {
-    var modal = document.getElementById('calendarModal');
-    if (event.target === modal) {
-        closeCalendarModal();
-    }
+function showEmpresaList() {
+    var list = document.getElementById('nameList');
+    list.style.display = 'block';
 }
+
+
+document.getElementById('searchInput').addEventListener('focus', showEmpresaList);
+document.querySelector('.arrow-button').addEventListener('click', showEmpresaList);
+
+
+document.addEventListener('click', function(event) {
+    var list = document.getElementById('nameList');
+    if (!event.target.matches('#searchInput') && !event.target.matches('.arrow-button') && !event.target.matches('.name-list li')) {
+        list.style.display = 'none';
+    }
+
+});
+document.addEventListener('click', function(event) {
+    var menu = document.getElementById('menuToggle');
+    var targetElement = event.target; // Elemento clicado
+
+    // Verifica se o elemento clicado não é parte do menu
+    if (!menu.contains(targetElement)) {
+        // Fecha o menu
+        var checkbox = document.querySelector('#menuToggle input[type="checkbox"]');
+        checkbox.checked = false;
+    }
+});
+
+
 
 window.onclick = function(event) {
     if (!event.target.matches('.dropbtn')) {
@@ -159,10 +183,10 @@ window.onclick = function(event) {
         }
     }
 }
-addClickEventToListItems();
 document.addEventListener('DOMContentLoaded', function() {
     handleEmpresa()
     loadAndDisplayUsername();
     loadNomeEmpresa();
+    addClickEventToListItems();
 
 });
