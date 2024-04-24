@@ -26,6 +26,14 @@ app.use(session({
 app.use(express.static(path.join(__dirname, '../../../frontend')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({limit: '50mb'}));
+app.get('/api/isLoggedIn', (req, res) => {
+    if (req.session.username) {
+        res.json({ isLoggedIn: true });
+    } else {
+        res.json({ isLoggedIn: false });
+    }
+});
+
 routing(app);
 
 createServer(app).listen( port, () => {

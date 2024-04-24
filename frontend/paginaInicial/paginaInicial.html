@@ -18,6 +18,12 @@
         <form id="todo-list-form" method="post">
             <input type="text" id="todo-input" placeholder="Digite uma tarefa" name="titulo">
             <input type="date" id="todo-date" name="dataLimite">
+            <input type="checkbox" id="recurrence-checkbox">
+            <label for="recurrence-checkbox">Recorrente?</label>
+            <div id="recurrence-container" style="display: none;">
+                <label for="recurrence-day">Dia do mês:</label>
+                <input type="number" id="recurrence-day" name="recurrence-day" min="1" max="31" value="1">
+            </div>
             <input type="hidden" name="idcliente" id="idcliente">
             <input type="submit" value="Enviar" id="todo-submit">
         </form>
@@ -29,7 +35,9 @@
             <tr>
                 <th>Status</th>
                 <th>Tarefa</th>
-                <th>Data</th>
+                <th>Data Limite</th>
+                <th>Data Inicial</th>
+                <th>Data Conclusão</th>
                 <th>Editar</th>
                 <th>Excluir</th>
             </tr>

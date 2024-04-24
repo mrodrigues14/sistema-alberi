@@ -9,7 +9,23 @@ function myFunction() {
     }
 }
 
+function isLoggedIn() {
+    fetch('/api/isLoggedIn')
+        .then(response => response.json())
+        .then(data => {
+            if (data.isLoggedIn) {
+                // O usuário está logado
+                console.log('Usuário logado');
+            } else {
+                console.log('Usuário não logado');
+                window.location.href = '/paginaLogin/index.html';
 
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+        });
+}
 
 function loadAndDisplayUsername() {
     fetch('/api/usuario-logado')
@@ -75,9 +91,6 @@ function showCalendarModal() {
         });
 }
 
-function closeCalendarModal() {
-    document.getElementById('calendarModal').style.display = 'none';
-}
 
 function inputNomeEmpresa(names) {
     var input = document.getElementById('searchInput');
@@ -90,10 +103,6 @@ function inputNomeEmpresa(names) {
     document.querySelector('.arrow-button').addEventListener('click', function() {
         updateList('');
     });
-    document.getElementById('searchInput').addEventListener('focus', function() {
-        updateList('');
-    });
-
 
     list.addEventListener('click', function(e) {
         if (e.target.tagName === 'LI') {
@@ -105,9 +114,11 @@ function inputNomeEmpresa(names) {
     });
 
     function updateList(filter) {
+        // Ensure filter is not null before converting to lower case
         var safeFilter = filter ? filter.toLowerCase() : '';
 
         var filteredNames = names.filter(function(name) {
+            // Ensure name is not null before converting to lower case
             return name && name.toLowerCase().includes(safeFilter);
         });
 
@@ -184,6 +195,7 @@ window.onclick = function(event) {
     }
 }
 document.addEventListener('DOMContentLoaded', function() {
+    isLoggedIn();
     handleEmpresa()
     loadAndDisplayUsername();
     loadNomeEmpresa();

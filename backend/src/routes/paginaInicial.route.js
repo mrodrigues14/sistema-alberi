@@ -29,12 +29,12 @@ router.get('/tarefas', (req, res) => {
 });
 
 router.post('/adicionartarefa', (req, res) => {
-    const {titulo, idcliente, dataLimite, idusuario} = req.body;
-    console.log(titulo, idcliente, dataLimite, idusuario);
+    const {titulo, idcliente, dataLimite, idusuario, recurrenceDay} = req.body;
+    console.log(titulo, idcliente, dataLimite, idusuario, recurrenceDay);
     if (!titulo || !idcliente || !dataLimite) {
         return res.status(400).json({error: 'Dados incompletos'});
     }
-    adicionarTarefa(titulo, idcliente, dataLimite, idusuario, (err, result) => {
+    adicionarTarefa(titulo, idcliente, dataLimite, idusuario,recurrenceDay, (err, result) => {
         if (err) {
             return res.status(500).json(err);
         }
