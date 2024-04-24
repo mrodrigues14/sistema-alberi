@@ -30,22 +30,19 @@ router.post('/remover', (req, res) => {
         }
         else
         {
-            res.redirect('/dados');
+            res.redirect(`/dados?successMsg=Banco removido com sucesso!`);
         }
     });
 });
 
 router.post('/adicionar', (req, res) => {
-    const { idcliente, nomeBanco, tipoConta } = req.body;
+    const {idcliente, nomeBanco, tipoConta} = req.body;
     adicionar(idcliente, nomeBanco, tipoConta, (err, result) => {
-        if(err){
+        if (err) {
             res.status(500).send("Erro ao inserir");
-        }
-        else
-        {
-            res.redirect('/dados');
+        } else {
+            res.redirect(`/dados?successMsg=Banco ${nomeBanco} adicionado com sucesso!`);
         }
     });
 });
-
 module.exports = router;

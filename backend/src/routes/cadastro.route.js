@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 router.post('/', async (req, res) => {
     const {nomeEmpresa, telefone, cnpj, cpf} = req.body;
     await adicionar(nomeEmpresa, telefone, cnpj, cpf);
-    res.redirect('/cadastro');
+    res.redirect(`/cadastro?successMsg=Empresa ${nomeEmpresa} cadastrada com sucesso!`);
 });
 
 router.get('/empresas',  (req, res) => {

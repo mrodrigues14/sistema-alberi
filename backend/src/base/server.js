@@ -6,6 +6,8 @@ const app = express();
 const port = 8080;
 const session = require('express-session');
 const { auth } = require('express-openid-connect');
+const flash = require('connect-flash');
+
 
 const config = {
     authRequired: false,
@@ -34,6 +36,7 @@ app.use(auth(config));
 app.use(express.static(path.join(__dirname, '../../../frontend')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({limit: '50mb'}));
+app.use(flash());
 
 const routing = require('../routing');
 routing(app);
