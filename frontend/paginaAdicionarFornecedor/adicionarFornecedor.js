@@ -106,3 +106,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
 });
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    const params = new URLSearchParams(window.location.search);
+    const successMsg = params.get('successMsg');
+    if (successMsg) {
+        alert(successMsg);
+        history.pushState(null, '', window.location.pathname);
+    }
+});
+
