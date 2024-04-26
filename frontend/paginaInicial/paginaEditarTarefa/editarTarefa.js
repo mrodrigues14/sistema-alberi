@@ -19,7 +19,7 @@ function formatDate(dateString) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    fetch(`/paginainicial/editartarefa/gettarefa?idtarefa=${idtarefa}`)
+    fetch(`/paginaInicial/editartarefa/gettarefa?idtarefa=${idtarefa}`)
         .then(response => response.json())
         .then(data => {
             const table = document.getElementById('todo-table');

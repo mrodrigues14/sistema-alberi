@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 router.post('/', async (req, res) => {
     const {nomeEmpresa, telefone, cnpj, cpf} = req.body;
     await adicionar(nomeEmpresa, telefone, cnpj, cpf);
-    res.redirect('/cadastro');
+    res.redirect(`/cadastro?successMsg=Empresa ${nomeEmpresa} cadastrada com sucesso!`);
 });
 
 router.get('/empresas',  (req, res) => {
@@ -33,7 +33,7 @@ router.post('/remover', (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao remover dados");
         }
-        res.redirect('/cadastro');
+        res.redirect(`/cadastro?successMsg=Empresa ${selectNomeEmpresa} removida!`);
     });
 });
 

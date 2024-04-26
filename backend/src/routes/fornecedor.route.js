@@ -31,7 +31,7 @@ router.post('/adicionar', (req, res) => {
             res.status(500).send('Erro ao adicionar fornecedor');
         }
         else {
-            res.redirect('/fornecedor');
+            res.redirect(`/fornecedor?successMsg=Fornecedor ${nomeFornecedor} adicionado com sucesso!`);
         }
     });
 });
@@ -44,7 +44,7 @@ router.post('/remover', (req, res) => {
             res.status(500).send('Erro ao remover fornecedor');
         }
         else {
-            res.redirect('/fornecedor');
+            res.redirect(`/fornecedor?successMsg=Fornecedor removido!`);
         }
     });
 });

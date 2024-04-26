@@ -203,7 +203,7 @@ function deletarSelecionados() {
         return;
     }
 
-    if (!confirm('Tem certeza que deseja deletar as linhas selecionadas?')) {
+    if (!confirm(`Tem certeza que deseja deletar ${linhasSelecionadas.length} extrato(s) selecionado(s)?`)) {
         return;
     }
 
@@ -222,7 +222,6 @@ function deletarSelecionados() {
     document.body.appendChild(form);
     form.submit();
 }
-
 
 function gerarPDF() {
     var { jsPDF } = window.jspdf;
