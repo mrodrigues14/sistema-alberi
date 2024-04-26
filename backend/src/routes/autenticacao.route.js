@@ -30,7 +30,6 @@ router.post('/login', (req, res) => {
                     }
                 });
             } else {
-                // Não encontrado: usuário ou senha incorretos
                 res.status(401).send({ message: 'Usuário ou senha incorretas. Por favor, verifique suas credenciais de acesso. ' });
             }
         });

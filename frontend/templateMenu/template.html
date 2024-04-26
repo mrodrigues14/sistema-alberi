@@ -4,22 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exemplo de Interface</title>
-    <link rel="stylesheet" href="styletemplate.css">
-</head>
+    <link rel="stylesheet" type="text/css" href="/templateMenu/styletemplate.css"></head>
 <body>
+
+
 <div class="navbar">
-    <a href="/paginaInicial"><button class="buttonMenu" id="menuButton">Menu inicial</button></a>
-    <a href="/estudos"><button class="buttonMenu" id="estudosButton">Estudos</button></a>
-    <a href="/insercao"><button class="buttonMenu" id="extratoButton">Extrato bancário</button></a>
-    <a href="/cadastro"><button class="buttonMenu" id="cadastroButton">Dados do Cliente</button></a>
-    <a href="/dados"><button class="buttonMenu" id="dadosButton">Cadastro de bancos</button></a>
+    <nav role="navigation">
+        <div id="menuToggle">
+            <input type="checkbox" />
+            <span></span>
+            <span></span>
+            <span></span>
+            <ul id="menu">
+                <a href="/paginainicial"><li>Menu inicial</li></a>
+                <a href="/estudos"><li>Estudos</li></a>
+                <a href="/insercao"><li>Extrato bancário</li></a>
+                <a href="/cadastro"><li>Dados do Cliente</li></a>
+                <a href="/dados"><li>Cadastro de bancos</li></a>
+                <a href="#"><li>Outro item</li></a> <!-- Adicione mais itens conforme necessário -->
+            </ul>
+        </div>
+    </nav>
 
     <div class="search-box-empresa" style="display: inline-block;">
-        <label for="searchInput"></label>
-        <input type="text" id="searchInput" placeholder="Selecione uma empresa" onfocus="loadNomeEmpresa()">
-        <button onclick="toggleListVisibility()" class="arrow-button"></button>
+        <label for="searchInput"></label><input type="text" id="searchInput" placeholder="Selecione uma empresa">
+        <button onclick="loadNomeEmpresa()" class="arrow-button"></button>
         <div>
-            <ul id="nameList" class="name-list" style="display:none;"></ul>
+            <ul id="nameList" class="name-list"></ul>
         </div>
     </div>
 

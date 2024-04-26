@@ -4,41 +4,31 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 const port = 8080;
+const routing = require('../routing');
 const session = require('express-session');
-const { auth } = require('express-openid-connect');
-const flash = require('connect-flash');
-
-
-const config = {
-    authRequired: false,
-    auth0Logout: true,
-    secret: '36286cee2569a4cb1103a12a4a8e6aa23247d544c3afc7a9b0ca3faa7b5d9bde',
-    baseURL: 'http://localhost:8080',
-    clientID: 'oLGVuEq7pnHrs1WcfZZVXjrpT3y7RonD',
-    issuerBaseURL: 'https://dev-usjcus5lkrz7ygfy.us.auth0.com',
-    afterCallback: (req, res, session, decodedState) => {
-        res.redirect('/paginaInicial');
-    }
-};
+const {createServer} = require("http");
 
 app.use(session({
     secret: '1234',
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: true,
+        secure: false,
         maxAge: 24 * 60 * 60 * 1000
     }
 }));
 
-app.use(auth(config));
-
 app.use(express.static(path.join(__dirname, '../../../frontend')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({limit: '50mb'}));
-app.use(flash());
+app.get('/api/isLoggedIn', (req, res) => {
+    if (req.session.username) {
+        res.json({ isLoggedIn: true });
+    } else {
+        res.json({ isLoggedIn: false });
+    }
+});
 
-const routing = require('../routing');
 routing(app);
 
 // Para HTTPS (comente a linha abaixo se quiser usar HTTPS)
