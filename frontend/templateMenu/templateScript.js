@@ -9,7 +9,23 @@ function myFunction() {
     }
 }
 
+function isLoggedIn() {
+    fetch('/api/isLoggedIn')
+        .then(response => response.json())
+        .then(data => {
+            if (data.isLoggedIn) {
+                // O usuário está logado
+                console.log('Usuário logado');
+            } else {
+                console.log('Usuário não logado');
+                window.location.href = '/paginaLogin/index.html';
 
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+        });
+}
 
 function loadAndDisplayUsername() {
     fetch('/api/usuario-logado')
@@ -75,9 +91,6 @@ function showCalendarModal() {
         });
 }
 
-function closeCalendarModal() {
-    document.getElementById('calendarModal').style.display = 'none';
-}
 
 function inputNomeEmpresa(names) {
     var input = document.getElementById('searchInput');
@@ -136,14 +149,36 @@ function redirecionamentoDePagina() {
     window.location.reload(true);
 }
 
-
-// Evento para fechar o modal se clicado fora dele
-window.onclick = function(event) {
-    var modal = document.getElementById('calendarModal');
-    if (event.target === modal) {
-        closeCalendarModal();
-    }
+function showEmpresaList() {
+    var list = document.getElementById('nameList');
+    list.style.display = 'block';
 }
+
+
+document.getElementById('searchInput').addEventListener('focus', showEmpresaList);
+document.querySelector('.arrow-button').addEventListener('click', showEmpresaList);
+
+
+document.addEventListener('click', function(event) {
+    var list = document.getElementById('nameList');
+    if (!event.target.matches('#searchInput') && !event.target.matches('.arrow-button') && !event.target.matches('.name-list li')) {
+        list.style.display = 'none';
+    }
+
+});
+document.addEventListener('click', function(event) {
+    var menu = document.getElementById('menuToggle');
+    var targetElement = event.target; // Elemento clicado
+
+    // Verifica se o elemento clicado não é parte do menu
+    if (!menu.contains(targetElement)) {
+        // Fecha o menu
+        var checkbox = document.querySelector('#menuToggle input[type="checkbox"]');
+        checkbox.checked = false;
+    }
+});
+
+
 
 window.onclick = function(event) {
     if (!event.target.matches('.dropbtn')) {
@@ -159,10 +194,11 @@ window.onclick = function(event) {
         }
     }
 }
-addClickEventToListItems();
 document.addEventListener('DOMContentLoaded', function() {
+    isLoggedIn();
     handleEmpresa()
     loadAndDisplayUsername();
     loadNomeEmpresa();
+    addClickEventToListItems();
 
 });
