@@ -386,3 +386,12 @@ iframe {
     -moz-appearance: none;
     appearance: none;
 }
+
+.select2-container--default .select2-selection--single {
+    width: 120%;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    font-size: 12px;
+}
+
