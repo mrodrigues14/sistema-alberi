@@ -1,0 +1,233 @@
+.subnavbar {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #FFFFFF;
+    color: white;
+    padding: 1vw;
+    display: flex;
+    margin: 0;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+
+}
+.subnavbar div{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    width: 51%;
+}
+.subnavbar button {
+    font-family: 'DM Sans', sans-serif;
+    padding: 5px 10px;
+    background-color: #FFFFFF;
+    color: black;
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+
+
+}
+
+.buttonMenu{
+    margin: 0 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
+    width: auto;
+
+}
+
+.subnavbar button:hover {
+    background-color: #8BACAF;
+}
+
+.editorCategoria{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background-color: #FFFFFF;
+}
+
+.adicionarCategoria{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 2%;
+    margin-bottom: 5%;
+    width: 20%;
+    height: auto;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+}
+
+.adicionarCategoria form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.adicionarCategoria input{
+    text-align: center;
+    width: 80%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+.adicionarButton{
+    width: 50%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1%;
+    color: #000000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: normal;
+    align-self: center;
+}
+
+.adicionarButton:hover{
+    background-color: #8BACAF;
+    color: #FFFFFF;
+}
+
+.adicionarCategoria h2{
+    font-weight: normal;
+}
+
+.adicionarSubcategoria{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5%;
+    width: 20%;
+    height: auto;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+}
+
+.adicionarSubcategoria form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+}
+
+.adicionarSubcategoria input{
+    text-align: center;
+    width: 80%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+.adicionarSubcategoria button{
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #8BACAF;
+    color: #FFFFFF;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: lighter;
+    align-self: end;
+}
+
+.adicionarSubcategoria h2{
+    font-weight: normal;
+}
+
+.adicionarCategoria label{
+    margin-top: 5%;
+    margin-bottom: 5%;
+    margin-left: 15%;
+    margin-right: 15%;
+    width: 300px;
+    height: 100px;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.adicionarSubcategoria select{
+    width: 100%;
+    margin-bottom: 5%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+}
+
+.removerCategoria{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 5%;
+    width: 20%;
+    height: auto;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+}
+
+.removerCategoria form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+}
+
+.removerCategoria input{
+    text-align: center;
+    width: 80%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+#seletorCategoria2{
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.removerCategoria h3{
+    font-weight: normal;
+}
