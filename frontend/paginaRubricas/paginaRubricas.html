@@ -7,11 +7,65 @@
         #extratoButton{
             background-color: #8BACAF;
         }
+        #rubricaButton{
+            background-color: #8BACAF;
+        }
+        hr{
+            margin: 0;
+            border-color: #adadad;
+            border-top: 0px;
+        }
     </style>
+    <link rel="stylesheet" href="/paginaRubricas/paginaRubricas.css">
 </head>
 <body>
     <div id="menu-container"></div>
+    <hr>
+    <div class="subnavbar">
+        <a href="/insercao"><button class="buttonMenu" id="inserirButton">Inserir extrato</button></a>
+        <a href="/consulta"><button class="buttonMenu" id="consultaButton">Consultar extrato</button></a>
+        <a href="/rubricas"><button class="buttonMenu" id="rubricaButton">Rubricas</button></a>
+        <a href="/fornecedor"><button class="buttonMenu" id="fornecedorButton">Adicionar fornecedor</button></a>
+        <div></div>
+    </div>
+    <hr>
+    <div class="editorCategoria">
+        <div class="adicionarCategoria">
+            <h2>Adicionar Rubrica</h2>
+            <form action="/categoria/" method="post">
+                <input type="text" name="CATEGORIA" placeholder="Informe a Rubrica" class="texto">
+                <input type="hidden" name="idcliente">
+                <input type="submit" value="Adicionar" class="adicionarButton">
+            </form>
+        </div>
 
+        <div class="adicionarSubcategoria">
+            <h2>Adicionar Sub-Rubrica</h2>
+            <form action="/categoria/subcategoria" method="post">
+                <label>
+                    <select name="categoriaPai" id="seletorCategoria">
+                        <option value="" disabled selected>Selecione Rubrica-Pai</option>
+                    </select>
+                </label>
+                <input type="text" name="SUBCATEGORIA" placeholder="Informe a sub-rubrica" class="texto">
+                <input type="hidden" name="idcliente2">
+                <input type="submit" value="Adicionar" class="adicionarButton">
+            </form>
+        </div>
+
+        <div class="removerCategoria">
+            <h3>Remover Rubrica e Sub-Rubrica</h3>
+            <form action="/categoria/delete/" method="post">
+                <label>
+                    <select name="categoria" id="seletorCategoria2">
+                        <option value="" disabled selected>Selecione para Remover</option>
+                    </select>
+                </label>
+                <input type="hidden" name="idcliente3">
+                <input type="submit" value="Remover" class="adicionarButton">
+            </form>
+        </div>
+    </div>
     <script src="/paginaRubricas/paginaRubricas.js"></script>
 </body>
 </html>

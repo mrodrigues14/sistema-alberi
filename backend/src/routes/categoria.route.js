@@ -29,7 +29,8 @@ router.post('/' , (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao adicionar categoria");
         }
-        res.redirect('/categoria');
+        const currentUrl = req.headers.referer;
+        res.redirect(currentUrl);
     });
 });
 
@@ -40,7 +41,8 @@ router.post('/delete' , (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao deletar categoria");
         }
-        res.redirect('/categoria');
+        const currentUrl = req.headers.referer;
+        res.redirect(currentUrl);
     });
 });
 
@@ -51,7 +53,8 @@ router.post('/subcategoria', (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao adicionar subcategoria");
         }
-        res.redirect('/categoria');
+        const currentUrl = req.headers.referer;
+        res.redirect(currentUrl);
     });
 });
 

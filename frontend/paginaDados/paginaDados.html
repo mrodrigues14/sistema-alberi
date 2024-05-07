@@ -17,35 +17,40 @@
         <div id="Adicionar-Conta">
             <h1>Adicionar Conta</h1>
             <form id="formAdd" action="/dados/adicionar" method="post">
-                <label for="nomeBanco">
-                    Nome do Banco:
-                    <input type="text" id="nomeBanco" name="nomeBanco">
-                </label>
-                <label for="tipoConta">
-                    Tipo:
-                    <select id="tipoConta" name="tipoConta">
-                        <option value="CONTA CORRENTE">Conta Corrente</option>
-                        <option value="CONTA SALARIO">Conta Salário</option>
-                        <option value="CONTA INVESTIMENTO">Conta Investimento</option>
-                    </select>
-                </label>
-                <input type="hidden" name="idcliente">
-                <input type="submit" value="Adicionar" id="addButton">
+                <fieldset>
+                    <legend>Informações da Conta</legend>
+                    <label for="nomeBanco">Nome do Banco:
+                        <input type="text" id="nomeBanco" name="nomeBanco" required>
+                    </label>
+                    <label for="tipoConta">Tipo:
+                        <select id="tipoConta" name="tipoConta" required>
+                            <option value="CONTA CORRENTE">Conta Corrente</option>
+                            <option value="CONTA SALARIO">Conta Salário</option>
+                            <option value="CONTA INVESTIMENTO">Conta Investimento</option>
+                        </select>
+                    </label>
+                    <input type="hidden" name="idcliente">
+                    <input type="submit" value="Adicionar" id="addButton">
+                </fieldset>
             </form>
         </div>
 
+
         <div id="Remover Conta">
             <h1>Remover Conta</h1>
-            <form id="formRemove" action="/dados/remover" method="post">
-                <label for="nomeBanco">
-                    Nome do Banco:
-                    <select id="selectBanco" name="idbanco">
+            <fieldset>
+                <legend>Informações da Conta</legend>
+                <form id="formRemove" action="/dados/remover" method="post">
+                    <label for="nomeBanco">
+                        Nome do Banco:
+                        <select id="selectBanco" name="idbanco">
 
-                    </select>
-                </label>
-                <input type="hidden" name="idcliente2">
-                <input type="submit" value="Remover" id="removeButton">
-            </form>
+                        </select>
+                    </label>
+                    <input type="hidden" name="idcliente2">
+                    <input type="submit" value="Remover" id="removeButton">
+                </form>
+            </fieldset>
         </div>
     </div>
     <script src="/paginaDados/paginaDados.js"></script>

@@ -69,15 +69,6 @@
             <input type="submit" value="Editar" id="editarButton">
         </form>
     </div>
-    <script>
-        document.getElementById('removeButton').addEventListener('click', function(event) {
-            var empresa = document.getElementById('selectNomeEmpresa').value;
-            var confirmacao = confirm('Tem certeza que deseja remover a empresa ' + empresa + '?');
-            if (!confirmacao) {
-                event.preventDefault();
-            }
-        });
-    </script>
     <script src="/paginaCadastro/paginaCadastro.js"></script>
 </body>
 </html>

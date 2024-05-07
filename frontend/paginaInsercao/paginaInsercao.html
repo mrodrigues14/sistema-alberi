@@ -28,7 +28,7 @@
     <div class="subnavbar">
         <a href="/insercao"><button class="buttonMenu" id="inserirButton">Inserir extrato</button></a>
         <a href="/consulta"><button class="buttonMenu">Consultar extrato</button></a>
-        <a><button class="buttonMenu">Rubricas</button></a>
+        <a href="/rubricas"><button class="buttonMenu">Rubricas</button></a>
         <a href="/fornecedor"><button class="buttonMenu">Adicionar fornecedor</button></a>
         <div></div>
     </div>
@@ -39,10 +39,6 @@
 
             </select>
         </div>
-
-        <div id="categoriasButtonDiv">
-            <button id="categoriasButton" onclick="abrirPopUp()">Editar Categorias</button>
-        </div>
         <div>
             <form id="uploadForm" enctype="multipart/form-data">
                 <input type="file" id="excelFile" accept=".xlsx, .xls" />
@@ -50,19 +46,6 @@
             </form>
         </div>
 
-        <div id="loadingPopup" style="display: none;">
-            <div class="loadingContent">
-                <p>Carregando, por favor aguarde...</p>
-            </div>
-        </div>
-
-
-    </div>
-
-    <div class="sobreposicao" id="sobreposicao"></div>
-    <div class="popup" id="popup">
-        <div class="fechar" onclick="fecharPopUp()"><i class="fas fa-times"></i></div>
-        <iframe src="/categoria"></iframe>
     </div>
 
     <form id="meuFormulario" action="/insercao/" method="post">
@@ -71,7 +54,7 @@
                 <thead>
                 <tr>
                     <th>Data</th>
-                    <th>Categoria</th>
+                    <th>Rubrica</th>
                     <th>Fornecedor</th>
                     <th>Observação</th>
                     <th>Nome no Extrato</th>
@@ -115,7 +98,7 @@
         <thead>
         <tr>
             <th>Data</th>
-            <th>Categoria</th>
+            <th>Rubrica</th>
             <th>Fornecedor</th>
             <th>Observação</th>
             <th>Nome no Extrato</th>
