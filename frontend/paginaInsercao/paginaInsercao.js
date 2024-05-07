@@ -273,6 +273,6 @@ $(document).ready(function() {
     $('#seletorFornecedor').select2({
         allowClear: true
     });
-    $('#seletorCategoria').select2({ placeholder: "Selecione a categoria", allowClear: true });
+    $('#seletorCategoria').select2({ placeholder: "Selecione a rúbrica", allowClear: true });
 
 });

@@ -99,7 +99,7 @@
     margin-top: 3vw;
     margin-left: auto;
     margin-right: auto;
-    width: 88%;
+    width: 95%;
 }
 
 .tabela table{
@@ -164,13 +164,10 @@
     background-color: #fff;
     font-size: 16px;
     text-align-last: center;
+    text-align: center;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-}
-
-#seletorBanco::-ms-expand {
-    display: none;
 }
 
 input[type="submit"] {
@@ -292,21 +289,6 @@ iframe {
     font-size: 24px;
     color: #000;
 }
-
-#seletorCategoria{
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #fff;
-    font-size: 16px;
-    text-align-last: center;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-
 #loadingPopup {
     position: fixed;
     left: 0;
@@ -330,18 +312,6 @@ iframe {
     padding: 8px 12px;
 }
 
-#seletorFornecedor{
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #fff;
-    text-align-last: center;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
 
 #tipo{
     width: 100%;

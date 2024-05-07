@@ -33,7 +33,7 @@ router.post('/remover', (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao remover dados");
         }
-        res.redirect(`/cadastro?successMsg=Empresa ${selectNomeEmpresa} removida!`);
+        res.redirect('/cadastro');
     });
 });
 
