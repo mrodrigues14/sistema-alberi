@@ -1,6 +1,5 @@
 const express = require('express');
 const db = require('../base/database');
-const { auth, requiresAuth } = require('express-openid-connect');
 
 const router = express.Router();
 
@@ -38,11 +37,11 @@ router.post('/login', (req, res) => {
     }
 });
 
-router.get('/usuario-logado', requiresAuth(), (req, res) => {
-    if (req.oidc.user) {
-        res.json({ username: req.oidc.user.name });
+router.get('/usuario-logado', (req, res) => {
+    if (req.session && req.session.username) {
+        res.status(200).json({ username: req.session.username });
     } else {
-        res.status(401).send('Usuário não autenticado');
+        res.status(401).json({ message: 'No user logged in' });
     }
 });
 
