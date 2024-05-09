@@ -70,3 +70,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
         history.pushState(null, '', window.location.pathname);
     }
 });
+
+document.addEventListener("DOMContentLoaded", function() {
+    const formRemove = document.getElementById('formRemove');
+
+    formRemove.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const selectElement = document.getElementById('selectBanco');
+        const empresa = selectElement.options[selectElement.selectedIndex].text;
+        if (confirm('Tem certeza que deseja remover o banco: ' + empresa + '?')) {
+            formRemove.submit();
+        } else {
+            console.log('Remoção cancelada pelo usuário.');
+        }
+    });
+});

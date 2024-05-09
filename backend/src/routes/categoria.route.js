@@ -5,6 +5,7 @@ const {buscar} = require('../repositories/categoria.repository');
 const {adicionarOuAssociarCategoria} = require('../repositories/categoria.repository');
 const {deletar} = require('../repositories/categoria.repository');
 const {adicionarSubcategoria} = require('../repositories/categoria.repository');
+const {editarCategoria} = require('../repositories/categoria.repository');
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEditarCategoria/paginaEditarCategoria.html'));
@@ -29,8 +30,7 @@ router.post('/' , (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao adicionar categoria");
         }
-        const currentUrl = req.headers.referer;
-        res.redirect(currentUrl);
+        res.redirect(`/rubricas?successMsg=Rubrica ${CATEGORIA} adicionada com sucesso!`);
     });
 });
 
@@ -53,8 +53,19 @@ router.post('/subcategoria', (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao adicionar subcategoria");
         }
-        const currentUrl = req.headers.referer;
-        res.redirect(currentUrl);
+        res.redirect(`/rubricas?successMsg=Sub-Rubrica ${SUBCATEGORIA} adicionada com sucesso!`);
+    });
+});
+
+router.post('/editar' , (req, res) => {
+    const {idcliente4, categoriaAntiga, categoriaNova} = req.body;
+    console.log(req.body);
+    editarCategoria(categoriaAntiga, categoriaNova, idcliente4, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao editar categoria");
+        }
+        res.redirect(`/rubricas?successMsg=Rubrica editada para ${categoriaNova}!`);
     });
 });
 
