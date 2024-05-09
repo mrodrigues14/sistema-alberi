@@ -58,12 +58,14 @@ window.onload = function() {
                     row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
                     row.insertCell().textContent = insercao.NOME_BANCO;
                     row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
-                    row.insertCell().textContent = insercao.VALOR;
+
+                    row.insertCell().textContent = formatarValorFinanceiro(insercao.VALOR);
+
                     const deleteCell = row.insertCell();
                     deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
-                                            <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
-                                            <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-                                            </form>`;
+                                        <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
+                                        <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                                    </form>`;
                 });
             })
             .catch(error => {
@@ -191,12 +193,23 @@ function excelDateToJSDate(excelDate) {
 }
 
 function mostrarPopupCarregamento() {
-    document.getElementById('loadingPopup').style.display = 'block';
+    var popup = document.getElementById('loadingPopup');
+    if (popup) {
+        popup.style.display = 'block';
+    } else {
+        console.error('Loading popup element not found');
+    }
 }
+
 
 function fecharPopupCarregamento() {
     document.getElementById('loadingPopup').style.display = 'none';
 }
+
+function formatarValorFinanceiro(valor) {
+    return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 
 function lerExcel() {
     var input = document.getElementById('excelFile');
@@ -212,9 +225,15 @@ function lerExcel() {
                 if (row['Data'] && !isNaN(row['Data'])) {
                     row['Data'] = excelDateToJSDate(row['Data']);
                 }
-                // Usa as variáveis globais IDCLIENTE e IDBANCO
                 row['IDCLIENTE'] = idEmpresa;
                 row['IDBANCO'] = IDBANCO;
+
+                if (row['Saida']) {
+                    row['Saida'] = formatarValorFinanceiro(parseFloat(row['Saida']));
+                }
+                if (row['Entrada']) {
+                    row['Entrada'] = formatarValorFinanceiro(parseFloat(row['Entrada']));
+                }
             });
             var json_object = JSON.stringify(XL_row_object);
             console.log("JSON Convertido:", json_object);

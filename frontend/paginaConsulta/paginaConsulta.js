@@ -125,6 +125,12 @@ function buscarDados() {
         });
 }
 
+function formatarValorNumerico(valor) {
+    return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+
+
 function atualizarTabela(dados) {
     console.log('Atualizando tabela com:', dados);
     const tbody = document.getElementById('consulta').querySelector('tbody');
@@ -138,16 +144,21 @@ function atualizarTabela(dados) {
         row.insertCell().textContent = item.DESCRICAO;
         row.insertCell().textContent = item.NOME_NO_EXTRATO;
         row.insertCell().textContent = item.NOME_FORNECEDOR;
+
+        const entradaCell = row.insertCell();
+        const saidaCell = row.insertCell();
         if (item.TIPO_DE_TRANSACAO == 'ENTRADA') {
-            row.insertCell().textContent = item.VALOR.toFixed(2)
-            row.insertCell().textContent = ""
+            entradaCell.textContent = formatarValorNumerico(item.VALOR);
+            saidaCell.textContent = "";
             saldo += parseFloat(item.VALOR);
         } else {
-            row.insertCell().textContent = ""
-            row.insertCell().textContent = item.VALOR.toFixed(2);
+            entradaCell.textContent = "";
+            saidaCell.textContent = formatarValorNumerico(item.VALOR);
             saldo -= parseFloat(item.VALOR);
         }
-        row.insertCell().textContent = saldo.toFixed(2);
+
+        row.insertCell().textContent = formatarValorNumerico(saldo);
+
         const deleteCell = row.insertCell();
         deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
                                         <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
@@ -158,30 +169,32 @@ function atualizarTabela(dados) {
                                 <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
                                 `;
     });
+    fetchSaldoInicialEFinal(saldo);
+}
 
-    let saldoinicial = 0;
-    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${formatDateToFirstOfMonth($('#seletorMesAno').val())}`)
+function fetchSaldoInicialEFinal(saldoAtual) {
+    const mesAno = $('#seletorMesAno').val();
+    const dataFormatada = formatDateToFirstOfMonth(mesAno);
+
+    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${dataFormatada}`)
         .then(response => response.json())
         .then(data => {
             const table = document.getElementById('saldoInicialTable');
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = '';
+            let saldoinicial = 0;
             data.forEach(item => {
                 const row = tbody.insertRow();
                 saldoinicial += parseFloat(item.saldo);
-                row.insertCell().textContent = item.saldo.toFixed(2);
-
+                row.insertCell().textContent = formatarValorNumerico(item.saldo);
             });
-            const saldoFinal = saldo + saldoinicial;
-            const table2 = document.getElementById('saldoFinalTable')
+            const saldoFinal = saldoAtual + saldoinicial;
+            const table2 = document.getElementById('saldoFinalTable');
             const tbodysaldofinal = table2.querySelector('tbody');
             tbodysaldofinal.innerHTML = '';
             const row = tbodysaldofinal.insertRow();
-            row.insertCell().textContent = saldoFinal.toFixed(2);
-        })
-
-
-
+            row.insertCell().textContent = formatarValorNumerico(saldoFinal);
+        });
 }
 
 let linhasSelecionadas = [];
