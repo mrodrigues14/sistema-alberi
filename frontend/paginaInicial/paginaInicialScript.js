@@ -1,6 +1,6 @@
 const userRole = localStorage.getItem('userRole');
 const idusuario = localStorage.getItem('idusuario');
-console.log(idusuario);
+console.log("esse eh o id do usuario",idusuario);
 
 console.log(userRole);
 console.log(idusuario);
@@ -107,12 +107,12 @@ function displayTarefas(data) {
         const taskCell = row.insertCell();
         taskCell.innerHTML = `<span name="tarefa">${tarefa.TITULO}</span>`;
         const dateCell = row.insertCell();
-        dateCell.innerHTML = `<span name="data_limite">${tarefa.DATA_LIMITE}</span>`;
+        dateCell.innerHTML = `<span name="data_limite">${formatDate(tarefa.DATA_LIMITE)}</span>`;
         row.insertCell().textContent = tarefa.DATA_INICIO ? formatDate(tarefa.DATA_INICIO) : '';
         row.insertCell().textContent = tarefa.DATA_CONCLUSAO ? formatDate(tarefa.DATA_CONCLUSAO) : '';
         const actionCell = row.insertCell();
         actionCell.innerHTML = `<button class="edit-button" onclick="editarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer;">
-                                                                  <img src="imagens/editarTarefa.png" style="width: 100%;">
+                                                                  <img src="imagens/editar.png" style="width: 100%;">
                                                                   </button>`;
         row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer">
                                                                   <img src="imagens/lixeira.png" style="width: 100%;">
@@ -196,8 +196,11 @@ function inputNomeEmpresa(names) {
         });
 
         function updateList(filter) {
+            console.log("Names array:", names);
+            console.log("Filter value:", filter);
+
             var filteredNames = names.filter(function (name) {
-                return name.toLowerCase().includes(filter.toLowerCase());
+                return name && name.toLowerCase().includes(filter.toLowerCase());
             });
 
             list.innerHTML = '';
@@ -209,6 +212,8 @@ function inputNomeEmpresa(names) {
 
             list.style.display = filteredNames.length ? 'block' : 'none';
         }
+
+
     }
     else{
         console.error('Elementos input ou list não foram encontrados!');
@@ -289,12 +294,10 @@ function adicionarTarefa() {
         },
         body: JSON.stringify({
             titulo,
-            dataLimite,
-            dataInicial,
-            frequencia,
-            proximoPrazo,
-            recurrenceDay,
             idcliente,
+            dataLimite,
+            idusuario,
+            recurrenceDay,
         }),
     })
         .then(response => {
@@ -401,7 +404,7 @@ function editarTarefa(idAfazer) {
     const dateInput = document.createElement('input');
     dateInput.type = 'date';
     dateInput.name = 'data_limite';
-    dateInput.value = row.querySelector('[name="data_limite"]').value;
+    dateInput.value = row.querySelector('[name="data_limite"]').textContent;
 
     const taskCell = row.querySelector('[name="tarefa"]').parentElement;
     taskCell.innerHTML = '';
@@ -411,31 +414,23 @@ function editarTarefa(idAfazer) {
     dateCell.innerHTML = '';
     dateCell.appendChild(dateInput);
 
-    const saveButton = document.createElement('button');
-    saveButton.className = 'save-button';
-    saveButton.textContent = 'Salvar';
-    saveButton.style.display = 'inline-block';
-    saveButton.onclick = () => salvarAlteracoes(idAfazer);
-
+    // Change edit button to save button
     const editButton = row.querySelector('.edit-button');
-    editButton.style.display = 'none';
-
-    const actionCell = row.querySelector('[name="action"]');
-    actionCell.innerHTML = '';
-    actionCell.appendChild(saveButton);
+    editButton.innerHTML = '<img src="imagens/salvar.png" style="width: 100%;">'; // assuming salvar.png is your save icon
+    editButton.onclick = function() { salvarAlteracoes(idAfazer); }; // Change onclick to save changes
 }
 
 function salvarAlteracoes(idAfazer) {
     const row = document.querySelector(`tr[data-id="${idAfazer}"]`);
     const taskInput = row.querySelector('input[name="tarefa"]');
     const dateInput = row.querySelector('input[name="data_limite"]');
-    const saveButton = row.querySelector('.save-button');
-    const editButton = row.querySelector('.edit-button');
 
     const task = taskInput.value.trim();
     const date = dateInput.value;
 
-    if (!task ||!date) {
+    console.log("Sending data:", { idtarefa: idAfazer, titulo: task, dataLimite: date }); // Log the data being sent
+
+    if (!task || !date) {
         alert('Por favor, preencha todos os campos!');
         return;
     }
@@ -453,20 +448,17 @@ function salvarAlteracoes(idAfazer) {
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Erro ao salvar alterações');
+                return response.text().then(text => Promise.reject('Response not OK: ' + text));
             }
             return response.json();
         })
         .then(data => {
-            console.log('Alterações salvas com sucesso!');
-            window.location.reload();
+            console.log('Alterações salvas com sucesso!', data);
+            window.location.reload();  // Reload the page to show the updated task list
         })
-        .catch(error => console.error('Erro ao salvar alterações:', error));
-
-    taskInput.remove();
-    dateInput.remove();
-    saveButton.remove();
-    editButton.style.display = 'inline-block';
+        .catch(error => {
+            console.error('Erro ao salvar alterações:', error);
+        });
 }
 
 function deletarTarefa(idtarefa) {

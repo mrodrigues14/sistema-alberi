@@ -122,6 +122,7 @@ function handleFiltrarPorCategoriaEntrada() {
             .then(response => response.json())
             .then(data => {
                 console.log('Dados de saída por categoria:', data);
+          33
                 criarGraficoEntradaPorCategoria(data);
             })
             .catch(error => console.error('Erro ao buscar dados de saída por categoria:', error));

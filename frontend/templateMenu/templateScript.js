@@ -99,6 +99,9 @@ function inputNomeEmpresa(names) {
     input.addEventListener('input', function(e) {
         updateList(e.target.value);
     });
+    document.getElementById('searchInput').addEventListener('focus', function() {
+        updateList('');
+    });
 
     document.querySelector('.arrow-button').addEventListener('click', function() {
         updateList('');
@@ -114,11 +117,9 @@ function inputNomeEmpresa(names) {
     });
 
     function updateList(filter) {
-        // Ensure filter is not null before converting to lower case
         var safeFilter = filter ? filter.toLowerCase() : '';
 
         var filteredNames = names.filter(function(name) {
-            // Ensure name is not null before converting to lower case
             return name && name.toLowerCase().includes(safeFilter);
         });
 
@@ -155,8 +156,6 @@ function showEmpresaList() {
 }
 
 
-document.getElementById('searchInput').addEventListener('focus', showEmpresaList);
-document.querySelector('.arrow-button').addEventListener('click', showEmpresaList);
 
 
 document.addEventListener('click', function(event) {

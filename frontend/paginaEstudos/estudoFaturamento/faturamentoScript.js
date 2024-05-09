@@ -16,7 +16,7 @@ function fetchTemplate(){
             link.href = '/templateMenu/styletemplate.css';
             link.rel = 'stylesheet';
             link.type = 'text/css';
-            document.head.appendChild(link);
+            document.head.appendChild(link);+565
 
             var script = document.createElement('script');
             script.src = '/templateMenu/templateScript.js';

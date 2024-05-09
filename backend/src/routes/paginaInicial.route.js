@@ -60,16 +60,23 @@ router.get('/editartarefa', (req, res) => {
 });
 
 router.post('/editartarefa', (req, res) => {
-    const {id, titulo, dataLimite} = req.body;
-    if(!titulo || !id || !dataLimite)
-        res.redirect(`/paginaInicial/editartarefa?id=${id}`);
-    editarTarefa(id, titulo, dataLimite, (err, result) => {
+    console.log("Received data:", req.body); // Log the received data
+    const {idtarefa, titulo, dataLimite} = req.body;
+
+    if (!titulo || !idtarefa || !dataLimite) {
+        res.status(400).json({error: 'Missing fields'});
+        return;
+    }
+    editarTarefa(idtarefa, titulo, dataLimite, (err, result) => {
         if (err) {
-            return res.status(500).json(err);
+            res.status(500).json({error: 'Internal server error'});
+            return;
         }
-        res.redirect(`/paginaInicial/editartarefa?id=${id}`)
+        res.json({message: 'Task updated successfully'});
     });
 });
+
+
 
 router.get('/editartarefa/gettarefa', (req, res) => {
     const {idtarefa, idusuario} = req.query;
