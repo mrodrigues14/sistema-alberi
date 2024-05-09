@@ -57,7 +57,8 @@
     flex-direction: column;
     margin-top: 2%;
     margin-bottom: 5%;
-    width: 20%;
+    margin-right: 5%;
+    width: 100%;
     height: auto;
     border: 1px solid #000000;
     border-radius: 10px;
@@ -230,4 +231,61 @@
 
 .removerCategoria h3{
     font-weight: normal;
+}
+
+.adicionar_editar{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 50%;
+}
+
+.editarCategoria{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5%;
+    margin-top: 2%;
+    width: 100%;
+    height: auto;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+}
+
+#seletorCategoria3{
+    width: 100%;
+    margin-bottom: 5%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.editarCategoria h2{
+    font-weight: normal;
+}
+
+.editarCategoria form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+}
+
+.editarCategoria input{
+    text-align: center;
+    width: 80%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 5px;
+    background-color: transparent;
 }

@@ -70,7 +70,8 @@ window.onload = function() {
                             data.forEach(categoria => {
                                 const option = document.createElement('option');
                                 option.value = categoria.IDCATEGORIA;
-                                option.textContent = categoria.NOME;
+                                const prefix = categoria.ID_CATEGORIA_PAI ? '— ' : '';
+                                option.textContent = `${prefix}${categoria.NOME}`;
                                 select.appendChild(option);
                             });
                         })
@@ -100,7 +101,8 @@ window.onload = function() {
                             data.forEach(categoria => {
                                 const option = document.createElement('option');
                                 option.value = categoria.IDCATEGORIA;
-                                option.textContent = categoria.NOME;
+                                const prefix = categoria.ID_CATEGORIA_PAI ? '— ' : '';
+                                option.textContent = `${prefix}${categoria.NOME}`;
                                 select.appendChild(option);
                             });
                         })
@@ -129,4 +131,59 @@ window.onload = function() {
         .catch(error => {
             console.error('Erro ao carregar dados da empresa:', error);
         });
+
+    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                const campoOculto = document.querySelector('input[name="idcliente4"]');
+                if (campoOculto) {
+                    campoOculto.value = data[0].IDCLIENTE;
+                    idCliente = data[0].IDCLIENTE;
+                    fetch(`/categoria/dados?idcliente=${encodeURIComponent(idCliente)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const select = document.getElementById('seletorCategoria3');
+                            data.forEach(categoria => {
+                                const option = document.createElement('option');
+                                option.value = categoria.IDCATEGORIA;
+                                const prefix = categoria.ID_CATEGORIA_PAI ? '— ' : '';
+                                option.textContent = `${prefix}${categoria.NOME}`;
+                                select.appendChild(option);
+                            });
+                        })
+                } else {
+                    console.error('Campo oculto id_empresa não encontrado');
+                }
+            } else {
+                console.error('Dados da empresa não retornados ou vazios');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao carregar dados da empresa:', error);
+        });
 }
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    const params = new URLSearchParams(window.location.search);
+    const successMsg = params.get('successMsg');
+    if (successMsg) {
+        alert(successMsg);
+        history.pushState(null, '', window.location.pathname);
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const formRemove = document.getElementById('formRemove');
+
+    formRemove.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const selectElement = document.getElementById('seletorCategoria2');
+        const empresa = selectElement.options[selectElement.selectedIndex].text;
+        if (confirm('Tem certeza que deseja remover a rubrica: ' + empresa + '?')) {
+            formRemove.submit();
+        } else {
+            console.log('Remoção cancelada pelo usuário.');
+        }
+    });
+});

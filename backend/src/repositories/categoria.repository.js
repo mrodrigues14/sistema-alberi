@@ -2,10 +2,12 @@ const mysqlConn = require("../base/database");
 
 function buscar(idcliente, callback){
     mysqlConn.query(
-        `SELECT C.IDCATEGORIA AS IDCATEGORIA, C.NOME AS NOME, C.ID_CATEGORIA_PAI AS ID_CATEGORIA_PAI 
+        `SELECT C.IDCATEGORIA, C.NOME, COALESCE(C.ID_CATEGORIA_PAI, C.IDCATEGORIA) AS ORDER_PARENT, C.ID_CATEGORIA_PAI
         FROM CATEGORIA C
         INNER JOIN RELACAOCLIENTECATEGORIA RCC ON C.IDCATEGORIA = RCC.ID_CATEGORIA
-        WHERE RCC.ID_CLIENTE = ?`, [idcliente],
+        WHERE RCC.ID_CLIENTE = ?
+        ORDER BY ORDER_PARENT, C.ID_CATEGORIA_PAI IS NOT NULL, C.IDCATEGORIA
+        `, [idcliente],
         function(err, result, fields) {
             if (err) {
                 callback(err, null);
@@ -86,5 +88,21 @@ function adicionarSubcategoria(idCliente, idCategoriaPai, subcategoria, callback
     });
 }
 
-
-module.exports = {buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria};
+function editarCategoria(idCategoriaAntiga, categoriaNova, idCliente, callback) {
+    mysqlConn.query(`SELECT NOME FROM CATEGORIA WHERE IDCATEGORIA = ? LIMIT 1`, [idCategoriaAntiga], function(err, results) {
+        if (err) {
+            callback(err, null);
+        } else if (results.length > 0) {
+            mysqlConn.query(`UPDATE CATEGORIA SET NOME = ? WHERE IDCATEGORIA = ?`, [categoriaNova, idCategoriaAntiga], function(err, result) {
+                if (err) {
+                    callback(err, null);
+                } else {
+                    callback(null, result);
+                }
+            });
+        } else {
+            callback(new Error("Categoria não encontrada."), null);
+        }
+    });
+}
+module.exports = {buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria, editarCategoria};

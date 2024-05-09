@@ -44,7 +44,7 @@ router.post('/remover', (req, res) => {
             res.status(500).send('Erro ao remover fornecedor');
         }
         else {
-            res.redirect(`/fornecedor?successMsg=Fornecedor removido!`);
+            res.redirect(`/fornecedor`);
         }
     });
 });

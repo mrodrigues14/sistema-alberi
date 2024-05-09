@@ -30,15 +30,30 @@
     </div>
     <hr>
     <div class="editorCategoria">
-        <div class="adicionarCategoria">
-            <h2>Adicionar Rubrica</h2>
-            <form action="/categoria/" method="post">
-                <input type="text" name="CATEGORIA" placeholder="Informe a Rubrica" class="texto">
-                <input type="hidden" name="idcliente">
-                <input type="submit" value="Adicionar" class="adicionarButton">
-            </form>
-        </div>
+        <div class="adicionar_editar">
+            <div class="adicionarCategoria">
+                <h2>Adicionar Rubrica</h2>
+                <form action="/categoria/" method="post">
+                    <input type="text" name="CATEGORIA" placeholder="Informe a Rubrica" class="texto">
+                    <input type="hidden" name="idcliente">
+                    <input type="submit" value="Adicionar" class="adicionarButton">
+                </form>
+            </div>
 
+            <div class="editarCategoria">
+                <h2>Editar Rubrica</h2>
+                <form action="/categoria/editar" method="post">
+                    <label>
+                        <select name="categoriaAntiga" id="seletorCategoria3">
+                            <option value="" disabled selected>Selecione para Remover</option>
+                        </select>
+                    </label>
+                    <input type="text" name="categoriaNova" placeholder="Informe o novo nome da rubrica" class="texto">
+                    <input type="hidden" name="idcliente4">
+                    <input type="submit" value="Editar" class="adicionarButton">
+                </form>
+            </div>
+        </div>
         <div class="adicionarSubcategoria">
             <h2>Adicionar Sub-Rubrica</h2>
             <form action="/categoria/subcategoria" method="post">
@@ -55,7 +70,7 @@
 
         <div class="removerCategoria">
             <h3>Remover Rubrica e Sub-Rubrica</h3>
-            <form action="/categoria/delete/" method="post">
+            <form action="/categoria/delete/" method="post" id="formRemove">
                 <label>
                     <select name="categoria" id="seletorCategoria2">
                         <option value="" disabled selected>Selecione para Remover</option>
