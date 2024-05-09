@@ -9,28 +9,11 @@ function myFunction() {
     }
 }
 
-function isLoggedIn() {
-    fetch('/api/isLoggedIn')
-        .then(response => response.json())
-        .then(data => {
-            if (data.isLoggedIn) {
-                // O usuário está logado
-                console.log('Usuário logado');
-            } else {
-                console.log('Usuário não logado');
-                window.location.href = '/paginaLogin/index.html';
-
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-        });
-}
-
 function loadAndDisplayUsername() {
     fetch('/api/usuario-logado')
         .then(response => {
             if (!response.ok) {
+                // Se a resposta do servidor não for ok, redireciona para a página de login
                 throw new Error('Não foi possível obter o nome do usuário logado');
             }
             return response.json();
@@ -39,12 +22,17 @@ function loadAndDisplayUsername() {
             const userButton = document.querySelector('.usernameDisplay');
             if (userButton && data.username) {
                 userButton.textContent = data.username;
+            } else {
+
+                window.location.href = '/';
             }
         })
         .catch(error => {
             console.error('Erro:', error);
+            window.location.href = '/';
         });
 }
+
 
 function loadNomeEmpresa() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
@@ -194,7 +182,6 @@ window.onclick = function(event) {
     }
 }
 document.addEventListener('DOMContentLoaded', function() {
-    isLoggedIn();
     handleEmpresa()
     loadAndDisplayUsername();
     loadNomeEmpresa();
