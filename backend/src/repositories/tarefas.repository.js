@@ -35,14 +35,15 @@ function consultarTarefa(idtarefa, idusuario, callback){
 
 }
 
-function adicionarTarefa(tarefa, idcliente, dataLimite, idusuario,recurrenceDay, callback) {
-    const dataInicio = new Date().toISOString().split('T')[0];
+function adicionarTarefa(tarefa, idcliente, dataLimite, idusuario, recurrenceDay, callback) {
+    const dataInicio = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z');
     mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, DATA_INICIO, ID_CLIENTE, ID_USUARIO, RECORRENCIA) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)`,
-        [tarefa, "NÃO FOI INICIADO", dataLimite, dataInicio, idcliente, idusuario,recurrenceDay ],
+        [tarefa, "NÃO FOI INICIADO", dataLimite, dataInicio.toISOString().split('T')[0], idcliente, idusuario, recurrenceDay],
         (err, result, fields) => {
             callback(err, result);
         });
 }
+
 
 function deletarTarefa(idtarefa, callback){
     mysqlConn.query(`DELETE FROM TAREFAS WHERE IDTAREFA = ?`, [idtarefa], (err, result) =>{
