@@ -316,14 +316,12 @@ function adicionarTarefa() {
 }// Até aqui js matheus edition
 
 function formatDate(dateString, isInitialDate = false) {
-    const date = new Date(dateString);
-    const today = new Date();
-    date.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
+    const date = new Date(dateString + 'T00:00:00Z');
+    const today = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z');
 
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const year = date.getUTCFullYear();
 
     const dias = Math.floor((date - today) / (1000 * 60 * 60 * 24));
 
@@ -341,6 +339,7 @@ function formatDate(dateString, isInitialDate = false) {
         return `Iniciado em: ${day}/${month}/${year}`;
     }
 }
+
 
 
 function toTitleCase(str) {
