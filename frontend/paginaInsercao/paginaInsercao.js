@@ -290,8 +290,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 $(document).ready(function() {
     $('#seletorFornecedor').select2({
+        allowClear: true,
+        sorter: data => data.sort((a, b) => a.text.localeCompare(b.text))
+    });
+
+    $('#seletorCategoria').select2({
+        placeholder: "Selecione a rúbrica",
         allowClear: true
     });
-    $('#seletorCategoria').select2({ placeholder: "Selecione a rúbrica", allowClear: true });
-
 });

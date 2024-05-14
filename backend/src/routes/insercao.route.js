@@ -66,7 +66,7 @@ router.post('/', async (req, res) => {
         console.log(req.body);
         let tipo;
         let valor = 0;
-        if(valorEn !== 0){
+        if(valorEn){
             tipo = "Entrada";
             valor = valorEn;
         }
