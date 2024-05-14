@@ -13,7 +13,6 @@ function loadAndDisplayUsername() {
     fetch('/api/usuario-logado')
         .then(response => {
             if (!response.ok) {
-                // Se a resposta do servidor não for ok, redireciona para a página de login
                 throw new Error('Não foi possível obter o nome do usuário logado');
             }
             return response.json();
@@ -22,8 +21,9 @@ function loadAndDisplayUsername() {
             const userButton = document.querySelector('.usernameDisplay');
             if (userButton && data.username) {
                 userButton.textContent = data.username;
+                localStorage.setItem('idUsuario', data.idusuario);  // Salva o ID do usuário no localStorage
+                console.log(data.idusuario);
             } else {
-
                 window.location.href = '/';
             }
         })
@@ -32,6 +32,7 @@ function loadAndDisplayUsername() {
             window.location.href = '/';
         });
 }
+
 
 
 function loadNomeEmpresa() {
@@ -43,6 +44,7 @@ function loadNomeEmpresa() {
             return response.json();
         })
         .then(data => {
+            console.log('Dados recebidos:', data); // Isso vai mostrar a estrutura exata dos dados recebidos
             inputNomeEmpresa(data);
             addClickEventToListItems();
         })
@@ -53,19 +55,15 @@ function loadNomeEmpresa() {
 
 function handleEmpresa() {
     var nomeEmpresa = getStoredEmpresaName();
-    updateNomeEmpresa(nomeEmpresa);
+    var idEmpresa = localStorage.getItem('idEmpresaSelecionada'); // Recuperar o ID da empresa também.
+    updateNomeEmpresa(nomeEmpresa, idEmpresa); // Usar o ID aqui.
 }
+
 
 function getStoredEmpresaName() {
     return localStorage.getItem('nomeEmpresaSelecionada');
 }
 
-function updateNomeEmpresa(nomeEmpresa) {
-    var empresaSelecionadaElement = document.querySelector('.empresaSelecionada');
-    if (empresaSelecionadaElement && nomeEmpresa) {
-        empresaSelecionadaElement.textContent = nomeEmpresa;
-    }
-}
 
 function showCalendarModal() {
     fetch('templateMenu/calendar.html') // Caminho para o seu calendar.html
@@ -80,13 +78,15 @@ function showCalendarModal() {
 }
 
 
-function inputNomeEmpresa(names) {
+function inputNomeEmpresa(responseData) {
+    var empresas = responseData.empresas; // Adapte conforme a estrutura de dados recebida
     var input = document.getElementById('searchInput');
     var list = document.getElementById('nameList');
 
     input.addEventListener('input', function(e) {
         updateList(e.target.value);
     });
+
     document.getElementById('searchInput').addEventListener('focus', function() {
         updateList('');
     });
@@ -95,37 +95,57 @@ function inputNomeEmpresa(names) {
         updateList('');
     });
 
-    list.addEventListener('click', function(e) {
-        if (e.target.tagName === 'LI') {
-            input.value = e.target.textContent;
+    document.getElementById('nameList').addEventListener('click', function(e) {
+        const li = e.target.closest('li'); // Isso encontra o elemento li mais próximo, independente de onde o clique ocorreu
+        if (li) {
+            console.log('Nome:', li.dataset.nome);
+            input.value = li.textContent;
             list.style.display = 'none';
-
-            empresaSelecionada(e.target.textContent);
+            empresaSelecionada(li.dataset.nome, li.dataset.id);
         }
     });
 
-    function updateList(filter) {
-        var safeFilter = filter ? filter.toLowerCase() : '';
 
-        var filteredNames = names.filter(function(name) {
-            return name && name.toLowerCase().includes(safeFilter);
+
+
+    function updateList(filter) {
+        var safeFilter = filter.toLowerCase();
+
+        var filteredData = empresas.filter(function(data) {
+            return data.NOME.toLowerCase().includes(safeFilter);
         });
 
         list.innerHTML = '';
-        filteredNames.forEach(function(name) {
+        filteredData.forEach(function(data) {
             var li = document.createElement('li');
-            li.textContent = name;
+            li.textContent = data.NOME;
+            li.setAttribute('data-nome', data.NOME);  // Garantindo que os data attributes são corretamente definidos
+            li.setAttribute('data-id', data.IDCLIENTE);
             list.appendChild(li);
         });
 
-        list.style.display = filteredNames.length ? 'block' : 'none';
+        list.style.display = filteredData.length ? 'block' : 'none';
+    }
+
+}
+
+function empresaSelecionada(nomeEmpresa, idEmpresa) {
+    console.log('Setting empresa:', nomeEmpresa, idEmpresa); // Verifique os valores antes de definir
+    localStorage.setItem('nomeEmpresaSelecionada', nomeEmpresa);
+    localStorage.setItem('idEmpresaSelecionada', idEmpresa);
+    updateNomeEmpresa(nomeEmpresa, idEmpresa);
+    console.log('LocalStorage after setting:', localStorage.getItem('idEmpresaSelecionada')); // Confirma o valor após a configuração
+}
+
+function updateNomeEmpresa(nomeEmpresa, idEmpresa) {
+    console.log('Updating display for:', nomeEmpresa, idEmpresa); // Isso vai mostrar se os valores são `undefined`.
+    var empresaSelecionadaElement = document.querySelector('.empresaSelecionada');
+    if (empresaSelecionadaElement && nomeEmpresa && idEmpresa) { // Certifique-se que ambos, nome e ID, existem.
+        empresaSelecionadaElement.textContent = nomeEmpresa;
     }
 }
 
-function empresaSelecionada(nomeEmpresa) {
-    localStorage.setItem('nomeEmpresaSelecionada', nomeEmpresa);
-    updateNomeEmpresa(nomeEmpresa);
-}
+
 
 function addClickEventToListItems() {
     var listItems = document.querySelectorAll('.name-list li');
@@ -137,12 +157,6 @@ function addClickEventToListItems() {
 function redirecionamentoDePagina() {
     window.location.reload(true);
 }
-
-function showEmpresaList() {
-    var list = document.getElementById('nameList');
-    list.style.display = 'block';
-}
-
 
 
 
@@ -186,5 +200,4 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAndDisplayUsername();
     loadNomeEmpresa();
     addClickEventToListItems();
-
 });

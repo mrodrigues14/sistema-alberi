@@ -1,13 +1,12 @@
 const userRole = localStorage.getItem('userRole');
 const idusuario = localStorage.getItem('idusuario');
-function getStoredEmpresaName() {
-    return localStorage.getItem('nomeEmpresaSelecionada');
-}
 
 let IDCLIENTE = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     loadUserOptions();
+    loadTasks(); // Carregar tarefas do banco de dados
+
     fetch('/templateMenu/template.html')
         .then(response => response.text())
         .then(data => {
@@ -35,21 +34,67 @@ document.addEventListener('DOMContentLoaded', function() {
 const listColumns = document.querySelectorAll(".drag-item-list");
 let listArrays = [[], [], [], []]; // Arrays for each column: [Backlog, Progress, Complete, On Hold]
 
+function loadTasks() {
+    const idcliente = localStorage.getItem('idEmpresaSelecionada');
+    const idusuario = localStorage.getItem('idusuario');
+    const isAdmin = localStorage.getItem('isAdmin') === 'true'; // Ajuste conforme como o isAdmin é armazenado
+
+    fetch(`/paginaInicial/tarefas?idcliente=${idcliente}&idusuario=${idusuario}&isAdmin=${isAdmin}`)
+        .then(response => response.json())
+        .then(data => {
+            // Limpar as listas existentes
+            listArrays = [[], [], [], []];
+
+            // Distribuir tarefas nas colunas
+            data.forEach(task => {
+                let column = 0; // Default to the first column
+                if (task.STATUS === 'Fazendo') {
+                    column = 1;
+                } else if (task.STATUS === 'Feito') {
+                    column = 2;
+                } else if (task.STATUS === 'Em Espera') {
+                    column = 3;
+                }
+
+                // Convertendo dados para formato compatível
+                const itemObject = {
+                    idtarefa: task.IDTAREFA,
+                    title: task.TITULO,
+                    dueDate: task.DATA_LIMITE,
+                    author: task.ID_USUARIO,
+                    authorName: task.NOME_DO_USUARIO,
+                    status: task.STATUS,
+                    description: task.DESCRICAO || "" // Adicione DESCRIÇÃO na query SQL se necessário
+                };
+
+                listArrays[column].push(itemObject);
+            });
+
+            updateDOM(); // Atualizar o DOM com as novas tarefas
+        })
+        .catch(error => {
+            console.error('Erro ao carregar tarefas:', error);
+        });
+}
+
 function loadUserOptions() {
     fetch('/paginaInicial/listaUsuarios')
         .then(response => response.json())
         .then(data => {
             const select = document.getElementById('author');
-            select.innerHTML = '';
+            select.innerHTML = ''; // Limpar opções existentes
             data.forEach(user => {
                 const option = document.createElement('option');
-                option.value = user.idusuario;
-                option.textContent = user.NOME_DO_USUARIO;
+                option.value = user.IDUSUARIOS; // O valor é o ID, que não é mostrado ao usuário
+                option.textContent = user.NOME_DO_USUARIO; // Mostra apenas o nome
                 select.appendChild(option);
             });
         })
-        .catch(error => console.error('Erro ao carregar usuários:', error));
+        .catch(error => {
+            console.error('Erro ao carregar usuários:', error);
+        });
 }
+
 
 function createItemEl(columnEl, column, item, index) {
     const listEl = document.createElement("li");
@@ -57,6 +102,7 @@ function createItemEl(columnEl, column, item, index) {
     listEl.draggable = true;
     listEl.setAttribute("onfocusout", `updateItem(${index}, ${column})`);
     listEl.setAttribute("ondragstart", "drag(event)");
+    listEl.setAttribute("data-idtarefa", item.idtarefa);
     listEl.innerHTML = `
         <div class="item-content">
             <div class="item-header">
@@ -74,6 +120,8 @@ function createItemEl(columnEl, column, item, index) {
 }
 
 
+
+
 function updateDOM() {
     listColumns.forEach((column, i) => {
         const columnEl = column;
@@ -84,8 +132,8 @@ function updateDOM() {
     });
 }
 
-function showInputBox(column) {
-    currentColumn = column;
+function showInputBox() {
+    currentColumn = 0; // Set currentColumn to 0 for "Para Fazer"
     document.getElementById('taskPopup').style.display = 'block';
     document.getElementById('title').value = '';
     document.getElementById('description').value = '';
@@ -98,28 +146,30 @@ function showInputBox(column) {
     form.addEventListener('submit', handleSubmit);
 }
 
+
 function handleSubmit(event) {
     event.preventDefault();
-    addNewItem();
+    addNewItem(currentColumn);
     closePopup();
 }
 
-function addNewItem() {
+function addNewItem(column = 0) { // Default column to 0 for "Para Fazer"
     const title = document.getElementById('title').value;
     const description = document.getElementById('description').value;
     const authorSelect = document.getElementById('author');
-    const authorId = authorSelect.value; // ID do usuário
-    const authorName = authorSelect.options[authorSelect.selectedIndex].text; // Nome do autor (usado apenas no lado do cliente)
+    const authorId = authorSelect.value;
     const dueDate = document.getElementById('dueDate').value;
-    const idcliente = 1;
-    const recurrenceDay = 0;
+    const idcliente = localStorage.getItem('idEmpresaSelecionada');
+    const status = 'Backlog'; // Always set status to "Para Fazer"
 
     const itemObject = {
         titulo: title,
-        idcliente: idcliente, // Adicionado para combinar com a estrutura do servidor
+        idcliente: idcliente,
         dataLimite: dueDate,
-        idusuario: authorId, // ID do autor
-        recurrenceDay: recurrenceDay // Adicionado para combinar com a estrutura do servidor
+        idusuario: authorId,
+        status: status,
+        recurrenceDay: 0,
+        descricao: description
     };
 
     fetch('/paginaInicial/adicionartarefa', {
@@ -131,16 +181,26 @@ function addNewItem() {
     })
         .then(response => response.json())
         .then(data => {
-            console.log('Success:', data);
+            console.log('Resposta do servidor:', data);
             if (data.success) {
-                itemObject.authorName = authorName; // Incluindo o nome para exibição no DOM
-                addToColumn(currentColumn, itemObject); // Adiciona o item ao DOM após sucesso do servidor
+                itemObject.idtarefa = data.idtarefa; // Assuming server returns the ID of the new task
+                itemObject.title = itemObject.titulo;
+                itemObject.dueDate = itemObject.dataLimite;
+                itemObject.authorName = authorSelect.options[authorSelect.selectedIndex].text;
+                addToColumn(column, itemObject); // Add the item to the "Para Fazer" column
+                updateDOM(); // Update the DOM automatically
+            } else {
+                alert('Erro ao adicionar tarefa: ' + data.error);
             }
         })
         .catch((error) => {
-            console.error('Error:', error);
+            console.error('Erro:', error);
+            alert('Falha na comunicação com o servidor.');
         });
 }
+
+
+
 
 function addToColumn(column, itemObject) {
     listArrays[column].push(itemObject);
@@ -215,5 +275,102 @@ function deleteTask(idtarefa, index, column) {
 
 function closePopup() {
     document.getElementById('taskPopup').style.display = 'none';
+}
+function rebuildArrays() {
+    // Clear existing array content
+    listArrays = [[], [], [], []]; // Reset all columns
+
+    // Traverse each column and rebuild the arrays
+    listColumns.forEach((column, i) => {
+        const columnTasks = column.querySelectorAll(".drag-item"); // Select all task items in the column
+        columnTasks.forEach(task => {
+            const taskData = {
+                idtarefa: task.dataset.idtarefa, // Ensure data-idtarefa is set on each task item
+                title: task.querySelector('.item-title').textContent,
+                dueDate: task.querySelector('.item-date').textContent,
+                author: task.dataset.authorId, // Ensure data-authorId is set on each task item
+                authorName: task.querySelector('.item-author').textContent,
+                description: task.dataset.description // Ensure data-description is set on each task item
+            };
+            listArrays[i].push(taskData);
+        });
+    });
+
+    console.log('Arrays rebuilt:', listArrays); // Logging to verify the operation
+}
+
+function dragEnter(e) {
+    e.preventDefault();
+    let target = e.target;
+    // Certifique-se de que o target seja sempre a lista UL e não um LI ou qualquer outro filho
+    while (target && !target.classList.contains('drag-item-list')) {
+        target = target.parentNode;
+    }
+    if (target) {
+        currentColumn = Array.from(listColumns).indexOf(target);
+        target.classList.add("over");
+    }
+}
+
+function dragLeave(e) {
+    e.preventDefault();
+    let target = e.target;
+    // Mesmo loop para garantir que o target é a lista UL
+    while (target && !target.classList.contains('drag-item-list')) {
+        target = target.parentNode;
+    }
+    if (target && currentColumn !== undefined && listColumns[currentColumn]) {
+        listColumns[currentColumn].classList.remove("over");
+    }
+}
+
+function drop(e) {
+    e.preventDefault();
+    const columnId = currentColumn;
+    if (columnId !== undefined && listColumns[columnId]) {
+        const statusMap = { 0: 'Backlog', 1: 'Fazendo', 2: 'Feito', 3: 'Em Espera' };
+        const newStatus = statusMap[columnId];
+
+        // Ensure draggedItem is the task element
+        const taskId = draggedItem.getAttribute('data-idtarefa');
+        if (!taskId) {
+            console.error('No task ID found on dragged item');
+            return;
+        }
+
+        // Update status in the backend
+        updateTaskStatus(taskId, newStatus);
+
+        listColumns[columnId].classList.remove("over");
+        listColumns[columnId].appendChild(draggedItem);
+        rebuildArrays();
+        currentColumn = undefined; // Reset currentColumn to avoid errors
+    }
+}
+
+
+function updateTaskStatus(idtarefa, newStatus) {
+    fetch('/paginaInicial/atualizartarefa', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ idtarefa, newStatus })
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Status updated:', data);
+        })
+        .catch(error => console.error('Error updating status:', error));
+}
+
+
+
+function drag(e) {
+    draggedItem = e.target.closest('.drag-item'); // Ensure draggedItem is the task element
+    dragging = true;
+}
+
+
+function allowDrop(e) {
+    e.preventDefault();
 }
 

@@ -46,8 +46,8 @@ router.post('/adicionartarefa', (req, res) => {
 
 
 router.post('/atualizartarefa', (req, res) => {
-    const {idtarefa} = req.body;
-    atualizarStatus(idtarefa, (err, result) => {
+    const {idtarefa, newStatus} = req.body;
+    atualizarStatus(idtarefa, newStatus, (err, result) => {
         if (err) {
             res.status(500).json(err);
         } else {

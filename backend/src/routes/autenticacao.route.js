@@ -20,6 +20,7 @@ router.post('/login', (req, res) => {
             if (results.length > 0) {
                 req.session.username = results[0].NOME_DO_USUARIO;
                 req.session.role = results[0].ROLE;
+                req.session.idusuario=results[0].IDUSUARIOS
                 res.status(200).send({
                     message: 'Login successful',
                     user: {
@@ -39,7 +40,7 @@ router.post('/login', (req, res) => {
 
 router.get('/usuario-logado', (req, res) => {
     if (req.session && req.session.username) {
-        res.status(200).json({ username: req.session.username });
+        res.status(200).json({ username: req.session.username , idusuario: req.session.idusuario });
     } else {
         res.status(401).json({ message: 'No user logged in' });
     }

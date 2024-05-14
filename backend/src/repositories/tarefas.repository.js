@@ -37,12 +37,14 @@ function consultarTarefa(idtarefa, idusuario, callback){
 
 function adicionarTarefa(tarefa, idcliente, dataLimite, idusuario, recurrenceDay, callback) {
     const dataInicio = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z');
+    const status = "PARA FAZER"; // Certifique-se de que o status está definido corretamente
     mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, DATA_INICIO, ID_CLIENTE, ID_USUARIO, RECORRENCIA) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)`,
-        [tarefa, "NÃO INICIADO", dataLimite, dataInicio.toISOString().split('T')[0], idcliente, idusuario, recurrenceDay],
+        [tarefa, status, dataLimite, dataInicio.toISOString().split('T')[0], idcliente, idusuario, recurrenceDay],
         (err, result, fields) => {
             callback(err, result);
         });
 }
+
 
 
 function deletarTarefa(idtarefa, callback){
@@ -51,49 +53,42 @@ function deletarTarefa(idtarefa, callback){
     });
 }
 
-function atualizarStatus(idtarefa, callback) {
-    mysqlConn.query('SELECT STATUS, DATA_INICIO, DATA_CONCLUSAO FROM TAREFAS WHERE IDTAREFA = ?', [idtarefa], function(err, results) {
+function atualizarStatus(idtarefa, newStatus, callback) {
+    // First, get the current status of the task
+    mysqlConn.query('SELECT STATUS FROM TAREFAS WHERE IDTAREFA = ?', [idtarefa], function(err, results) {
         if (err) {
+            console.error('Database error:', err);
             return callback(err);
         }
 
         if (results.length === 0) {
-            return callback(new Error('Nenhuma tarefa encontrada com o id fornecido.'));
+            return callback(new Error('No task found with the given ID'));
         }
 
-        let proximoStatus;
-        switch (results[0].STATUS) {
-            case 'CONCLUÍDO':
-                proximoStatus = 'NÃO FOI INICIADO';
-                break;
-            case 'PENDENTE':
-                proximoStatus = 'CONCLUÍDO';
-                break;
-            case 'NÃO FOI INICIADO':
-                proximoStatus = 'PENDENTE';
-                break;
-            default:
-                return callback(new Error('Status atual desconhecido.'));
+        const currentStatus = results[0].STATUS;
+
+        // Only update if the new status is different
+        if (currentStatus !== newStatus) {
+            mysqlConn.query('UPDATE TAREFAS SET STATUS = ? WHERE IDTAREFA = ?', [newStatus, idtarefa], function(err, result) {
+                if (err) {
+                    console.error('Database error:', err);
+                    return callback(err);
+                }
+
+                if (result.warningStatus) {
+                    console.warn('Update warning:', result.info);
+                }
+
+                console.log('Update result:', result);
+                callback(null, result);
+            });
+        } else {
+            console.log('No status change required for task:', idtarefa);
+            callback(null, { message: 'No status change required' });
         }
-
-        let dataInicio = results[0].DATA_INICIO;
-        let dataConclusao = '';
-
-        if (proximoStatus === 'NÃO FOI INICIADO' || proximoStatus === 'PENDENTE' ) {
-            dataConclusao = null;
-        } else if (proximoStatus === 'CONCLUÍDO') {
-            dataConclusao = new Date().toISOString().split('T')[0];
-        }
-
-        mysqlConn.query('UPDATE TAREFAS SET STATUS = ?, DATA_INICIO = ?, DATA_CONCLUSAO = ? WHERE IDTAREFA = ?', [proximoStatus, dataInicio, dataConclusao, idtarefa], function(err, result) {
-            if (err) {
-                return callback(err);
-            }
-
-            return callback(null, result, proximoStatus);
-        });
     });
 }
+
 
 function editarTarefa(idtarefa, titulo, dataLimite, callback){
     mysqlConn.query('UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ? WHERE IDTAREFA = ?', [titulo, dataLimite, idtarefa], function(err, result){
@@ -102,7 +97,7 @@ function editarTarefa(idtarefa, titulo, dataLimite, callback){
 }
 
 function consultarUsuarios(callback){
-    mysqlConn.query(`SELECT NOME_DO_USUARIO FROM USUARIOS`, function(err, result, fields) {
+    mysqlConn.query(`SELECT NOME_DO_USUARIO, IDUSUARIOS FROM USUARIOS`, function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
