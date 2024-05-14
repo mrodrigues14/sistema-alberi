@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report</title>
+    <link rel="stylesheet" href="reportStyle.css">
+</head>
+<body>
+<div id="menu-container"></div>
+<div class="report-container">
+    <h1>Submit Report</h1>
+    <form id="reportForm" enctype="multipart/form-data">
+        <label for="title">Título</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="description">Descrição do erro ou melhoria:</label>
+        <textarea id="description" name="description" required></textarea>
+
+        <label for="file">Anexe logs de erro, sugestões de melhorias, etc (PDF, Images, Word):</label>
+        <input type="file" id="file" name="file" accept=".pdf, .docx, .doc, image/*">
+
+        <button type="submit">Submit Report</button>
+    </form>
+</div>
+
+
+<div id="successPopup" class="popup">
+    <div class="popup-content">
+        <p>Report enviado com sucesso!</p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+</div>
+
+
+
+
+<div class="report-list-container">
+    <h2>Meus Relatórios</h2>
+    <ul id="reportList"></ul>
+</div>
+
+<script src="reportScript.js"></script>
+<script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+</body>
+</html>

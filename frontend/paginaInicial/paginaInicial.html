@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Pagina Inicial</title>
     <style>
-        #menuButton{
+        #menuButton {
             background-color: #8BACAF;
         }
     </style>
@@ -12,43 +12,128 @@
 </head>
 <body>
 <div id="menu-container"></div>
-<div class="todo-list">
-    <div class="todo-list-header">
-        <h1>Lista de Tarefas</h1>
-        <form id="todo-list-form" method="post">
-            <input type="text" id="todo-input" placeholder="Digite uma tarefa" name="titulo">
-            <input type="date" id="todo-date" name="dataLimite">
-            <input type="checkbox" id="recurrence-checkbox">
-            <label for="recurrence-checkbox">Recorrente?</label>
-            <div id="recurrence-container" style="display: none;">
-                <label for="recurrence-day">Dia do mês:</label>
-                <input type="number" id="recurrence-day" name="recurrence-day" min="1" max="31" value="1">
+<h1 class="main-title">Tarefas Alberi</h1>
+<div class="drag-container">
+    <ul class="drag-list">
+        <!-- Coluna Para Fazer -->
+        <li class="drag-column to-do-column">
+            <span class="header">
+                <h1>Para Fazer</h1>
+            </span>
+            <!-- Conteúdo Para Fazer -->
+            <div id="to-do-content" class="custom-scroll-todo">
+                <ul class="drag-item-list" id="to-do-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
-            <input type="hidden" name="idcliente" id="idcliente">
-            <input type="submit" value="Enviar" id="todo-submit">
-        </form>
-
-    </div>
-    <div class="todo-list-body">
-        <table id="todo-table">
-            <thead>
-            <tr>
-                <th>Status</th>
-                <th>Tarefa</th>
-                <th>Data Limite</th>
-                <th>Data Inicial</th>
-                <th>Data Conclusão</th>
-                <th>Editar</th>
-                <th>Excluir</th>
-            </tr>
-            </thead>
-            <tbody id="todo-tbody">
-
-            </tbody>
-        </table>
-    </div>
-    <div id="iframe-container"></div>
+            <!-- Grupo de Botões de Adicionar -->
+            <div class="add-btn-group">
+                <div class="add-btn" onclick="showInputBox(0)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
+                <div class="add-btn solid" onclick="hideInputBox(0)">
+                    <span>Salvar Item</span>
+                </div>
+            </div>
+            <div class="add-container">
+                <div class="add-item" contenteditable="true"></div>
+            </div>
+        </li>
+        <!-- Coluna Fazendo -->
+        <li class="drag-column doing-column">
+            <span class="header">
+                <h1>Fazendo</h1>
+            </span>
+            <!-- Conteúdo Fazendo -->
+            <div id="doing-content" class="custom-scroll-doing">
+                <ul class="drag-item-list" id="doing-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+            </div>
+            <!-- Grupo de Botões de Adicionar -->
+            <div class="add-btn-group">
+                <div class="add-btn" onclick="showInputBox(1)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
+                <div class="add-btn solid" onclick="hideInputBox(1)">
+                    <span>Salvar Item</span>
+                </div>
+            </div>
+            <div class="add-container">
+                <div class="add-item" contenteditable="true"></div>
+            </div>
+        </li>
+        <!-- Coluna Feito -->
+        <li class="drag-column done-column">
+            <span class="header">
+                <h1>Feito</h1>
+            </span>
+            <!-- Conteúdo Feito -->
+            <div id="done-content" class="custom-scroll-done">
+                <ul class="drag-item-list" id="done-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+            </div>
+            <!-- Grupo de Botões de Adicionar -->
+            <div class="add-btn-group">
+                <div class="add-btn" onclick="showInputBox(2)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
+                <div class="add-btn solid" onclick="hideInputBox(2)">
+                    <span>Salvar Item</span>
+                </div>
+            </div>
+            <div class="add-container">
+                <div class="add-item" contenteditable="true"></div>
+            </div>
+        </li>
+        <!-- Coluna Em Espera -->
+        <li class="drag-column on-hold-column">
+            <span class="header">
+                <h1>Em Espera</h1>
+            </span>
+            <!-- Conteúdo Em Espera -->
+            <div id="on-hold-content" class="custom-scroll">
+                <ul class="drag-item-list" id="on-hold-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+            </div>
+            <!-- Grupo de Botões de Adicionar -->
+            <div class="add-btn-group">
+                <div class="add-btn" onclick="showInputBox(3)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
+                <div class="add-btn solid" onclick="hideInputBox(3)">
+                    <span>Salvar Item</span>
+                </div>
+            </div>
+            <div class="add-container">
+                <div class="add-item" contenteditable="true"></div>
+            </div>
+        </li>
+    </ul>
 </div>
+<div id="taskPopup" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px;">
+    <h2>Adicionar Nova Tarefa</h2>
+    <form id="taskForm">
+        <div>
+            <label for="title">Título:</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div>
+            <label for="description">Descrição:</label>
+            <textarea id="description" name="description" required></textarea>
+        </div>
+        <div>
+            <label for="author">Autor:</label>
+            <input type="text" id="author" name="author" required>
+        </div>
+        <div>
+            <label for="dueDate">Data Final:</label>
+            <input type="date" id="dueDate" name="dueDate" required>
+        </div>
+        <button type="submit">Salvar Tarefa</button>
+        <button type="button" onclick="closePopup()">Cancelar</button>
+    </form>
+</div>
+
+<!-- Script -->
 <script src="paginaInicialScript.js"></script>
 </body>
 </html>

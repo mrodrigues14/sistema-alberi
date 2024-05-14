@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exemplo de Interface</title>
-    <link rel="stylesheet" type="text/css" href="/templateMenu/styletemplate.css"></head>
-<body>
-
-
-<div class="navbar">
+    <link rel="stylesheet" type="text/css" href="/templateMenu/styletemplate.css">
+</head>
+<body class="custom-interface">
+<div class="navbar-all">
     <nav role="navigation">
         <div id="menuToggle">
             <input type="checkbox" />
@@ -21,7 +20,7 @@
                 <a href="/insercao"><li>Extrato bancário</li></a>
                 <a href="/cadastro"><li>Dados do Cliente</li></a>
                 <a href="/dados"><li>Cadastro de bancos</li></a>
-                <a href="#"><li>Outro item</li></a> <!-- Adicione mais itens conforme necessário -->
+                <a href="/report"><li>Reportar Falha ou sugestão de melhoria</li></a>
             </ul>
         </div>
     </nav>
@@ -40,31 +39,12 @@
         <div id="myDropdown" class="dropdown-content">
             <a href="#">Cadastrar Empresa</a>
             <a href="#">Cadastrar Usúario</a>
-            <a href="#!" onclick="showCalendarModal()">Agenda</a> <!-- Botão para o pop-up da agenda -->
+            <a href="#!" onclick="showCalendarModal()">Agenda</a>
             <a href="/templateMenu/logout">Sair</a>
         </div>
     </div>
 </div>
 
-<!--<div id="calendarModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeCalendarModal()">&times;</span>
-        <h2>Agenda do Google</h2>
-        <iframe src="templateMenu/calendar.html" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
-    </div>
-</div>-->
-
-
-<!--<div id="calendarModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeCalendarModal()">&times;</span>
-        <h2>Agenda do Google</h2>
-        <iframe src="templateMenu/calendar.html" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
-    </div>
-</div>-->
-
-
 <script src="templateScript.js"></script>
-
 </body>
 </html>

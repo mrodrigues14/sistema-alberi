@@ -1,16 +1,11 @@
 const userRole = localStorage.getItem('userRole');
 const idusuario = localStorage.getItem('idusuario');
-console.log("esse eh o id do usuario",idusuario);
-
-console.log(userRole);
-console.log(idusuario);
 
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/templateMenu/template.html')
         .then(response => response.text())
         .then(data => {
             document.getElementById('menu-container').innerHTML = data;
-
             var link = document.createElement('link');
             link.href = '/templateMenu/styletemplate.css';
             link.rel = 'stylesheet';
@@ -29,452 +24,199 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
-
-    const form = document.getElementById('todo-list-form');
-    form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Impede o envio do formulário da maneira tradicional
-        adicionarTarefa(); // Chama a função que irá lidar com a adição da tarefa
-    });
 });
 
-let IDCLIENTE = 0;
+const addBtns = document.querySelectorAll(".add-btn:not(.solid)");
+const saveItemBtns = document.querySelectorAll(".solid");
+const addItemContainers = document.querySelectorAll(".add-container");
+const addItems = document.querySelectorAll(".add-item");
+const listColumns = document.querySelectorAll(".drag-item-list");
+const backlogListEl = document.getElementById("to-do-list");
+const progressListEl = document.getElementById("doing-list");
+const completeListEl = document.getElementById("done-list");
+const onHoldListEl = document.getElementById("on-hold-list");
 
-window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
-        var dropdowns = document.getElementsByClassName("dropdown-content");
-        var i;
-        for (i = 0; i < dropdowns.length; i++) {
-            var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
-                document.querySelector('.dropbtn').classList.remove('active');
-                var empresaSelecionada = document.querySelector('.empresaSelecionada');
-                empresaSelecionada.style.borderRadius = '0 0 5px 5px';
-            }
-        }
-    }
-}
+let updatedOnLoad = false;
+let backlogListArray = [], progressListArray = [], completeListArray = [], onHoldListArray = [];
+let listArrays = [backlogListArray, progressListArray, completeListArray, onHoldListArray];
+let draggedItem, dragging = false, currentColumn;
 
-window.onload = function() {
-    const nomeEmpresa = localStorage.getItem('nomeEmpresaSelecionada');
-    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.length > 0) {
-                const campoOculto = document.getElementById('idcliente')
-                if (campoOculto) {
-                    campoOculto.value = data[0].IDCLIENTE;
-                    IDCLIENTE = data[0].IDCLIENTE;
-                    if (userRole === 'MUDARDEPOIS') {
-                        fetch(`/paginaInicial/tarefas?isAdmin=true&idusuario=${idusuario}`)
-                            .then(handleResponse)
-                            .then(displayTarefas)
-                            .catch(handleError);
-                    } else {
-                        fetch(`/paginaInicial/tarefas?idcliente=${IDCLIENTE}&idusuario=${idusuario}`)
-                            .then(handleResponse)
-                            .then(displayTarefas)
-                            .catch(handleError);
-                    }
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao buscar o idcliente:', error);
-        });
-}
-
-function handleResponse(response) {
-    if (!response.ok) {
-        throw new Error('Erro ao buscar as tarefas');
-    }
-    return response.json();
-}
-
-function displayTarefas(data) {
-    const table = document.getElementById('todo-table');
-    const tbody = table.querySelector('tbody');
-    tbody.innerHTML = '';
-    data.forEach(tarefa => {
-        const row = tbody.insertRow();
-        row.dataset.id = tarefa.IDTAREFA;
-        row.dataset.dataLimite = tarefa.DATA_LIMITE;
-        row.dataset.recurrenceDay = tarefa.RECORRENCIA_DIA;
-
-        row.insertCell().innerHTML = `<button class="${getStatusClass(tarefa.STATUS)}" onclick="completarTarefa(${tarefa.IDTAREFA})">
-                                                   ${toTitleCase(tarefa.STATUS)}
-                                                   </button>`;
-        const taskCell = row.insertCell();
-        taskCell.innerHTML = `<span name="tarefa">${tarefa.TITULO}</span>`;
-        const dateCell = row.insertCell();
-        dateCell.innerHTML = `<span name="data_limite">${formatDate(tarefa.DATA_LIMITE)}</span>`;
-        row.insertCell().textContent = tarefa.DATA_INICIO ? formatDate(tarefa.DATA_INICIO) : '';
-        row.insertCell().textContent = tarefa.DATA_CONCLUSAO ? formatDate(tarefa.DATA_CONCLUSAO) : '';
-        const actionCell = row.insertCell();
-        actionCell.innerHTML = `<button class="edit-button" onclick="editarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer;">
-                                                                  <img src="imagens/editar.png" style="width: 100%;">
-                                                                  </button>`;
-        row.insertCell().innerHTML = `<button class="delete-button" onclick="deletarTarefa(${tarefa.IDTAREFA})" style="width: 2.5vw;  cursor: pointer">
-                                                                  <img src="imagens/lixeira.png" style="width: 100%;">
-                </button>`;
-    });
-
-    checkRecurrenceDates();
-}
-
-
-function handleError(error) {
-    console.error('Erro na requisição:', error);
-}
-function loadAndDisplayUsername() {
-    fetch('/api/usuario-logado')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Não foi possível obter o nome do usuário logado');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const userButton = document.querySelector('.usernameDisplay');
-            if (userButton && data.username) {
-                userButton.textContent = data.username;
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-        });
-}
-
-
-function loadNomeEmpresa() {
-    fetch('/paginaInicial/consultarEmpresas', { method: 'POST' })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Não foi possível buscar as empresas');
-            }
-            return response.json();
-        })
-        .then(data => {
-            inputNomeEmpresa(data);
-            addClickEventToListItems();
-        })
-        .catch(error => {
-            console.error('Erro na requisição:', error);
-        });
-}
-function addClickEventToListItems() {
-    var listItems = document.querySelectorAll('.name-list li');
-    listItems.forEach(function(item) {
-        item.addEventListener('click', redirecionamentoDePagina);
-    });
-}
-
-function redirecionamentoDePagina() {
-    window.location.href = '/paginaInicial';
-}
-
-function inputNomeEmpresa(names) {
-    var input = document.getElementById('searchInput');
-    var list = document.getElementById('nameList');
-
-    if (input && list) {
-        input.addEventListener('input', function (e) {
-            updateList(e.target.value);
-        });
-
-        document.querySelector('.arrow-button').addEventListener('click', function () {
-            updateList('');
-        });
-
-        list.addEventListener('click', function (e) {
-            if (e.target.tagName === 'LI') {
-                input.value = e.target.textContent;
-                list.style.display = 'none';
-
-                empresaSelecionada(e.target.textContent);
-            }
-        });
-
-        function updateList(filter) {
-            console.log("Names array:", names);
-            console.log("Filter value:", filter);
-
-            var filteredNames = names.filter(function (name) {
-                return name && name.toLowerCase().includes(filter.toLowerCase());
-            });
-
-            list.innerHTML = '';
-            filteredNames.forEach(function (name) {
-                var li = document.createElement('li');
-                li.textContent = name;
-                list.appendChild(li);
-            });
-
-            list.style.display = filteredNames.length ? 'block' : 'none';
-        }
-
-
-    }
-    else{
-        console.error('Elementos input ou list não foram encontrados!');
-    }
-}
-
-function empresaSelecionada(nomeEmpresa) {
-    localStorage.setItem('nomeEmpresaSelecionada', nomeEmpresa);
-    updateNomeEmpresa(nomeEmpresa);
-}
-
-function updateNomeEmpresa(nomeEmpresa) {
-    setTimeout(() => {
-        var empresaSelecionadaButton = document.querySelector('.empresaSelecionada');
-        if (empresaSelecionadaButton) {
-            empresaSelecionadaButton.textContent = nomeEmpresa;
-        }
-    }, 0);
-}
-
-addClickEventToListItems();
-document.addEventListener('DOMContentLoaded', function() {
-    loadNomeEmpresa();
-});
-
-const recurrenceCheckbox = document.getElementById('recurrence-checkbox');
-const recurrenceContainer = document.getElementById('recurrence-container');
-
-if (recurrenceCheckbox && recurrenceContainer) {
-    recurrenceCheckbox.addEventListener('change', () => {
-        if (recurrenceCheckbox.checked) {
-            recurrenceContainer.style.display = 'block';
-        } else {
-            recurrenceContainer.style.display = 'none';
-            document.getElementById('recurrence-day').value = '';
-        }
-    });
-}
-
-function checkRecurrenceDates() {
-    const today = new Date();
-    const rows = document.querySelectorAll('#todo-table tbody tr');
-
-    rows.forEach(row => {
-        const recurrenceDay = row.dataset.recurrenceDay;
-        if (recurrenceDay) {
-            const recurrenceDate = new Date(row.dataset.dataLimite);
-            recurrenceDate.setDate(recurrenceDay);
-
-            const daysUntilRecurrence = Math.ceil((recurrenceDate - today) / (1000 * 60 * 60 * 24));
-            if (daysUntilRecurrence === 7) {
-                row.classList.add('flash');
-            }
-        }
-    });
-}
-
-function adicionarTarefa() {
-    const idcliente = IDCLIENTE;
-    const titulo = document.getElementById('todo-input').value;
-    const dataLimite = document.getElementById('todo-date').value;
-    const dataInicial = new Date().toISOString().split('T')[0]; // Get current date
-    const recurrenceSelect = document.getElementById('recurrence-day');
-    if (!recurrenceSelect) {
-        console.error('Element with ID "recurrence-select" not found in DOM');
-        return;
-    }
-    const frequencia = recurrenceSelect.value;    const proximoPrazo = frequencia === 'semanal' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : // Set next due date to 7 days from now if weekly
-        frequencia === 'mensal' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : // Set next due date to 30 days from now if monthly
-            ''; // No recurrence, no need to set a next due date
-
-    const recurrenceDay = document.getElementById('recurrence-day').value;
-
-    fetch('/paginaInicial/adicionartarefa', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            titulo,
-            idcliente,
-            dataLimite,
-            idusuario,
-            recurrenceDay,
-        }),
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Falha ao adicionar tarefa');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Tarefa adicionada com sucesso', data);
-            window.location.reload();
-        })
-        .catch(error => {
-            console.error('Erro ao adicionar tarefa:', error);
-        });
-}// Até aqui js matheus edition
-
-function formatDate(dateString, isInitialDate = false) {
-    const date = new Date(dateString + 'T00:00:00Z');
-    const today = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z');
-
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const year = date.getUTCFullYear();
-
-    const dias = Math.floor((date - today) / (1000 * 60 * 60 * 24));
-
-    if (dias < 0) {
-        return `${day}/${month}/${year}`;
-    } else if (dias === 0) {
-        return `${day}/${month}/${year} (Hoje)`;
-    } else if (dias === 1) {
-        return `${day}/${month}/${year} (Amanhã)`;
+function getSavedColumns() {
+    if (localStorage.getItem("backlogItems")) {
+        listArrays = [
+            JSON.parse(localStorage.getItem("backlogItems")),
+            JSON.parse(localStorage.getItem("progressItems")),
+            JSON.parse(localStorage.getItem("completeItems")),
+            JSON.parse(localStorage.getItem("onHoldItems"))
+        ];
     } else {
-        return `${day}/${month}/${year} (Faltam ${dias} dias)`;
+        backlogListArray = ["Write the documentation", "Post a technical article"];
+        progressListArray = ["Work on Droppi project", "Listen to Spotify"];
+        completeListArray = ["Submit a PR", "Review my projects code"];
+        onHoldListArray = ["Get a girlfriend"];
     }
-
-    if (isInitialDate) {
-        return `Iniciado em: ${day}/${month}/${year}`;
-    }
+    updateDOM();
 }
 
-
-
-function toTitleCase(str) {
-    return str.replace(
-        /\w\S*/g,
-        function(txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        }
-    );
+function updateSavedColumns() {
+    const arrayNames = ["backlog", "progress", "complete", "onHold"];
+    arrayNames.forEach((name, index) => {
+        localStorage.setItem(`${name}Items`, JSON.stringify(listArrays[index]));
+    });
 }
 
-function firstLetterToUpperCase(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
-function getStatusClass(status) {
-    switch (status.toLowerCase()) {
-        case 'concluído':
-            return 'status-concluido';
-        case 'pendente':
-            return 'status-pendente';
-        case 'não foi iniciado':
-            return 'status-atrasado';
-        default:
-            return '';
-    }
+function filterArray(array) {
+    return array.filter(item => item !== null);
 }
 
-function completarTarefa(idtarefa) {
-
-    const dataConclusao = new Date().toISOString().split('T')[0]; // Get current date
-
-    fetch('/paginaInicial/atualizartarefa', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            idtarefa,
-            dataConclusao, // Send completion date to server
-        }),
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Erro ao atualizar a tarefa');
-            }
-            return response.json();
-        })
-        .then(data => {
-            window.location.reload();
-        })
-        .catch(error => console.error('Erro ao atualizar a tarefa:', error));
+function createItemEl(columnEl, column, item, index) {
+    const listEl = document.createElement("li");
+    listEl.classList.add("drag-item");
+    listEl.draggable = true;
+    listEl.setAttribute("onfocusout", `updateItem(${index}, ${column})`);
+    listEl.setAttribute("ondragstart", "drag(event)");
+    listEl.innerHTML = `
+        <div class="item-content">
+            <div class="item-header">
+                <div class="edit-icon" onclick="editItem(${index}, ${column})">&#9998;</div>
+                <div class="delete-icon" onclick="deleteItem(${index}, ${column})">&#128465;</div> <!-- Ícone de deletar -->
+            </div>
+            <h4 class="item-title">${item.title || ''}</h4>
+            <div class="item-details">
+                <span class="item-date">${item.dueDate || ''}</span>
+                <span class="item-author">${item.author || ''}</span>
+            </div>
+        </div>
+    `;
+    columnEl.appendChild(listEl);
 }
 
-function editarTarefa(idAfazer) {
-    const row = document.querySelector(`tr[data-id="${idAfazer}"]`);
-    const taskInput = document.createElement('input');
-    taskInput.type = 'text';
-    taskInput.name = 'tarefa';
-    taskInput.value = row.querySelector('[name="tarefa"]').textContent;
-
-    const dateInput = document.createElement('input');
-    dateInput.type = 'date';
-    dateInput.name = 'data_limite';
-    dateInput.value = row.querySelector('[name="data_limite"]').textContent;
-
-    const taskCell = row.querySelector('[name="tarefa"]').parentElement;
-    taskCell.innerHTML = '';
-    taskCell.appendChild(taskInput);
-
-    const dateCell = row.querySelector('[name="data_limite"]').parentElement;
-    dateCell.innerHTML = '';
-    dateCell.appendChild(dateInput);
-
-    // Change edit button to save button
-    const editButton = row.querySelector('.edit-button');
-    editButton.innerHTML = '<img src="imagens/salvar.png" style="width: 100%;">'; // assuming salvar.png is your save icon
-    editButton.onclick = function() { salvarAlteracoes(idAfazer); }; // Change onclick to save changes
+function deleteItem(index, column) {
+    listArrays[column].splice(index, 1); // Remove o item do array
+    updateDOM();
 }
 
-function salvarAlteracoes(idAfazer) {
-    const row = document.querySelector(`tr[data-id="${idAfazer}"]`);
-    const taskInput = row.querySelector('input[name="tarefa"]');
-    const dateInput = row.querySelector('input[name="data_limite"]');
+function editItem(index, column) {
+    const item = listArrays[column][index];
+    document.getElementById('title').value = item.title;
+    document.getElementById('description').value = item.description;
+    document.getElementById('author').value = item.author;
+    document.getElementById('dueDate').value = item.dueDate;
 
-    const task = taskInput.value.trim();
-    const date = dateInput.value;
+    // Show popup
+    document.getElementById('taskPopup').style.display = 'block';
+    currentColumn = column; // Save the current column to know where to save
 
-    console.log("Sending data:", { idtarefa: idAfazer, titulo: task, dataLimite: date }); // Log the data being sent
+    // Change submit event to update instead of add
+    const form = document.getElementById('taskForm');
+    form.onsubmit = function(event) {
+        event.preventDefault();
+        updateItem(index, column); // Update existing item
+        closePopup();
+    };
+}
 
-    if (!task || !date) {
-        alert('Por favor, preencha todos os campos!');
-        return;
-    }
+function updateItem(index, column) {
+    listArrays[column][index] = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        author: document.getElementById('author').value,
+        dueDate: document.getElementById('dueDate').value
+    };
+    updateDOM();
+}
 
-    fetch('/paginaInicial/editartarefa', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            idtarefa: idAfazer,
-            titulo: task,
-            dataLimite: date
-        })
-    })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => Promise.reject('Response not OK: ' + text));
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Alterações salvas com sucesso!', data);
-            window.location.reload();  // Reload the page to show the updated task list
-        })
-        .catch(error => {
-            console.error('Erro ao salvar alterações:', error);
+function updateDOM() {
+    listColumns.forEach((column, i) => {
+        const columnEl = column;
+        columnEl.textContent = '';
+        listArrays[i].forEach((item, index) => {
+            createItemEl(columnEl, i, item, index);
         });
+    });
+    updateSavedColumns();
 }
 
-function deletarTarefa(idtarefa) {
-    fetch('/paginaInicial/deletartarefa', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ idtarefa })
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Erro ao deletar a tarefa');
-            }
-            window.location.reload(true);
-        })
-        .catch(error => console.error('Erro ao deletar a tarefa:', error));
+function addToColumn(column, itemObject) {
+    listArrays[column].push(itemObject);
+    updateDOM();
+}
+
+function showInputBox(column) {
+    currentColumn = column;
+    document.getElementById('taskPopup').style.display = 'block';
+}
+
+function closePopup() {
+    document.getElementById('taskPopup').style.display = 'none';
+}
+
+document.getElementById('taskForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+    const author = document.getElementById('author').value;
+    const dueDate = document.getElementById('dueDate').value;
+    const itemObject = { title, description, author, dueDate };
+    addToColumn(currentColumn, itemObject);
+    document.getElementById('taskForm').reset();
+    closePopup();
+});
+
+function dragEnter(e) {
+    e.preventDefault();
+    let target = e.target;
+    while (target && !target.classList.contains('drag-item-list')) {
+        target = target.parentNode;
+    }
+    if (target) {
+        currentColumn = Array.from(listColumns).indexOf(target);
+        target.classList.add("over");
+    }
+}
+
+function dragLeave(e) {
+    e.preventDefault();
+    let target = e.target;
+    while (target && !target.classList.contains('drag-item-list')) {
+        target = target.parentNode;
+    }
+    if (target && currentColumn !== undefined && listColumns[currentColumn]) {
+        listColumns[currentColumn].classList.remove("over");
+    }
+}
+
+function drag(e) {
+    draggedItem = e.target;
+    dragging = true;
+}
+
+function allowDrop(e) {
+    e.preventDefault();
+}
+
+function drop(e) {
+    e.preventDefault();
+    if (currentColumn !== undefined && listColumns[currentColumn]) {
+        listColumns[currentColumn].classList.remove("over");
+        listColumns[currentColumn].appendChild(draggedItem);
+        rebuildArrays();
+        currentColumn = undefined; // Reset currentColumn para evitar erros
+    }
+}
+
+function rebuildArrays() {
+    listArrays.forEach((array, index) => {
+        array.length = 0;
+        Array.from(listColumns[index].children).forEach(child => {
+            array.push({
+                title: child.querySelector('.item-title').textContent,
+                dueDate: child.querySelector('.item-date').textContent,
+                author: child.querySelector('.item-author').textContent
+            });
+        });
+    });
+    updateDOM();
 }
 
 document.addEventListener('message', function(event) {
@@ -483,3 +225,4 @@ document.addEventListener('message', function(event) {
     }
 }, false);
 
+getSavedColumns(); // Load columns on start

@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
-
 input[type="text"] {
     padding: 10px;
     width: 300px;
@@ -9,19 +8,252 @@ input[type="text"] {
     font-size: 1rem;
 }
 
-body{
+body {
     font-family: 'DM Sans', sans-serif;
+    margin: 0;
+    background: url("./image.jpg");
+    background-size: cover;
+    background-position: 50% 60%;
+    background-attachment: fixed;
+    color: white;
+    font-size: 20px;
+    overflow-y: hidden;
 }
+
+.main-title {
+    text-align: center;
+    font-size: 3rem;
+    color: black;
+
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.drag-container {
+    margin: 20px;
+}
+
+.drag-list {
+    display: flex;
+    align-items: flex-start;
+}
+.drag-item-list.over {
+    border: 2px dashed #666; /* Exemplo de estilo para área de drop */
+}
+
+
+.drag-column {
+    flex: 1;
+    margin: 0 10px;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    overflow-x: hidden;
+}
+
+.to-do-column .header,
+.to-do-column .solid,
+.to-do-column .solid:hover,
+.to-do-column .over {
+    background-color: #a2622d;
+}
+
+.doing-column .header,
+.doing-column .solid,
+.doing-column .solid:hover,
+.doing-column .over {
+    background-color: #1b6161;
+}
+
+.done-column .header,
+.done-column .solid,
+.done-column .solid:hover,
+.done-column .over {
+    background-color: #248224;
+}
+
+.on-hold-column .header,
+.on-hold-column .solid,
+.on-hold-column .solid:hover,
+.on-hold-column .over {
+    background-color: #a22d22;
+}
+
+.custom-scroll-todo,
+.custom-scroll-doing,
+.custom-scroll-done,
+.custom-scroll {
+    overflow-y: auto;
+    max-height: 75vh;
+}
+
+.custom-scroll-todo::-webkit-scrollbar-track,
+.custom-scroll-doing::-webkit-scrollbar-track,
+.custom-scroll-done::-webkit-scrollbar-track,
+.custom-scroll::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin-right: 5px;
+}
+
+.custom-scroll-todo::-webkit-scrollbar,
+.custom-scroll-doing::-webkit-scrollbar,
+.custom-scroll-done::-webkit-scrollbar,
+.custom-scroll::-webkit-scrollbar {
+    width: 10px;
+}
+
+.custom-scroll-todo::-webkit-scrollbar-thumb,
+.custom-scroll-doing::-webkit-scrollbar-thumb,
+.custom-scroll-done::-webkit-scrollbar-thumb,
+.custom-scroll::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: var(--to-do);
+}
+
+.header {
+    display: flex;
+    justify-content: center;
+    border-radius: 10px;
+    margin: 10px;
+}
+
+.header h1 {
+    font-size: 1.25rem;
+}
+
+.over {
+    padding: 50px 10px;
+}
+
+.drag-item-list {
+    min-height: 50px;
+}
+
+.drag-item {
+    margin: 10px;
+    padding: 10px;
+    height: fit-content;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    line-height: 1.5rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.drag-item:focus {
+    outline: none;
+    background-color: white;
+    color: black;
+}
+
+.add-btn-group {
+    display: flex;
+    justify-content: space-between;
+}
+
+.add-btn {
+    margin: 10px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    width: fit-content;
+    border-radius: 5px;
+    transition: all 0.3s ease-in;
+    user-select: none;
+}
+
+.add-btn:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: black;
+}
+
+.add-btn:active {
+    transform: scale(0.97);
+}
+
+.solid {
+    display: none;
+}
+
+.solid:hover {
+    transition: unset;
+    filter: brightness(95%);
+    color: white;
+}
+
+.plus-sign {
+    font-size: 1.5rem;
+    margin-right: 5px;
+    position: relative;
+    top: -3px;
+}
+
+.add-container {
+    margin: 10px;
+    padding: 5px 10px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    min-height: 100px;
+    display: none;
+}
+
+.add-item {
+    width: 100%;
+    min-height: 100px;
+    height: auto;
+    background-color: white;
+    border-radius: 10px;
+    margin: 5px auto;
+    resize: none;
+    color: black;
+    padding: 10px;
+}
+
+.add-item:focus {
+    outline: none;
+}
+
+@media screen and (max-width: 1800px) {
+    .main-title {
+        font-size: 2rem;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    body {
+        overflow-y: auto;
+    }
+
+    .drag-container {
+        margin: 0;
+    }
+
+    .drag-list {
+        display: block;
+    }
+
+    .drag-column {
+        margin: 10px;
+    }
+}
+
 .search-box {
     position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
-    top:40%;
-    left:40%;
+    top: 40%;
+    left: 40%;
     width: auto;
 }
-
 
 .arrow-button {
     padding: 10px;
@@ -32,8 +264,6 @@ body{
     cursor: pointer;
     width: auto;
     height: 42px;
-
-
 }
 
 .arrow-button::before {
@@ -52,7 +282,7 @@ body{
     border: 1px solid #ddd;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    width: 100%;/
+    width: 100%;
     box-sizing: border-box;
     display: block;
     position: absolute;
@@ -68,7 +298,7 @@ body{
     font-size: 1.2rem;
 }
 
-.change-button{
+.change-button {
     border-radius: 5px;
     padding: 5px 10px;
     cursor: pointer;
@@ -130,7 +360,7 @@ iframe {
     box-sizing: border-box;
 }
 
-.todo-list{
+.todo-list {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -138,7 +368,7 @@ iframe {
     margin-top: 20px;
 }
 
-.todo-list .todo-item{
+.todo-list .todo-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -149,23 +379,23 @@ iframe {
     box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
 }
 
-.todo-list-header{
+.todo-list-header {
     text-align: center;
     width: 50%;
     border-radius: 5px;
 }
 
-.todo-list-header h1{
+.todo-list-header h1 {
     margin: 0;
 }
 
-#todo-list-form{
+#todo-list-form {
     align-items: center;
     justify-content: center;
     margin-top: .7vw;
 }
 
-#todo-input{
+#todo-input {
     width: 50%;
     padding: 10px;
     border-radius: 5px;
@@ -175,7 +405,7 @@ iframe {
     background-color: #FFFFFF;
 }
 
-#todo-date{
+#todo-date {
     padding: 10px;
     border-radius: 5px;
     border: none;
@@ -184,7 +414,7 @@ iframe {
     box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
 }
 
-#todo-submit{
+#todo-submit {
     padding: 12px;
     border-radius: 5px;
     border: none;
@@ -194,33 +424,33 @@ iframe {
     cursor: pointer;
 }
 
-#todo-submit:hover{
+#todo-submit:hover {
     background-color: #8BACAF;
 }
 
-#todo-table{
+#todo-table {
     width: 100%;
     border-radius: 5px;
     box-shadow: 0 0 15px 0 rgba(0,0,0,0.2), 0 0 15px 0 rgba(0,0,0,0.19);
     background-color: #FFFFFF;
 }
 
-#todo-table th{
+#todo-table th {
     padding: .5vw .5vw .25vw;
     border-bottom: 1px solid #ddd;
 }
 
-#todo-table td{
+#todo-table td {
     padding: .5vw .5vw .25vw;
     border-bottom: 1px solid #ddd;
     text-align: center;
 }
 
-#todo-table tr:hover{
+#todo-table tr:hover {
     background-color: #f5f5f5;
 }
 
-#todo-table th{
+#todo-table th {
     background-color: #f1f1f1;
 }
 
@@ -236,4 +466,129 @@ iframe {
     0% { background-color: white; }
     50% { background-color: yellow; }
     100% { background-color: white; }
+}
+#taskPopup {
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    color: #333; /* Cor escura para o texto */
+}
+
+#taskForm label {
+    display: block;
+    color: #333; /* Assegura que o texto do rótulo seja visível */
+}
+
+#taskForm input{
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    background: #fff; /* Fundo branco para os campos de entrada */
+    color: #333; /* Texto escuro para os campos de entrada */
+    border: 1px solid #ccc; /* Borda sutil para os campos */
+}
+#taskForm textarea {
+    width: 100%; /* Garante que ocupe a largura total do formulário */
+    padding: 8px;
+    box-sizing: border-box;
+    background: #fff; /* Fundo branco para melhor visibilidade */
+    color: #333; /* Cor do texto */
+    border: 1px solid #ccc; /* Borda sutil */
+    resize: vertical; /* Permite redimensionar apenas verticalmente */
+    min-height: 100px; /* Altura mínima inicial */
+}
+
+#taskForm button {
+    background-color: #4CAF50; /* Cor verde para os botões */
+    color: white; /* Texto branco para os botões */
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#taskForm button:hover {
+    background-color: #45a049; /* Cor mais escura ao passar o mouse */
+}
+
+.drag-item {
+    background-color: #333; /* Fundo escuro */
+    color: white; /* Texto branco */
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.item-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.item-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.item-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+}
+
+.item-date {
+    color: #f0ad4e; /* Cor de destaque para a data */
+}
+
+.item-author {
+    color: #5cb85c; /* Cor de destaque para o autor */
+}
+
+.drag-item {
+    position: relative;
+    background-color: #333;
+    color: white;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.item-content {
+    position: relative; /* Adicionado para posicionamento relativo */
+}
+
+.edit-icon {
+    position: absolute;
+    top: 5px;
+    right: 30px; /* Ajustado para melhor posicionamento */
+    cursor: pointer;
+    font-size: 16px;
+    color: white; /* Cor ajustada para visibilidade */
+    z-index: 10; /* Assegura que fique acima de outros elementos */
+}
+
+.delete-icon {
+    margin-left: 10px;
+    color: red; /* Cor do ícone de deletar */
+    position: absolute;
+    top: 5px;
+    right: 10px; /* Ajustado para melhor posicionamento */
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 10; /* Assegura que fique acima de outros elementos */
+}
+
+
+
+.item-header {
+    display: flex;
+    justify-content: flex-end; /* Alinha os ícones à direita */
+    width: 100%;
 }

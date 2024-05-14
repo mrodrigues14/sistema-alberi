@@ -12,6 +12,8 @@ const dadosRouter = require('./routes/dados.route');
 const paginaMenuInicial = require('./routes/paginaMenuInicial.route');
 const seletorEmpresa = require('./routes/seletorEmpresa.route')
 const templateMenu = require('./routes/templateMenu.route')
+const report = require('./routes/report.route')
+
 
 function routing(app){
     app.use('/api', autenticacaoRouter);
@@ -28,6 +30,7 @@ function routing(app){
     app.use('/paginaMenuInicial', paginaMenuInicial);
     app.use('/seletorEmpresa', seletorEmpresa)
     app.use('/templateMenu', templateMenu)
+    app.use('/report', report)
 
 }
 
