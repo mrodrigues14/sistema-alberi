@@ -101,4 +101,15 @@ function editarTarefa(idtarefa, titulo, dataLimite, callback){
     });
 }
 
-module.exports = {listarTarefas, adicionarTarefa, atualizarStatus, deletarTarefa, consultarTarefa, editarTarefa};
+function consultarUsuarios(callback){
+    mysqlConn.query(`SELECT NOME_DO_USUARIO FROM USUARIOS`, function(err, result, fields) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+
+module.exports = {listarTarefas, adicionarTarefa, atualizarStatus, deletarTarefa, consultarTarefa, editarTarefa, consultarUsuarios};

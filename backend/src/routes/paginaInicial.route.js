@@ -8,6 +8,7 @@ const {atualizarStatus} = require('../repositories/tarefas.repository.js');
 const {deletarTarefa} = require('../repositories/tarefas.repository.js');
 const {consultarTarefa} = require('../repositories/tarefas.repository.js');
 const {editarTarefa} = require('../repositories/tarefas.repository.js');
+const {consultarUsuarios} = require("../repositories/tarefas.repository");
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaInicial/paginaInicial.html'));
@@ -112,5 +113,16 @@ router.post('/consultarEmpresas', (req, res) => {
         }
     });
 });
+
+router.get('/listaUsuarios', (req, res) => {
+    consultarUsuarios((err, result) => {
+        if (err) {
+            return res.status(500).json(err);
+        }
+        res.json(result);
+    });
+});
+
+
 
 module.exports = router;
