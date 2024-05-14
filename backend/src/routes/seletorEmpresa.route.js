@@ -15,7 +15,7 @@ router.post('/consultarEmpresas', (req, res) => {
         }
 
         if (results.length > 0) {
-            res.json({ empresas: results }); // Alterado para retornar diretamente os resultados
+            res.json({ empresas: results });
         } else {
             res.status(404).send({ message: 'Nenhuma empresa encontrada' });
         }

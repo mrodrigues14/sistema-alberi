@@ -37,7 +37,7 @@ function consultarTarefa(idtarefa, idusuario, callback){
 
 function adicionarTarefa(tarefa, idcliente, dataLimite, idusuario, recurrenceDay, callback) {
     const dataInicio = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z');
-    const status = "PARA FAZER"; // Certifique-se de que o status está definido corretamente
+    const status = "PARA FAZER";
     mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, DATA_INICIO, ID_CLIENTE, ID_USUARIO, RECORRENCIA) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)`,
         [tarefa, status, dataLimite, dataInicio.toISOString().split('T')[0], idcliente, idusuario, recurrenceDay],
         (err, result, fields) => {
@@ -67,7 +67,6 @@ function atualizarStatus(idtarefa, newStatus, callback) {
 
         const currentStatus = results[0].STATUS;
 
-        // Only update if the new status is different
         if (currentStatus !== newStatus) {
             mysqlConn.query('UPDATE TAREFAS SET STATUS = ? WHERE IDTAREFA = ?', [newStatus, idtarefa], function(err, result) {
                 if (err) {

@@ -61,7 +61,7 @@ router.get('/editartarefa', (req, res) => {
 });
 
 router.post('/editartarefa', (req, res) => {
-    console.log("Received data:", req.body); // Log the received data
+    console.log("Received data:", req.body);
     const {idtarefa, titulo, dataLimite} = req.body;
 
     if (!titulo || !idtarefa || !dataLimite) {

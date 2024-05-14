@@ -21,7 +21,7 @@ function loadAndDisplayUsername() {
             const userButton = document.querySelector('.usernameDisplay');
             if (userButton && data.username) {
                 userButton.textContent = data.username;
-                localStorage.setItem('idUsuario', data.idusuario);  // Salva o ID do usuário no localStorage
+                localStorage.setItem('idUsuario', data.idusuario);
                 console.log(data.idusuario);
             } else {
                 window.location.href = '/';
@@ -44,7 +44,7 @@ function loadNomeEmpresa() {
             return response.json();
         })
         .then(data => {
-            console.log('Dados recebidos:', data); // Isso vai mostrar a estrutura exata dos dados recebidos
+            console.log('Dados recebidos:', data);
             inputNomeEmpresa(data);
             addClickEventToListItems();
         })
@@ -55,8 +55,8 @@ function loadNomeEmpresa() {
 
 function handleEmpresa() {
     var nomeEmpresa = getStoredEmpresaName();
-    var idEmpresa = localStorage.getItem('idEmpresaSelecionada'); // Recuperar o ID da empresa também.
-    updateNomeEmpresa(nomeEmpresa, idEmpresa); // Usar o ID aqui.
+    var idEmpresa = localStorage.getItem('idEmpresaSelecionada');
+    updateNomeEmpresa(nomeEmpresa, idEmpresa);
 }
 
 
@@ -66,7 +66,7 @@ function getStoredEmpresaName() {
 
 
 function showCalendarModal() {
-    fetch('templateMenu/calendar.html') // Caminho para o seu calendar.html
+    fetch('templateMenu/calendar.html')
         .then(response => response.text())
         .then(html => {
             document.getElementById('calendarModalContent').innerHTML = html;
@@ -79,7 +79,7 @@ function showCalendarModal() {
 
 
 function inputNomeEmpresa(responseData) {
-    var empresas = responseData.empresas; // Adapte conforme a estrutura de dados recebida
+    var empresas = responseData.empresas;
     var input = document.getElementById('searchInput');
     var list = document.getElementById('nameList');
 
@@ -96,7 +96,7 @@ function inputNomeEmpresa(responseData) {
     });
 
     document.getElementById('nameList').addEventListener('click', function(e) {
-        const li = e.target.closest('li'); // Isso encontra o elemento li mais próximo, independente de onde o clique ocorreu
+        const li = e.target.closest('li');
         if (li) {
             console.log('Nome:', li.dataset.nome);
             input.value = li.textContent;
@@ -119,7 +119,7 @@ function inputNomeEmpresa(responseData) {
         filteredData.forEach(function(data) {
             var li = document.createElement('li');
             li.textContent = data.NOME;
-            li.setAttribute('data-nome', data.NOME);  // Garantindo que os data attributes são corretamente definidos
+            li.setAttribute('data-nome', data.NOME);
             li.setAttribute('data-id', data.IDCLIENTE);
             list.appendChild(li);
         });
@@ -130,17 +130,17 @@ function inputNomeEmpresa(responseData) {
 }
 
 function empresaSelecionada(nomeEmpresa, idEmpresa) {
-    console.log('Setting empresa:', nomeEmpresa, idEmpresa); // Verifique os valores antes de definir
+    console.log('Setting empresa:', nomeEmpresa, idEmpresa);
     localStorage.setItem('nomeEmpresaSelecionada', nomeEmpresa);
     localStorage.setItem('idEmpresaSelecionada', idEmpresa);
     updateNomeEmpresa(nomeEmpresa, idEmpresa);
-    console.log('LocalStorage after setting:', localStorage.getItem('idEmpresaSelecionada')); // Confirma o valor após a configuração
+    console.log('LocalStorage after setting:', localStorage.getItem('idEmpresaSelecionada'));
 }
 
 function updateNomeEmpresa(nomeEmpresa, idEmpresa) {
-    console.log('Updating display for:', nomeEmpresa, idEmpresa); // Isso vai mostrar se os valores são `undefined`.
+    console.log('Updating display for:', nomeEmpresa, idEmpresa);
     var empresaSelecionadaElement = document.querySelector('.empresaSelecionada');
-    if (empresaSelecionadaElement && nomeEmpresa && idEmpresa) { // Certifique-se que ambos, nome e ID, existem.
+    if (empresaSelecionadaElement && nomeEmpresa && idEmpresa) {
         empresaSelecionadaElement.textContent = nomeEmpresa;
     }
 }
@@ -169,11 +169,9 @@ document.addEventListener('click', function(event) {
 });
 document.addEventListener('click', function(event) {
     var menu = document.getElementById('menuToggle');
-    var targetElement = event.target; // Elemento clicado
+    var targetElement = event.target;
 
-    // Verifica se o elemento clicado não é parte do menu
     if (!menu.contains(targetElement)) {
-        // Fecha o menu
         var checkbox = document.querySelector('#menuToggle input[type="checkbox"]');
         checkbox.checked = false;
     }

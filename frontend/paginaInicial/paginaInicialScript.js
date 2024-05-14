@@ -5,7 +5,7 @@ let IDCLIENTE = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     loadUserOptions();
-    loadTasks(); // Carregar tarefas do banco de dados
+    loadTasks();
 
     fetch('/templateMenu/template.html')
         .then(response => response.text())
@@ -32,22 +32,20 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const listColumns = document.querySelectorAll(".drag-item-list");
-let listArrays = [[], [], [], []]; // Arrays for each column: [Backlog, Progress, Complete, On Hold]
+let listArrays = [[], [], [], []];
 
 function loadTasks() {
     const idcliente = localStorage.getItem('idEmpresaSelecionada');
     const idusuario = localStorage.getItem('idusuario');
-    const isAdmin = localStorage.getItem('isAdmin') === 'true'; // Ajuste conforme como o isAdmin é armazenado
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
     fetch(`/paginaInicial/tarefas?idcliente=${idcliente}&idusuario=${idusuario}&isAdmin=${isAdmin}`)
         .then(response => response.json())
         .then(data => {
-            // Limpar as listas existentes
             listArrays = [[], [], [], []];
 
-            // Distribuir tarefas nas colunas
             data.forEach(task => {
-                let column = 0; // Default to the first column
+                let column = 0;
                 if (task.STATUS === 'Fazendo') {
                     column = 1;
                 } else if (task.STATUS === 'Feito') {
@@ -56,7 +54,6 @@ function loadTasks() {
                     column = 3;
                 }
 
-                // Convertendo dados para formato compatível
                 const itemObject = {
                     idtarefa: task.IDTAREFA,
                     title: task.TITULO,
@@ -64,13 +61,13 @@ function loadTasks() {
                     author: task.ID_USUARIO,
                     authorName: task.NOME_DO_USUARIO,
                     status: task.STATUS,
-                    description: task.DESCRICAO || "" // Adicione DESCRIÇÃO na query SQL se necessário
+                    description: task.DESCRICAO || ""
                 };
 
                 listArrays[column].push(itemObject);
             });
 
-            updateDOM(); // Atualizar o DOM com as novas tarefas
+            updateDOM();
         })
         .catch(error => {
             console.error('Erro ao carregar tarefas:', error);
@@ -82,11 +79,11 @@ function loadUserOptions() {
         .then(response => response.json())
         .then(data => {
             const select = document.getElementById('author');
-            select.innerHTML = ''; // Limpar opções existentes
+            select.innerHTML = '';
             data.forEach(user => {
                 const option = document.createElement('option');
-                option.value = user.IDUSUARIOS; // O valor é o ID, que não é mostrado ao usuário
-                option.textContent = user.NOME_DO_USUARIO; // Mostra apenas o nome
+                option.value = user.IDUSUARIOS;
+                option.textContent = user.NOME_DO_USUARIO;
                 select.appendChild(option);
             });
         })
@@ -98,7 +95,7 @@ function loadUserOptions() {
 function formatDate(dateString) {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `Data Limite: ${day}/${month}/${year}`;
 }
@@ -142,7 +139,7 @@ function updateDOM() {
 }
 
 function showInputBox() {
-    currentColumn = 0; // Set currentColumn to 0 for "Para Fazer"
+    currentColumn = 0;
     document.getElementById('taskPopup').style.display = 'block';
     document.getElementById('title').value = '';
     document.getElementById('description').value = '';
@@ -150,7 +147,6 @@ function showInputBox() {
     document.getElementById('dueDate').value = '';
 
     const form = document.getElementById('taskForm');
-    // Remover quaisquer eventos anteriores para evitar duplicações
     form.removeEventListener('submit', handleSubmit);
     form.addEventListener('submit', handleSubmit);
 }
@@ -162,15 +158,14 @@ function handleSubmit(event) {
     closePopup();
 }
 
-function addNewItem(column = 0) { // Default column to 0 for "Para Fazer"
+function addNewItem(column = 0) {
     const title = document.getElementById('title').value;
     const description = document.getElementById('description').value;
     const authorSelect = document.getElementById('author');
     const authorId = authorSelect.value;
     const dueDate = document.getElementById('dueDate').value;
     const idcliente = localStorage.getItem('idEmpresaSelecionada');
-    const status = 'Backlog'; // Always set status to "Para Fazer"
-
+    const status = 'Backlog';
     const itemObject = {
         titulo: title,
         idcliente: idcliente,
@@ -192,12 +187,12 @@ function addNewItem(column = 0) { // Default column to 0 for "Para Fazer"
         .then(data => {
             console.log('Resposta do servidor:', data);
             if (data.success) {
-                itemObject.idtarefa = data.idtarefa; // Assuming server returns the ID of the new task
+                itemObject.idtarefa = data.idtarefa;
                 itemObject.title = itemObject.titulo;
                 itemObject.dueDate = itemObject.dataLimite;
                 itemObject.authorName = authorSelect.options[authorSelect.selectedIndex].text;
-                addToColumn(column, itemObject); // Add the item to the "Para Fazer" column
-                updateDOM(); // Update the DOM automatically
+                addToColumn(column, itemObject);
+                updateDOM();
             } else {
                 alert('Erro ao adicionar tarefa: ' + data.error);
             }
@@ -256,8 +251,8 @@ function updateItem(index, column) {
         .then(response => response.json())
         .then(data => {
             console.log('Item updated:', data);
-            listArrays[column][index] = item; // Update the item in the array
-            updateDOM(); // Update the DOM to reflect the change
+            listArrays[column][index] = item;
+            updateDOM();
         })
         .catch(error => console.error('Error updating item:', error));
 }
@@ -286,32 +281,30 @@ function closePopup() {
     document.getElementById('taskPopup').style.display = 'none';
 }
 function rebuildArrays() {
-    // Clear existing array content
-    listArrays = [[], [], [], []]; // Reset all columns
+    listArrays = [[], [], [], []];
 
-    // Traverse each column and rebuild the arrays
     listColumns.forEach((column, i) => {
-        const columnTasks = column.querySelectorAll(".drag-item"); // Select all task items in the column
+        const columnTasks = column.querySelectorAll(".drag-item");
         columnTasks.forEach(task => {
             const taskData = {
-                idtarefa: task.dataset.idtarefa, // Ensure data-idtarefa is set on each task item
+                idtarefa: task.dataset.idtarefa,
                 title: task.querySelector('.item-title').textContent,
                 dueDate: task.querySelector('.item-date').textContent,
-                author: task.dataset.authorId, // Ensure data-authorId is set on each task item
+                author: task.dataset.authorId,
                 authorName: task.querySelector('.item-author').textContent,
-                description: task.dataset.description // Ensure data-description is set on each task item
+                description: task.dataset.description
             };
             listArrays[i].push(taskData);
         });
     });
 
-    console.log('Arrays rebuilt:', listArrays); // Logging to verify the operation
+    console.log('Arrays rebuilt:', listArrays);
 }
 
 function dragEnter(e) {
     e.preventDefault();
     let target = e.target;
-    // Certifique-se de que o target seja sempre a lista UL e não um LI ou qualquer outro filho
+
     while (target && !target.classList.contains('drag-item-list')) {
         target = target.parentNode;
     }
@@ -324,7 +317,6 @@ function dragEnter(e) {
 function dragLeave(e) {
     e.preventDefault();
     let target = e.target;
-    // Mesmo loop para garantir que o target é a lista UL
     while (target && !target.classList.contains('drag-item-list')) {
         target = target.parentNode;
     }
@@ -340,20 +332,18 @@ function drop(e) {
         const statusMap = { 0: 'Backlog', 1: 'Fazendo', 2: 'Feito', 3: 'Em Espera' };
         const newStatus = statusMap[columnId];
 
-        // Ensure draggedItem is the task element
         const taskId = draggedItem.getAttribute('data-idtarefa');
         if (!taskId) {
             console.error('No task ID found on dragged item');
             return;
         }
 
-        // Update status in the backend
         updateTaskStatus(taskId, newStatus);
 
         listColumns[columnId].classList.remove("over");
         listColumns[columnId].appendChild(draggedItem);
         rebuildArrays();
-        currentColumn = undefined; // Reset currentColumn to avoid errors
+        currentColumn = undefined;
     }
 }
 
@@ -374,7 +364,7 @@ function updateTaskStatus(idtarefa, newStatus) {
 
 
 function drag(e) {
-    draggedItem = e.target.closest('.drag-item'); // Ensure draggedItem is the task element
+    draggedItem = e.target.closest('.drag-item');
     dragging = true;
 }
 
