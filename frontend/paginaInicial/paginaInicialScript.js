@@ -95,6 +95,14 @@ function loadUserOptions() {
         });
 }
 
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = date.getFullYear();
+    return `Data Limite: ${day}/${month}/${year}`;
+}
+
 
 function createItemEl(columnEl, column, item, index) {
     const listEl = document.createElement("li");
@@ -111,13 +119,14 @@ function createItemEl(columnEl, column, item, index) {
             </div>
             <h4 class="item-title">${item.title || ''}</h4>
             <div class="item-details">
-                <span class="item-date">${item.dueDate || ''}</span>
+                <span class="item-date">${formatDate(item.dueDate) || ''}</span>
                 <span class="item-author">${item.authorName || ''}</span> 
             </div>
         </div>
     `;
     columnEl.appendChild(listEl);
 }
+
 
 
 
