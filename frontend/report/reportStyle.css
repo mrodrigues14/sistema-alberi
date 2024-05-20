@@ -1,37 +1,55 @@
 body {
     font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
 }
 
-.report-container, .report-list-container {
-    margin: 20px;
+.container {
+    width: 60%;
+    margin: 50px auto;
     padding: 20px;
+    background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-h1, h2 {
+h2 {
+    text-align: center;
     color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
 }
 
 label {
     display: block;
-    margin-top: 10px;
+    margin-bottom: 5px;
+    color: #333;
 }
 
-input, textarea {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    box-sizing: border-box;
+input[type="text"], textarea, input[type="file"], select {
+    width: calc(100% - 22px);
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: vertical;
+    height: 100px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: flex-end;
 }
 
 button {
     background-color: #4CAF50;
     color: white;
-    padding: 10px 15px;
-    margin-top: 10px;
+    padding: 10px 20px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -53,6 +71,17 @@ button:hover {
     border: 1px solid #ddd;
     border-radius: 4px;
 }
+
+.report-container, .report-list-container {
+    width: 60%;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 /* CSS para o popup */
 .popup {
     display: none;
@@ -98,7 +127,7 @@ button:hover {
 .popup-content button {
     background-color: #4CAF50;
     color: white;
-    padding: 10px 15px;
+    padding: 10px 20px;
     margin-top: 20px;
     border: none;
     border-radius: 4px;
@@ -109,3 +138,61 @@ button:hover {
     background-color: #45a049;
 }
 
+/* CSS para centralizar os botões de paginação */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.pagination button:hover {
+    background-color: #45a049;
+}
+
+.pagination #pageNumber {
+    margin: 0 10px;
+}
+
+/* CSS para os botões de filtro */
+.filter-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    margin: 0 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+}
+
+.filter-btn.yellow {
+    background-color: #FFC107;
+}
+
+.filter-btn.blue {
+    background-color: #007BFF;
+}
+
+.filter-btn.green {
+    background-color: #28A745;
+}
+
+.filter-btn:hover {
+    opacity: 0.8;
+}

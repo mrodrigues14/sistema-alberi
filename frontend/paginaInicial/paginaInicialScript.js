@@ -1,8 +1,3 @@
-const userRole = localStorage.getItem('userRole');
-const idusuario = localStorage.getItem('idusuario');
-
-let IDCLIENTE = 0;
-
 document.addEventListener('DOMContentLoaded', function() {
     loadUserOptions();
     loadTasks();
@@ -33,13 +28,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 const listColumns = document.querySelectorAll(".drag-item-list");
 let listArrays = [[], [], [], []];
+let currentColumn;
+let draggedItem;
 
 function loadTasks() {
     const idcliente = localStorage.getItem('idEmpresaSelecionada');
     const idusuario = localStorage.getItem('idusuario');
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
-    fetch(`/paginaInicial/tarefas?idcliente=${idcliente}&idusuario=${idusuario}&isAdmin=${isAdmin}`)
+    fetch(`/paginaInicial/tarefas?idcliente=${idcliente}&idusuario=${idusuario}`)
         .then(response => response.json())
         .then(data => {
             listArrays = [[], [], [], []];
@@ -100,7 +96,6 @@ function formatDate(dateString) {
     return `Data Limite: ${day}/${month}/${year}`;
 }
 
-
 function createItemEl(columnEl, column, item, index) {
     const listEl = document.createElement("li");
     listEl.classList.add("drag-item");
@@ -108,11 +103,12 @@ function createItemEl(columnEl, column, item, index) {
     listEl.setAttribute("onfocusout", `updateItem(${index}, ${column})`);
     listEl.setAttribute("ondragstart", "drag(event)");
     listEl.setAttribute("data-idtarefa", item.idtarefa);
+    listEl.setAttribute("onclick", `showTaskDetails(${index}, ${column})`); // Adicione o evento de clique
     listEl.innerHTML = `
         <div class="item-content">
             <div class="item-header">
-                <div class="edit-icon" onclick="editItem(${index}, ${column})">&#9998;</div>
-                <div class="delete-icon" onclick="deleteTask(${item.idtarefa}, ${index}, ${column})">&#128465;</div>
+                <div class="edit-icon" onclick="editItem(${index}, ${column}); event.stopPropagation();">&#9998;</div>
+                <div class="delete-icon" onclick="showDeleteConfirmPopup(${item.idtarefa}, '${item.title}', ${index}, ${column}); event.stopPropagation();">&#128465;</div>
             </div>
             <h4 class="item-title">${item.title || ''}</h4>
             <div class="item-details">
@@ -124,9 +120,28 @@ function createItemEl(columnEl, column, item, index) {
     columnEl.appendChild(listEl);
 }
 
+function showTaskDetails(index, column) {
+    const item = listArrays[column][index];
+    const detailTitle = document.getElementById('detailTitle');
+    const detailDescription = document.getElementById('detailDescription');
+    const detailAuthor = document.getElementById('detailAuthor');
+    const detailDueDate = document.getElementById('detailDueDate');
+    const taskDetailPopup = document.getElementById('taskDetailPopup');
 
+    if (detailTitle && detailDescription && detailAuthor && detailDueDate && taskDetailPopup) {
+        detailTitle.textContent = item.title;
+        detailDescription.textContent = item.description;
+        detailAuthor.textContent = item.authorName;
+        detailDueDate.textContent = formatDate(item.dueDate);
+        taskDetailPopup.style.display = 'block';
+    } else {
+        console.error('One or more elements are missing from the DOM.');
+    }
+}
 
-
+function closeDetailPopup() {
+    document.getElementById('taskDetailPopup').style.display = 'none';
+}
 
 function updateDOM() {
     listColumns.forEach((column, i) => {
@@ -138,23 +153,32 @@ function updateDOM() {
     });
 }
 
-function showInputBox() {
-    currentColumn = 0;
+function showInputBox(column = 0) {
+    currentColumn = column;
     document.getElementById('taskPopup').style.display = 'block';
+    document.getElementById('taskId').value = ''; // Certifique-se de que o campo taskId esteja vazio
     document.getElementById('title').value = '';
     document.getElementById('description').value = '';
     document.getElementById('author').value = '';
     document.getElementById('dueDate').value = '';
 
-    const form = document.getElementById('taskForm');
-    form.removeEventListener('submit', handleSubmit);
-    form.addEventListener('submit', handleSubmit);
-}
+    document.getElementById('popupTitle').textContent = 'Adicionar Tarefa'; // Define o título do popup
 
+    const form = document.getElementById('taskForm');
+    form.removeEventListener('submit', handleSubmit); // Remove qualquer event listener anterior
+    form.addEventListener('submit', handleSubmit); // Adiciona o event listener de submissão
+}
 
 function handleSubmit(event) {
     event.preventDefault();
-    addNewItem(currentColumn);
+    const taskId = document.getElementById('taskId').value;
+    if (taskId) {
+        const column = currentColumn;
+        const index = listArrays[column].findIndex(task => task.idtarefa === taskId);
+        updateItem(index, column);
+    } else {
+        addNewItem(currentColumn);
+    }
     closePopup();
 }
 
@@ -187,12 +211,8 @@ function addNewItem(column = 0) {
         .then(data => {
             console.log('Resposta do servidor:', data);
             if (data.success) {
-                itemObject.idtarefa = data.idtarefa;
-                itemObject.title = itemObject.titulo;
-                itemObject.dueDate = itemObject.dataLimite;
-                itemObject.authorName = authorSelect.options[authorSelect.selectedIndex].text;
-                addToColumn(column, itemObject);
-                updateDOM();
+                // Recarregar a página após adicionar a tarefa com sucesso
+                window.location.reload();
             } else {
                 alert('Erro ao adicionar tarefa: ' + data.error);
             }
@@ -203,9 +223,6 @@ function addNewItem(column = 0) {
         });
 }
 
-
-
-
 function addToColumn(column, itemObject) {
     listArrays[column].push(itemObject);
     updateDOM();
@@ -213,32 +230,52 @@ function addToColumn(column, itemObject) {
 
 function editItem(index, column) {
     const item = listArrays[column][index];
+    document.getElementById('taskId').value = item.idtarefa;
     document.getElementById('title').value = item.title;
     document.getElementById('description').value = item.description;
-    document.getElementById('author').value = item.author;
-    document.getElementById('dueDate').value = item.dueDate;
+
+    // Definir o autor original
+    const authorSelect = document.getElementById('author');
+    for (let i = 0; i < authorSelect.options.length; i++) {
+        if (authorSelect.options[i].value == item.author) {
+            authorSelect.selectedIndex = i;
+            break;
+        }
+    }
+
+    // Definir a data original no formato yyyy-MM-dd
+    const dueDate = new Date(item.dueDate);
+    const formattedDate = dueDate.toISOString().split('T')[0];
+    document.getElementById('dueDate').value = formattedDate;
+
+    // Define o título do popup
+    document.getElementById('popupTitle').textContent = 'Editar Tarefa';
     document.getElementById('taskPopup').style.display = 'block';
     currentColumn = column;
+
     const form = document.getElementById('taskForm');
-    form.onsubmit = function(event) {
+    form.removeEventListener('submit', handleSubmit); // Remove qualquer event listener anterior
+    form.addEventListener('submit', function(event) {
         event.preventDefault();
         updateItem(index, column);
         closePopup();
-    };
+    });
 }
 
 function updateItem(index, column) {
+    const taskId = document.getElementById('taskId').value;
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
     const authorSelect = document.getElementById('author');
     const authorId = authorSelect.value;
-    const authorName = authorSelect.options[authorSelect.selectedIndex].text;
+    const dueDate = document.getElementById('dueDate').value;
 
     const item = {
-        idtarefa: listArrays[column][index].idtarefa,
-        title: document.getElementById('title').value,
-        description: document.getElementById('description').value,
-        author: authorId,
-        authorName: authorName,
-        dueDate: document.getElementById('dueDate').value
+        idtarefa: taskId,
+        titulo: title,
+        descricao: description,
+        dataLimite: dueDate,
+        idusuario: authorId
     };
 
     fetch('/paginaInicial/editartarefa', {
@@ -251,10 +288,27 @@ function updateItem(index, column) {
         .then(response => response.json())
         .then(data => {
             console.log('Item updated:', data);
-            listArrays[column][index] = item;
-            updateDOM();
+            // Recarregar a página após editar a tarefa com sucesso
+            window.location.reload();
         })
         .catch(error => console.error('Error updating item:', error));
+}
+
+function showDeleteConfirmPopup(taskId, taskTitle, index, column) {
+    const deleteTaskTitle = document.getElementById('deleteTaskTitle');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+
+    deleteTaskTitle.textContent = `Tem certeza de que deseja excluir a tarefa "${taskTitle}"?`;
+    confirmDeleteButton.onclick = function() {
+        deleteTask(taskId, index, column);
+        closeDeleteConfirmPopup();
+    };
+
+    document.getElementById('deleteConfirmPopup').style.display = 'block';
+}
+
+function closeDeleteConfirmPopup() {
+    document.getElementById('deleteConfirmPopup').style.display = 'none';
 }
 
 function deleteTask(idtarefa, index, column) {
@@ -280,6 +334,7 @@ function deleteTask(idtarefa, index, column) {
 function closePopup() {
     document.getElementById('taskPopup').style.display = 'none';
 }
+
 function rebuildArrays() {
     listArrays = [[], [], [], []];
 
@@ -347,7 +402,6 @@ function drop(e) {
     }
 }
 
-
 function updateTaskStatus(idtarefa, newStatus) {
     fetch('/paginaInicial/atualizartarefa', {
         method: 'POST',
@@ -361,15 +415,11 @@ function updateTaskStatus(idtarefa, newStatus) {
         .catch(error => console.error('Error updating status:', error));
 }
 
-
-
 function drag(e) {
     draggedItem = e.target.closest('.drag-item');
     dragging = true;
 }
 
-
 function allowDrop(e) {
     e.preventDefault();
 }
-

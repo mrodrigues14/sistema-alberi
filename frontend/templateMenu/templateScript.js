@@ -22,7 +22,10 @@ function loadAndDisplayUsername() {
             if (userButton && data.username) {
                 userButton.textContent = data.username;
                 localStorage.setItem('idUsuario', data.idusuario);
+                localStorage.setItem('userRoles', data.role);
+                console.log(data.role);
                 console.log(data.idusuario);
+                showAdminOptions();
             } else {
                 window.location.href = '/';
             }
@@ -32,6 +35,7 @@ function loadAndDisplayUsername() {
             window.location.href = '/';
         });
 }
+
 
 
 
@@ -159,6 +163,12 @@ function redirecionamentoDePagina() {
 }
 
 
+function showAdminOptions() {
+    let userRoles = localStorage.getItem('userRoles');
+    if (userRoles !== 'admin') {
+        document.getElementById('menuAdicionarUsuario').style.display = 'none';
+    }
+}
 
 document.addEventListener('click', function(event) {
     var list = document.getElementById('nameList');
@@ -177,7 +187,26 @@ document.addEventListener('click', function(event) {
     }
 });
 
-
+function logout() {
+    fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'same-origin'
+    })
+        .then(response => {
+            if (response.ok) {
+                localStorage.removeItem('idUsuario');
+                localStorage.removeItem('userRoles');
+                localStorage.removeItem('nomeEmpresaSelecionada');
+                localStorage.removeItem('idEmpresaSelecionada');
+                window.location.href = '/';
+            } else {
+                throw new Error('Erro ao fazer logout');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+        });
+}
 
 window.onclick = function(event) {
     if (!event.target.matches('.dropbtn')) {

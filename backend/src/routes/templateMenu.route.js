@@ -9,13 +9,6 @@ router.get('/', (req, res) => {
 });
 
 
-router.get('/logout', requiresAuth(), function(req, res){
-    // O método req.oidc.logout() irá tratar o logout da sessão local e do Auth0
-    req.oidc.logout({
-        returnTo: 'http://localhost:8080'  // URL para redirecionar após o logout
-    });
-});
-
 router.get('/verificar-login', (req, res) => {
     if (req.oidc.isAuthenticated()) {
         res.send({ autenticado: true });

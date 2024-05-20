@@ -1,28 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportar falhas ou melhorias</title>
     <link rel="stylesheet" href="reportStyle.css">
 </head>
 <body>
 <div id="menu-container"></div>
-<div class="report-container">
-    <h1>Submit Report</h1>
+
+<div class="container">
+    <h2>Reportar falhas ou melhorias</h2>
     <form id="reportForm" enctype="multipart/form-data">
-        <label for="title">Título</label>
-        <input type="text" id="title" name="title" required>
-
-        <label for="description">Descrição do erro ou melhoria:</label>
-        <textarea id="description" name="description" required></textarea>
-
-        <label for="file">Anexe logs de erro, sugestões de melhorias, etc (PDF, Images, Word):</label>
-        <input type="file" id="file" name="file" accept=".pdf, .docx, .doc, image/*">
-
-        <button type="submit">Submit Report</button>
+        <div class="form-group">
+            <label for="title">Título</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Descrição do erro ou melhoria:</label>
+            <textarea id="description" name="description" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="type">Classificação do erro ou melhoria:</label>
+            <select id="type" name="type" required>
+                <option value="">Selecione o tipo</option>
+                <option value="ERRO GRAVE">ERRO GRAVE</option>
+                <option value="ERRO MEDIO">ERRO MÉDIO</option>
+                <option value="ERRO PEQUENO">ERRO PEQUENO</option>
+                <option value="MELHORIA CURTO PRAZO">MELHORIA DE CURTO PRAZO</option>
+                <option value="MELHORIA MEDIO PRAZO">MELHORIA DE MÉDIO PRAZO</option>
+                <option value="MELHORIA LONGO PRAZO">MELHORIA DE LONGO PRAZO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="file">Anexe logs de erro, sugestões de melhorias, etc (PDF, Images, Word):</label>
+            <input type="file" id="file" name="file" accept=".pdf, .docx, .doc, image/*">
+        </div>
+        <div class="buttons">
+            <button type="submit">Enviar</button>
+        </div>
     </form>
 </div>
-
 
 <div id="successPopup" class="popup">
     <div class="popup-content">
@@ -31,12 +49,19 @@
     </div>
 </div>
 
-
-
-
 <div class="report-list-container">
     <h2>Meus Relatórios</h2>
+    <div class="filter-buttons">
+        <button class="filter-btn yellow" onclick="loadUserReports(userId, 1, 10, 'Nao iniciado')">Não Iniciado</button>
+        <button class="filter-btn blue" onclick="loadUserReports(userId, 1, 10, 'Em desenvolvimento')">Em Desenvolvimento</button>
+        <button class="filter-btn green" onclick="loadUserReports(userId, 1, 10, 'Concluido')">Concluído</button>
+    </div>
     <ul id="reportList"></ul>
+    <div class="pagination">
+        <button class="pagination-btn" onclick="changePage('prev')">Anterior</button>
+        <span id="pageNumber">1</span>
+        <button class="pagination-btn" onclick="changePage('next')">Próxima</button>
+    </div>
 </div>
 
 <script src="reportScript.js"></script>

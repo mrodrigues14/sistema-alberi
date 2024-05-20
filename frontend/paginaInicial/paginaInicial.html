@@ -49,10 +49,6 @@
             </div>
             <!-- Grupo de Botões de Adicionar -->
             <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(1)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
                 <div class="add-btn solid" onclick="hideInputBox(1)">
                     <span>Salvar Item</span>
                 </div>
@@ -72,10 +68,6 @@
             </div>
             <!-- Grupo de Botões de Adicionar -->
             <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(2)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
                 <div class="add-btn solid" onclick="hideInputBox(2)">
                     <span>Salvar Item</span>
                 </div>
@@ -95,10 +87,6 @@
             </div>
             <!-- Grupo de Botões de Adicionar -->
             <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(3)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
                 <div class="add-btn solid" onclick="hideInputBox(3)">
                     <span>Salvar Item</span>
                 </div>
@@ -110,8 +98,9 @@
     </ul>
 </div>
 <div id="taskPopup" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px;">
-    <h2>Adicionar Nova Tarefa</h2>
+    <h2 id="popupTitle">Adicionar Nova Tarefa</h2>
     <form id="taskForm">
+        <input type="hidden" id="taskId" name="taskId">
         <div>
             <label for="title">Título:</label>
             <input type="text" id="title" name="title" required>
@@ -122,16 +111,31 @@
         </div>
         <div>
             <label for="author">Autor:</label>
-            <select id="author" required>
-            </select>
+            <select id="author" required></select>
         </div>
         <div>
             <label for="dueDate">Data Final:</label>
             <input type="date" id="dueDate" name="dueDate" required>
         </div>
-        <button type="submit">Salvar Tarefa</button>
-        <button type="button" onclick="closePopup()">Cancelar</button>
+        <button type="submit" class="confirmarButtonTarefa">Salvar Tarefa</button>
+        <button type="button" class="cancelarButtonTarefa" onclick="closePopup()">Cancelar</button>
     </form>
+</div>
+
+<div id="taskDetailPopup" style="display:none;">
+    <h2 id="detailTitle"></h2>
+    <p id="detailDescription"></p>
+    <p id="detailAuthor"></p>
+    <p id="detailDueDate"></p>
+    <button onclick="closeDetailPopup()">Fechar</button>
+</div>
+
+<!-- Popup de confirmação de exclusão -->
+<div id="deleteConfirmPopup" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px;">
+    <h2>Confirmação de Exclusão</h2>
+    <p id="deleteTaskTitle">Tem certeza de que deseja excluir a tarefa?</p>
+    <button id="confirmDeleteButton">Excluir</button>
+    <button onclick="closeDeleteConfirmPopup()">Cancelar</button>
 </div>
 
 <!-- Script -->
