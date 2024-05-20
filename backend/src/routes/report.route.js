@@ -11,12 +11,12 @@ router.get('/', (req, res) => {
 });
 
 router.post('/adicionar', upload.single('file'), (req, res) => {
-    const { title, description } = req.body;
+    const { title, description, type } = req.body;
     const file = req.file ? req.file.filename : null;
     const userId = req.body.ID_USUARIO;
     const data = new Date();
 
-    inserirReport(title, description, data, file, userId, (err, result) => {
+    inserirReport(title, description, data, file, userId, type, (err, result) => {
         if (err) {
             console.error('Erro ao inserir report:', err);
             res.status(500).send('Erro ao inserir report');
@@ -28,8 +28,11 @@ router.post('/adicionar', upload.single('file'), (req, res) => {
 
 router.get('/listar', (req, res) => {
     const userId = req.query.ID_USUARIO;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const situacao = req.query.situacao || null;
 
-    getReportsByUserId(userId, (err, reports) => {
+    getReportsByUserId(userId, page, limit, situacao, (err, reports) => {
         if (err) {
             console.error('Erro ao buscar reports:', err);
             res.status(500).send('Erro ao buscar reports');

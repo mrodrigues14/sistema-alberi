@@ -23,8 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
-
-
 });
 
 const reportForm = document.getElementById('reportForm');
@@ -33,7 +31,6 @@ if (reportForm) {
         event.preventDefault();
         const formData = new FormData(this);
 
-        // Adicionar o ID do usuário ao FormData antes de enviar
         const userId = localStorage.getItem('idusuario');
         formData.append('ID_USUARIO', userId);
 
@@ -44,12 +41,8 @@ if (reportForm) {
             if (response.ok) {
                 console.log('Report enviado com sucesso!');
                 response.text().then(text => console.log(text));
-
-                // Exibir o popup de sucesso
                 showSuccessPopup();
-
-                // Atualizar a lista de relatórios após enviar
-                loadUserReports(userId);
+                loadUserReports(userId, 1, 10);
             } else {
                 response.text().then(text => console.error('Erro ao enviar report:', text));
             }
@@ -59,30 +52,55 @@ if (reportForm) {
     });
 }
 
-// Função para carregar os relatórios do usuário
-function loadUserReports(userId) {
-    fetch(`/report/listar?ID_USUARIO=${userId}`)
+let currentPage = 1;
+let currentFilter = null;
+
+function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
+    currentPage = page;
+    currentFilter = situacao;
+
+    fetch(`/report/listar?ID_USUARIO=${userId}&page=${page}&limit=${limit}&situacao=${situacao}`)
         .then(response => response.json())
         .then(reports => {
             const reportList = document.getElementById('reportList');
             reportList.innerHTML = ''; // Limpa a lista antes de adicionar novos itens
-            reports.forEach(report => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `Título: ${report.TITULO}, Descrição: ${report.DESCRICAO}, Data: ${new Date(report.DATA).toLocaleString()}`;
-                reportList.appendChild(listItem);
-            });
+            if (reports.length > 0) {
+                reports.forEach(report => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <strong>Título:</strong> ${report.TITULO}<br>
+                        <strong>Tipo:</strong> ${report.PRIORIDADE}<br>
+                        <strong>Descrição:</strong> ${report.DESCRICAO}<br>
+                        <strong>Data:</strong> ${new Date(report.DATA).toLocaleString()}<br>
+                        <strong>Situação:</strong> ${report.SITUACAO}
+                    `;
+                    reportList.appendChild(listItem);
+                });
+            } else {
+                reportList.innerHTML = '<li>Nenhum relatório encontrado</li>';
+            }
+            document.getElementById('pageNumber').textContent = page;
         })
         .catch(error => {
             console.error('Erro ao carregar reports:', error);
         });
 }
 
-// Função para exibir o popup de sucesso
+function changePage(direction) {
+    const userId = localStorage.getItem('idusuario');
+    if (direction === 'next') {
+        currentPage += 1;
+    } else if (direction === 'prev' && currentPage > 1) {
+        currentPage -= 1;
+    }
+
+    loadUserReports(userId, currentPage, 10, currentFilter);
+}
+
 function showSuccessPopup() {
     const successPopup = document.getElementById('successPopup');
     const popupContent = successPopup.querySelector('.popup-content');
 
-    // Criar o elemento dotlottie-player
     const lottiePlayer = document.createElement('dotlottie-player');
     lottiePlayer.setAttribute('src', 'https://lottie.host/f970532a-cffa-46c6-bb0c-a868908cb65c/UR2kFoKi9D.json');
     lottiePlayer.setAttribute('background', 'transparent');
@@ -93,22 +111,19 @@ function showSuccessPopup() {
     lottiePlayer.setAttribute('playMode', 'normal');
     lottiePlayer.setAttribute('autoplay', 'true');
 
-    // Inserir o dotlottie-player no início do conteúdo do popup
     popupContent.insertBefore(lottiePlayer, popupContent.firstChild);
 
-    successPopup.classList.add('show', 'fade-in'); // Adiciona classes para exibir e animar o popup
+    successPopup.classList.add('show', 'fade-in');
 }
-
 
 // Função para fechar o popup de sucesso
 function closePopup() {
     const successPopup = document.getElementById('successPopup');
     successPopup.classList.remove('show'); // Remove a classe para esconder o popup
     window.location.reload();
-
 }
 
 const userId = localStorage.getItem('idusuario');
 if (userId) {
-    loadUserReports(userId);
+    loadUserReports(userId, 1, 10);
 }

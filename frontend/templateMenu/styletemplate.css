@@ -53,6 +53,7 @@ body {
 }
 
 .navbar-all .dropdown {
+    width: 250px;
     border-radius: 5px;
     position: relative;
     display: inline-block;
@@ -70,6 +71,7 @@ body {
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
     white-space: nowrap;
+    font-size: 16px;
 }
 
 .navbar-all .dropdown-content a {
@@ -90,6 +92,7 @@ body {
 
 .navbar-all .dropbtn.active + .empresaSelecionada {
     border-radius: 0;
+
 }
 
 .navbar-all .change-button {
@@ -137,7 +140,7 @@ body {
 }
 
 .navbar-all .dropbtn {
-    width: auto;
+    width: 250px;
     border-radius: 5px 5px 0 0;
 }
 
@@ -358,6 +361,9 @@ body {
     transform: none;
 }
 
+.menuAdicionarUsuario{
+
+}
 @media screen and (max-width: 768px) {
     .navbar-all .navbar {
         justify-content: flex-start; /* Alinhar à esquerda em telas menores */

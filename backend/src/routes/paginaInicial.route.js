@@ -19,8 +19,8 @@ router.get('/erro', (req, res) => {
 });
 
 router.get('/tarefas', (req, res) => {
-    const {idcliente, idusuario, isAdmin} = req.query;
-    listarTarefas(idcliente, idusuario, isAdmin,(err, result) => {
+    const {idcliente, idusuario} = req.query;
+    listarTarefas(idcliente, idusuario,(err, result) => {
         if (err) {
             res.status(500).json(err);
         } else {
@@ -30,12 +30,12 @@ router.get('/tarefas', (req, res) => {
 });
 
 router.post('/adicionartarefa', (req, res) => {
-    const {titulo, idcliente, dataLimite, idusuario, recurrenceDay} = req.body;
-    console.log(titulo, idcliente, dataLimite, idusuario, recurrenceDay);
+    const {titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay} = req.body;
+    console.log(titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay);
     if (!titulo || !idcliente || !dataLimite) {
         return res.status(400).json({error: 'Dados incompletos'});
     }
-    adicionarTarefa(titulo, idcliente, dataLimite, idusuario,recurrenceDay, (err, result) => {
+    adicionarTarefa(titulo, idcliente, dataLimite, idusuario, descricao,recurrenceDay, (err, result) => {
         if (err) {
             return res.status(500).json(err);
         }
@@ -62,18 +62,19 @@ router.get('/editartarefa', (req, res) => {
 
 router.post('/editartarefa', (req, res) => {
     console.log("Received data:", req.body);
-    const {idtarefa, titulo, dataLimite} = req.body;
+    const { idtarefa, titulo, descricao, dataLimite, idusuario } = req.body;
 
-    if (!titulo || !idtarefa || !dataLimite) {
+    if (!titulo || !idtarefa || !dataLimite || !descricao) {
         res.status(400).json({error: 'Missing fields'});
         return;
     }
-    editarTarefa(idtarefa, titulo, dataLimite, (err, result) => {
+    editarTarefa(idtarefa, titulo, dataLimite, descricao, idusuario, (err, result) => {
         if (err) {
-            res.status(500).json({error: 'Internal server error'});
-            return;
+            console.error('Erro ao atualizar a tarefa:', err);
+            res.status(500).json({ error: 'Erro ao atualizar a tarefa' });
+        } else {
+            res.json({ success: true });
         }
-        res.json({message: 'Task updated successfully'});
     });
 });
 

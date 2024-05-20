@@ -1,21 +1,13 @@
 const mysqlConn = require('../base/database.js');
 
-function listarTarefas(idcliente, idusuario, isAdmin, callback) {
-    let query = '';
-    let params = [];
-
-    if (isAdmin) {
-        query = `
-    SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, U.NOME_DO_USUARIO 
-    FROM TAREFAS AS T
-    INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
-    ORDER BY T.DATA_LIMITE ASC
-`;    } else {
-        query = `SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, DATA_INICIO, DATA_CONCLUSAO, ID_CLIENTE FROM TAREFAS WHERE id_cliente = ? AND ID_USUARIO = ? ORDER BY DATA_LIMITE ASC`;
-        params = [idcliente, idusuario];
-    }
-
-    mysqlConn.query(query, params, function(err, result, fields) {
+function listarTarefas(idcliente, idusuario, callback) {
+    mysqlConn.query(`
+        SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
+        FROM TAREFAS AS T
+        INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
+        WHERE T.ID_CLIENTE = ?
+        ORDER BY T.DATA_LIMITE ASC
+    `, [idcliente], function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
@@ -23,9 +15,10 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
         }
     });
 }
+
 
 function consultarTarefa(idtarefa, idusuario, callback){
-    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE FROM TAREFAS WHERE idtarefa = ? AND ID_USUARIO =?`, [idtarefa, idusuario], function(err, result, fields) {
+    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE, DESCRICAO FROM TAREFAS WHERE idtarefa = ? AND ID_USUARIO =?`, [idtarefa, idusuario], function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
@@ -35,11 +28,11 @@ function consultarTarefa(idtarefa, idusuario, callback){
 
 }
 
-function adicionarTarefa(tarefa, idcliente, dataLimite, idusuario, recurrenceDay, callback) {
+function adicionarTarefa(tarefa, idcliente, dataLimite, idusuario, descricao, recurrenceDay, callback) {
     const dataInicio = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z');
     const status = "PARA FAZER";
-    mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, DATA_INICIO, ID_CLIENTE, ID_USUARIO, RECORRENCIA) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)`,
-        [tarefa, status, dataLimite, dataInicio.toISOString().split('T')[0], idcliente, idusuario, recurrenceDay],
+    mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, DATA_INICIO, ID_CLIENTE, ID_USUARIO, DESCRICAO, RECORRENCIA) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [tarefa, status, dataLimite, dataInicio.toISOString().split('T')[0], idcliente, idusuario, descricao, recurrenceDay],
         (err, result, fields) => {
             callback(err, result);
         });
@@ -89,11 +82,13 @@ function atualizarStatus(idtarefa, newStatus, callback) {
 }
 
 
-function editarTarefa(idtarefa, titulo, dataLimite, callback){
-    mysqlConn.query('UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ? WHERE IDTAREFA = ?', [titulo, dataLimite, idtarefa], function(err, result){
-        callback(err, result);
-    });
+function editarTarefa(idtarefa, titulo, dataLimite, descricao, idusuario, callback){
+    mysqlConn.query('UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ?, DESCRICAO = ?, ID_USUARIO = ? WHERE IDTAREFA = ?',
+        [titulo, dataLimite, descricao, idusuario, idtarefa], function(err, result){
+            callback(err, result);
+        });
 }
+
 
 function consultarUsuarios(callback){
     mysqlConn.query(`SELECT NOME_DO_USUARIO, IDUSUARIOS FROM USUARIOS`, function(err, result, fields) {
