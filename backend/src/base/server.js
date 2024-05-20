@@ -38,10 +38,10 @@ app.listen(port, () => {
 
 /* Para HTTPS, descomente e ajuste conforme necessário
 const options = {
-    key: fs.readFileSync('/etc/letsencrypt/live/seusite.com.br/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/seusite.com.br/fullchain.pem'),
+    key: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/fullchain.pem'),
 };
 https.createServer(options, app).listen(port, () => {
-    console.log(`Server running securely on https://seusite.com.br:${port}`);
+    console.log(`Server running securely on https://albericonsult.com.br`);
 });
 */
