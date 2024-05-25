@@ -369,3 +369,55 @@ body {
         justify-content: flex-start; /* Alinhar à esquerda em telas menores */
     }
 }
+
+/* Estilo para o fundo embaçado */
+.blurred-background {
+    filter: blur(5px);
+}
+
+/* Estilo para a sobreposição embaçada */
+.overlay {
+    display: none; /* Inicialmente escondido */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999; /* Um nível abaixo do pop-up */
+}
+
+/* Estilo para a mensagem centralizada */
+.centered-message {
+    display: none; /* Inicialmente escondido */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    color: black;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    z-index: 1000; /* Nível acima da sobreposição */
+    width: 80%; /* Largura do pop-up */
+    max-width: 500px; /* Largura máxima */
+}
+
+/* Estilo para o botão de fechar */
+.centered-message .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.centered-message .close-button:hover {
+    color: #000;
+}

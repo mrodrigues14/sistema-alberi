@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Adicionar Usuário</title>
     <link rel="stylesheet" href="/paginaAdicionarUsuario/paginaAdicionarUsuarioStyle.css">
-
 </head>
 <body>
 <div id="menu-container"></div>
@@ -20,11 +19,16 @@
             <input type="text" id="nome" name="nome">
         </div>
         <div class="form-group checkbox-group">
+            <label>Função:</label>
             <label><input type="checkbox" name="role" value="Cliente"> Cliente</label>
             <label><input type="checkbox" name="role" value="Administrador"> Administrador</label>
             <label><input type="checkbox" name="role" value="Funcionario Administrativo"> Funcionário Administrativo</label>
             <label><input type="checkbox" name="role" value="Funcionario de Cliente"> Funcionário de Cliente</label>
             <label><input type="checkbox" name="role" value="Contabilidade"> Contabilidade</label>
+        </div>
+        <div class="form-group empresa-group">
+            <label>Empresas:</label>
+            <div id="empresas-list"></div>
         </div>
         <div class="buttons">
             <button type="button" onclick="adicionarUsuario()">Confirmar</button>

@@ -39,12 +39,18 @@
         <a><button class="empresaSelecionada"> teste </button></a>
         <div id="myDropdown" class="dropdown-content">
             <a href="#">Cadastrar Empresa</a>
-            <a href="#">Cadastrar Usúario</a>
+            <a href="#">Cadastrar Usuário</a>
             <a href="#!" onclick="showCalendarModal()">Agenda</a>
             <a href="#!" onclick="logout()">Sair</a>
         </div>
-
     </div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+<div id="noEmpresasMessage" class="centered-message">
+    <button class="close-button" onclick="closeNoEmpresasMessage()">X</button>
+    <p id="noEmpresasMessageText"></p>
 </div>
 
 <script src="templateScript.js"></script>

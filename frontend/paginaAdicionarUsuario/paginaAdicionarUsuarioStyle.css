@@ -36,18 +36,18 @@ input[type="text"] {
     box-sizing: border-box;
 }
 
-.checkbox-group {
+.checkbox-group, .empresa-group {
     display: flex;
     flex-direction: column;
 }
 
-.checkbox-group label {
+.checkbox-group label, .empresa-group label {
     display: flex;
     align-items: center;
     margin-bottom: 5px;
 }
 
-.checkbox-group input[type="checkbox"] {
+.checkbox-group input[type="checkbox"], .empresa-group input[type="checkbox"] {
     margin-right: 10px;
 }
 
@@ -64,7 +64,7 @@ button {
 }
 
 button[type="button"] {
-    background-color: #4CAF50;;
+    background-color: #4CAF50;
     color: #fff;
 }
 
@@ -80,7 +80,6 @@ button[type="button"]:nth-child(2) {
 button[type="button"]:nth-child(2):hover {
     background-color: #5a6268;
 }
-
 
 .popup {
     display: none;

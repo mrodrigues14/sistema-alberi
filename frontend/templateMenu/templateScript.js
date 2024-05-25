@@ -43,7 +43,9 @@ function loadNomeEmpresa() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Não foi possível buscar as empresas');
+                return response.json().then(data => {
+                    throw new Error(data.message);
+                });
             }
             return response.json();
         })
@@ -54,8 +56,10 @@ function loadNomeEmpresa() {
         })
         .catch(error => {
             console.error('Erro na requisição:', error);
+            showNoEmpresasMessage(error.message); // Exibe a mensagem de erro
         });
 }
+
 
 function handleEmpresa() {
     var nomeEmpresa = getStoredEmpresaName();
@@ -109,9 +113,6 @@ function inputNomeEmpresa(responseData) {
         }
     });
 
-
-
-
     function updateList(filter) {
         var safeFilter = filter.toLowerCase();
 
@@ -130,7 +131,6 @@ function inputNomeEmpresa(responseData) {
 
         list.style.display = filteredData.length ? 'block' : 'none';
     }
-
 }
 
 function empresaSelecionada(nomeEmpresa, idEmpresa) {
@@ -149,8 +149,6 @@ function updateNomeEmpresa(nomeEmpresa, idEmpresa) {
     }
 }
 
-
-
 function addClickEventToListItems() {
     var listItems = document.querySelectorAll('.name-list li');
     listItems.forEach(function(item) {
@@ -160,6 +158,24 @@ function addClickEventToListItems() {
 
 function redirecionamentoDePagina() {
     window.location.reload(true);
+}
+
+function showNoEmpresasMessage(message) {
+    var messageElement = document.getElementById('noEmpresasMessage');
+    var messageTextElement = document.getElementById('noEmpresasMessageText');
+    var overlayElement = document.getElementById('overlay');
+
+    messageTextElement.textContent = message;
+    messageElement.style.display = 'block';
+    overlayElement.style.display = 'block';
+}
+
+function closeNoEmpresasMessage() {
+    var messageElement = document.getElementById('noEmpresasMessage');
+    var overlayElement = document.getElementById('overlay');
+
+    messageElement.style.display = 'none';
+    overlayElement.style.display = 'none';
 }
 
 

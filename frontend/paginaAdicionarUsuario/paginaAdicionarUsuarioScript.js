@@ -21,6 +21,20 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
+
+    fetch('/adicionarUsuario/empresas')
+        .then(response => response.json())
+        .then(data => {
+            const empresasList = document.getElementById('empresas-list');
+            data.forEach(empresa => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" name="empresa" value="${empresa.IDCLIENTE}"> ${empresa.NOME}`;
+                empresasList.appendChild(label);
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar empresas:', error);
+        });
 });
 
 function adicionarUsuario() {
@@ -28,16 +42,22 @@ function adicionarUsuario() {
     const nome = document.getElementById('nome').value;
     const senha = '123456';
     const roles = [];
+    const empresas = [];
 
     document.querySelectorAll('input[name="role"]:checked').forEach((checkbox) => {
         roles.push(checkbox.value);
+    });
+
+    document.querySelectorAll('input[name="empresa"]:checked').forEach((checkbox) => {
+        empresas.push(checkbox.value);
     });
 
     const data = {
         cpf: cpf,
         nome: nome,
         senha: senha,
-        roles: roles
+        roles: roles,
+        empresas: empresas
     };
 
     fetch('/adicionarUsuario/add', {
@@ -49,8 +69,11 @@ function adicionarUsuario() {
     })
         .then(response => response.json())
         .then(data => {
-            console.log('Success:', data);
-            alert('Usuário adicionado com sucesso!');
+            if (data.error) {
+                alert(data.error);
+            } else {
+                showSuccessPopup();
+            }
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -64,8 +87,10 @@ function cancelar() {
     document.querySelectorAll('input[name="role"]:checked').forEach((checkbox) => {
         checkbox.checked = false;
     });
+    document.querySelectorAll('input[name="empresa"]:checked').forEach((checkbox) => {
+        checkbox.checked = false;
+    });
 }
-
 
 function showSuccessPopup() {
     const successPopup = document.getElementById('successPopup');
@@ -90,5 +115,4 @@ function closePopup() {
     const successPopup = document.getElementById('successPopup');
     successPopup.classList.remove('show');
     window.location.reload();
-
 }
