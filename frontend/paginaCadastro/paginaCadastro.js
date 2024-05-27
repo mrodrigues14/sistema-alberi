@@ -15,111 +15,44 @@ document.addEventListener('DOMContentLoaded', function() {
             script.onload = function() {
                 loadAndDisplayUsername();
                 handleEmpresa();
-            };            document.body.appendChild(script);
+            };
+            document.body.appendChild(script);
         })
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
-});
 
-document.addEventListener('DOMContentLoaded', function() {
-    var seletor = document.getElementById('seletorCNPJ');
-    var cpfInput = document.getElementById('cpf');
-    var cnpjInput = document.getElementById('cnpj');
-
-    function toggleInputs() {
-        var selectedValue = seletor.options[seletor.selectedIndex].value;
-
-        if(selectedValue === '0') {
-            cpfInput.style.display = 'block';
-            cnpjInput.style.display = 'none';
-        }
-        else if(selectedValue === '1') {
-            cpfInput.style.display = 'none';
-            cnpjInput.style.display = 'block';
-        }
-    }
-    seletor.addEventListener('change', toggleInputs);
-
-    cpfInput.style.display = 'none';
-    cnpjInput.style.display = 'none';
-
-    seletor.selectedIndex = 0;
-    toggleInputs();
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    var seletor = document.getElementById('seletorCNPJ');
-    var cpfLabel = document.querySelector('label[for="cpf"]');
-    var cnpjLabel = document.querySelector('label[for="cnpj"]');
-    function toggleLabels() {
-        var selectedValue = seletor.options[seletor.selectedIndex].value;
-
-        if(selectedValue === '0') {
-            cpfLabel.style.display = 'block';
-            cnpjLabel.style.display = 'none';
-        } else if(selectedValue === '1') {
-            cpfLabel.style.display = 'none';
-            cnpjLabel.style.display = 'block';
-        }
-    }
-
-    seletor.addEventListener('change', toggleLabels);
-
-    cpfLabel.style.display = 'none';
-    cnpjLabel.style.display = 'none';
-
-    seletor.selectedIndex = 0;
-    toggleLabels();
-});
-
-document.addEventListener('DOMContentLoaded', function() {
     fetch('/cadastro/empresas')
         .then(response => response.json())
         .then(data => {
-            let empresas =  document.getElementById('selectBanco');
+            let selectBanco = document.getElementById('selectBanco');
+            let selectEmpresa = document.getElementById('selectEmpresa');
             data.forEach(empresa => {
                 let option = document.createElement('option');
                 option.value = empresa.NOME;
                 option.text = empresa.NOME;
-                empresas.appendChild(option);
+                selectBanco.appendChild(option);
+
+                let optionEdit = document.createElement('option');
+                optionEdit.value = empresa.NOME;
+                optionEdit.text = empresa.NOME;
+                selectEmpresa.appendChild(optionEdit);
             });
         })
+        .catch(error => {
+            console.error('Erro ao carregar empresas:', error);
+        });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('/cadastro/empresas')
+function loadEmpresaDetails() {
+    const empresaNome = document.getElementById('selectEmpresa').value;
+    fetch(`/cadastro/empresa/${empresaNome}`)
         .then(response => response.json())
         .then(data => {
-            let empresas =  document.getElementById('selectEmpresa');
-            data.forEach(empresa => {
-                let option = document.createElement('option');
-                option.value = empresa.NOME;
-                option.text = empresa.NOME;
-                empresas.appendChild(option);
-            });
+            document.getElementById('nomeEmpresaEdit').value = data.NOME;
+            document.getElementById('cpfCnpjEdit').value = data.CPF || data.CNPJ || '';
         })
-});
-
-document.addEventListener('DOMContentLoaded', (event) => {
-    const params = new URLSearchParams(window.location.search);
-    const successMsg = params.get('successMsg');
-    if (successMsg) {
-        alert(successMsg);
-        history.pushState(null, '', window.location.pathname);
-    }
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-    const formRemove = document.getElementById('formRemove');
-
-    formRemove.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const empresa = document.getElementById('selectBanco').value;
-        if (confirm('Tem certeza que deseja remover a empresa: ' + empresa + '?')) {
-            formRemove.submit();
-        } else {
-            console.log('Remoção cancelada pelo usuário.');
-        }
-    });
-});
+        .catch(error => {
+            console.error('Erro ao carregar detalhes da empresa:', error);
+        });
+}
