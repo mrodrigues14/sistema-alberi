@@ -35,8 +35,12 @@ let draggedItem;
 function loadTasks() {
     const idcliente = localStorage.getItem('idEmpresaSelecionada');
     const idusuario = localStorage.getItem('idusuario');
-    const isAdmin = localStorage.getItem('userRoles');
-
+    let adminRole = localStorage.getItem('userRoles');
+    console.log(adminRole)
+    let isAdmin;
+    if (adminRole === 'Administrador') {
+        isAdmin = true
+    }
     fetch(`/paginaInicial/tarefas?idcliente=${idcliente}&idusuario=${idusuario}&isAdmin=${isAdmin}`)
         .then(response => response.json())
         .then(data => {
@@ -69,7 +73,7 @@ function loadTasks() {
                     author: task.ID_USUARIO,
                     authorName: task.NOME_DO_USUARIO,
                     companyId: task.IDEMPRESA,
-                    companyName: task.NOME_DA_EMPRESA,
+                    companyName: task.NOME,
                     status: task.STATUS,
                     description: task.DESCRICAO || ""
                 };
@@ -95,11 +99,10 @@ function loadUserOptions() {
                 const option = document.createElement('option');
                 option.value = user.IDUSUARIOS;
                 option.textContent = user.NOME_DO_USUARIO;
-                if (user.IDUSUARIOS == loggedUserId) {
-                    option.selected = true;
-                }
                 select.appendChild(option);
             });
+            // Pré-seleciona o usuário logado
+            select.value = loggedUserId;
         })
         .catch(error => {
             console.error('Erro ao carregar usuários:', error);
@@ -194,7 +197,8 @@ function showInputBox(column = 0) {
     document.getElementById('taskId').value = '';
     document.getElementById('title').value = '';
     document.getElementById('description').value = '';
-    document.getElementById('author').value = '';
+    const loggedUserId = localStorage.getItem('idusuario');
+    document.getElementById('author').value = loggedUserId;
     document.getElementById('dueDate').value = '';
 
     document.getElementById('popupTitle').textContent = 'Adicionar Tarefa';
@@ -289,8 +293,10 @@ function editItem(index, column) {
         }
     }
 
+    // Ajuste para exibir a data corretamente
     const dueDate = new Date(item.dueDate);
-    document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+    const adjustedDueDate = new Date(dueDate.getTime() + dueDate.getTimezoneOffset() * 60000);
+    document.getElementById('dueDate').value = adjustedDueDate.toISOString().split('T')[0];
 
     // Define o título do popup
     document.getElementById('popupTitle').textContent = 'Editar Tarefa';
@@ -305,7 +311,6 @@ function editItem(index, column) {
         closePopup();
     });
 }
-
 function updateItem(index, column) {
     const taskId = document.getElementById('taskId').value;
     const title = document.getElementById('title').value;

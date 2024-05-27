@@ -6,13 +6,15 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
         FROM TAREFAS AS T
         INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
         INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
-        WHERE T.ID_CLIENTE = ?
     `;
-    let params = [idcliente];
-    if (isAdmin === "Administrador") {
-        query += ' AND T.ID_USUARIO = ?';
-        params.push(idusuario);
+    let params = [];
+
+    if (isAdmin) {
+    } else {
+        query += ' WHERE T.ID_CLIENTE = ? AND T.ID_USUARIO = ?';
+        params.push(idcliente, idusuario);
     }
+
     query += ' ORDER BY T.DATA_LIMITE ASC';
 
     mysqlConn.query(query, params, function(err, result, fields) {
@@ -23,6 +25,7 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
         }
     });
 }
+
 
 
 
