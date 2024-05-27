@@ -196,3 +196,53 @@ button:hover {
 .filter-btn:hover {
     opacity: 0.8;
 }
+
+/* CSS para pré-visualização de arquivos */
+.preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.preview-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px;
+    box-sizing: border-box;
+    background-color: #f9f9f9;
+    position: relative;
+}
+
+.preview-item img {
+    max-width: 80px;
+    max-height: 80px;
+}
+
+.preview-item object {
+    width: 80px;
+    height: 80px;
+}
+
+.remove-preview {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    border: none;
+    width: 1px;
+    height: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    line-height: 12px;
+}

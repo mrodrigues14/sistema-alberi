@@ -12,7 +12,7 @@ router.post('/consultarEmpresas', (req, res) => {
     const userRole = req.session.role;
     const userName = req.session.username;
 
-    if (userRole === 'ADMIN') {
+    if (userRole === 'Administrador') {
         db.query('SELECT NOME, IDCLIENTE FROM CLIENTE', (error, results) => {
             if (error) {
                 console.error('Erro durante a busca por empresa no banco de dados:', error);

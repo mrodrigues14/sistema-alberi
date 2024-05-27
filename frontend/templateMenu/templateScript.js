@@ -56,7 +56,7 @@ function loadNomeEmpresa() {
         })
         .catch(error => {
             console.error('Erro na requisição:', error);
-            showNoEmpresasMessage(error.message); // Exibe a mensagem de erro
+            showNoEmpresasMessage(error.message);
         });
 }
 
@@ -181,7 +181,7 @@ function closeNoEmpresasMessage() {
 
 function showAdminOptions() {
     let userRoles = localStorage.getItem('userRoles');
-    if (userRoles !== 'admin') {
+    if (userRoles !== 'Administrador') {
         document.getElementById('menuAdicionarUsuario').style.display = 'none';
     }
 }

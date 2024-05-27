@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Erro ao carregar o template:', error);
         });
 
-    fetch('/adicionarUsuario/empresas')
+    fetch('/usuario/empresas')
         .then(response => response.json())
         .then(data => {
             const empresasList = document.getElementById('empresas-list');
@@ -60,7 +60,7 @@ function adicionarUsuario() {
         empresas: empresas
     };
 
-    fetch('/adicionarUsuario/add', {
+    fetch('/usuario/add', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

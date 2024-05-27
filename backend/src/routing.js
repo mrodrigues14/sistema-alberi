@@ -13,7 +13,7 @@ const paginaMenuInicial = require('./routes/paginaMenuInicial.route');
 const seletorEmpresa = require('./routes/seletorEmpresa.route')
 const templateMenu = require('./routes/templateMenu.route')
 const report = require('./routes/report.route')
-const adicionarUsuario = require('./routes/paginaAdicionarUsuario.route')
+const usuario = require('./routes/usuario.route')
 
 
 
@@ -33,7 +33,7 @@ function routing(app){
     app.use('/seletorEmpresa', seletorEmpresa)
     app.use('/templateMenu', templateMenu)
     app.use('/report', report)
-    app.use('/adicionarUsuario', adicionarUsuario)
+    app.use('/usuario', usuario)
 
 
 }

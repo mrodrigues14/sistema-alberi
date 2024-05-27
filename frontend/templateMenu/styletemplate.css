@@ -200,21 +200,6 @@ body {
     margin-right: 5px;
 }
 
-.navbar-all .name-list {
-    position: absolute;
-    top: calc(100% + 5px);
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 999;
-    width: 297px;
-    padding: 0;
-    margin: 0;
-    display: none;
-}
 
 .navbar-all .name-list li {
     padding: 10px;
@@ -245,7 +230,7 @@ body {
     border: 1px solid #ddd;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    width: 297px;
+    width: 361px;
     box-sizing: border-box;
     display: none;
     position: absolute;
@@ -253,6 +238,10 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 999;
+    margin-left: 48px;
+    margin-top: 0;
+    max-height: 300px; 
+    overflow-y: auto;
 }
 
 .navbar-all .name-list li {

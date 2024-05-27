@@ -1,9 +1,9 @@
 const mysqlConn = require("../base/database");
 
-function inserirReport(titulo, descricao, data, arquivo, ID_USUARIO, prioridade, callback = () => {}) {
+function inserirReport(titulo, descricao, data, arquivos, ID_USUARIO, prioridade, tipoArquivo, funcionalidadeAfetada, callback = () => {}) {
     const situacao = 'Não iniciado'; // Valor padrão para a coluna SITUACAO
-    mysqlConn.query(`INSERT INTO REPORT (TITULO, DESCRICAO, DATA, ARQUIVO, ID_USUARIO, PRIORIDADE, SITUACAO) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [titulo, descricao, data, arquivo, ID_USUARIO, prioridade, situacao],
+    mysqlConn.query(`INSERT INTO REPORT (TITULO, DESCRICAO, DATA, ARQUIVOS, ID_USUARIO, PRIORIDADE, TIPO_ARQUIVO, FUNCIONALIDADE_AFETADA, SITUACAO) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [titulo, descricao, data, arquivos, ID_USUARIO, prioridade, tipoArquivo, funcionalidadeAfetada, situacao],
         (err, result, fields) => {
             callback(err, result);
         });
@@ -31,14 +31,22 @@ function getReportsByUserId(ID_USUARIO, page, limit, situacao, callback) {
     });
 }
 
+function getReportFileById(reportId, callback) {
+    mysqlConn.query(`SELECT ARQUIVOS FROM REPORT WHERE ID = ?`, [reportId], (err, result) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            if (result.length > 0) {
+                callback(null, result[0].ARQUIVOS);
+            } else {
+                callback(new Error("Report not found"), null);
+            }
+        }
+    });
+}
+
 module.exports = {
     inserirReport,
-    getReportsByUserId
+    getReportsByUserId,
+    getReportFileById
 };
-
-
-module.exports = {
-    inserirReport,
-    getReportsByUserId
-};
-

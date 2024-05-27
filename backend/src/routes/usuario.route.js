@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const { adicionarUsuario, listarEmpresas } = require("../repositories/adicionarUsuario.repository");
+const { adicionarUsuario, listarEmpresas } = require("../repositories/usuario.repository");
 
 router.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../../frontend/paginaAdicionarUsuario/paginaAdicionarUsuario.html'));
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaUsuario/paginaAdicionarUsuario/paginaAdicionarUsuario.html'));
 });
 
 router.get('/empresas', (req, res) => {

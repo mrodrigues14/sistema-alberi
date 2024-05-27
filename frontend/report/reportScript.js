@@ -26,6 +26,69 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const reportForm = document.getElementById('reportForm');
+const filesInput = document.getElementById('files');
+const previewContainer = document.getElementById('preview');
+
+filesInput.addEventListener('change', function() {
+    previewContainer.innerHTML = '';
+    const files = Array.from(this.files);
+
+    files.forEach((file, index) => {
+        const fileReader = new FileReader();
+
+        fileReader.onload = function(e) {
+            const previewElement = document.createElement('div');
+            previewElement.classList.add('preview-item');
+
+            const removeButton = document.createElement('button');
+            removeButton.classList.add('remove-preview');
+            removeButton.innerHTML = '&times;';
+            removeButton.addEventListener('click', () => {
+                files.splice(index, 1);
+                previewContainer.removeChild(previewElement);
+                updateFilesInput(files);
+            });
+
+            previewElement.appendChild(removeButton);
+
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('preview-image');
+                previewElement.appendChild(img);
+            } else if (file.type === 'application/pdf') {
+                const pdfPreview = document.createElement('object');
+                pdfPreview.data = e.target.result;
+                pdfPreview.type = 'application/pdf';
+                pdfPreview.classList.add('preview-object');
+                previewElement.appendChild(pdfPreview);
+            } else if (file.type === 'application/msword' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                const wordIcon = document.createElement('img');
+                wordIcon.src = '/path/to/generic-file-icon.png'; // Substitua pelo caminho correto do ícone genérico
+                wordIcon.classList.add('preview-image');
+                previewElement.appendChild(wordIcon);
+            } else {
+                const fileIcon = document.createElement('img');
+                fileIcon.src = '/path/to/generic-file-icon.png'; // Substitua pelo caminho correto do ícone genérico
+                fileIcon.classList.add('preview-image');
+                previewElement.appendChild(fileIcon);
+            }
+
+            previewContainer.appendChild(previewElement);
+        };
+
+        fileReader.readAsDataURL(file);
+    });
+});
+
+function updateFilesInput(files) {
+    const dataTransfer = new DataTransfer();
+    files.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+    filesInput.files = dataTransfer.files;
+}
+
 if (reportForm) {
     reportForm.addEventListener('submit', function(event) {
         event.preventDefault();
@@ -70,6 +133,7 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
                     listItem.innerHTML = `
                         <strong>Título:</strong> ${report.TITULO}<br>
                         <strong>Tipo:</strong> ${report.PRIORIDADE}<br>
+                        <strong>Funcionalidade Afetada:</strong> ${report.FUNCIONALIDADE_AFETADA}<br>
                         <strong>Descrição:</strong> ${report.DESCRICAO}<br>
                         <strong>Data:</strong> ${new Date(report.DATA).toLocaleString()}<br>
                         <strong>Situação:</strong> ${report.SITUACAO}
