@@ -3,8 +3,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     loginForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        const username = document.querySelector('input[name="username"]').value;
+        let username = document.querySelector('input[name="username"]').value;
         const password = document.querySelector('input[name="password"]').value;
+
+        // Remover pontos, traços e barras do CPF/CNPJ
+        username = username.replace(/[.\-\/]/g, '');
 
         fetch('/api/login', {
             method: 'POST',
