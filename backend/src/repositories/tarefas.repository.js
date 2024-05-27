@@ -1,13 +1,21 @@
 const mysqlConn = require('../base/database.js');
 
-function listarTarefas(idcliente, idusuario, callback) {
-    mysqlConn.query(`
-        SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
+function listarTarefas(idcliente, idusuario, isAdmin, callback) {
+    let query = `
+        SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
         FROM TAREFAS AS T
         INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
+        INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
         WHERE T.ID_CLIENTE = ?
-        ORDER BY T.DATA_LIMITE ASC
-    `, [idcliente], function(err, result, fields) {
+    `;
+    let params = [idcliente];
+    if (isAdmin === "Administrador") {
+        query += ' AND T.ID_USUARIO = ?';
+        params.push(idusuario);
+    }
+    query += ' ORDER BY T.DATA_LIMITE ASC';
+
+    mysqlConn.query(query, params, function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
@@ -15,6 +23,7 @@ function listarTarefas(idcliente, idusuario, callback) {
         }
     });
 }
+
 
 
 function consultarTarefa(idtarefa, idusuario, callback){
@@ -28,15 +37,22 @@ function consultarTarefa(idtarefa, idusuario, callback){
 
 }
 
-function adicionarTarefa(tarefa, idcliente, dataLimite, idusuario, descricao, recurrenceDay, callback) {
+function adicionarTarefa(titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay, callback) {
     const dataInicio = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z');
-    const status = "PARA FAZER";
+    const status = "A Fazer";
     mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, DATA_INICIO, ID_CLIENTE, ID_USUARIO, DESCRICAO, RECORRENCIA) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [tarefa, status, dataLimite, dataInicio.toISOString().split('T')[0], idcliente, idusuario, descricao, recurrenceDay],
+        [titulo, status, dataLimite, dataInicio.toISOString().split('T')[0], idcliente, idusuario, descricao, recurrenceDay],
         (err, result, fields) => {
-            callback(err, result);
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
         });
 }
+
+
+
 
 
 
@@ -100,5 +116,14 @@ function consultarUsuarios(callback){
     });
 }
 
+function consultarEmpresas(callback) {
+    mysqlConn.query('SELECT IDCLIENTE, NOME FROM CLIENTE', (err, result, fields) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
 
-module.exports = {listarTarefas, adicionarTarefa, atualizarStatus, deletarTarefa, consultarTarefa, editarTarefa, consultarUsuarios};
+module.exports = {listarTarefas, adicionarTarefa, atualizarStatus, deletarTarefa, consultarTarefa, editarTarefa, consultarUsuarios, consultarEmpresas};

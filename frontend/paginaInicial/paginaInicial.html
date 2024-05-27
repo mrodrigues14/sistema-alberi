@@ -15,21 +15,15 @@
 <h1 class="main-title">Tarefas Alberi</h1>
 <div class="drag-container">
     <ul class="drag-list">
-        <!-- Coluna Para Fazer -->
-        <li class="drag-column to-do-column">
+        <!-- Coluna Pendentes de Dados -->
+        <li class="drag-column pending-data-column">
             <span class="header">
-                <h1>Para Fazer</h1>
+                <h1>Pendente de Dados</h1>
             </span>
-            <!-- Conteúdo Para Fazer -->
-            <div id="to-do-content" class="custom-scroll-todo">
-                <ul class="drag-item-list" id="to-do-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+            <div id="pending-data-content" class="custom-scroll-pending-data">
+                <ul class="drag-item-list" id="pending-data-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
-            <!-- Grupo de Botões de Adicionar -->
             <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(0)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
                 <div class="add-btn solid" onclick="hideInputBox(0)">
                     <span>Salvar Item</span>
                 </div>
@@ -38,17 +32,19 @@
                 <div class="add-item" contenteditable="true"></div>
             </div>
         </li>
-        <!-- Coluna Fazendo -->
-        <li class="drag-column doing-column">
+        <!-- Coluna A Fazer -->
+        <li class="drag-column to-do-column">
             <span class="header">
-                <h1>Fazendo</h1>
+                <h1>A Fazer</h1>
             </span>
-            <!-- Conteúdo Fazendo -->
-            <div id="doing-content" class="custom-scroll-doing">
-                <ul class="drag-item-list" id="doing-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+            <div id="to-do-content" class="custom-scroll-to-do">
+                <ul class="drag-item-list" id="to-do-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
-            <!-- Grupo de Botões de Adicionar -->
             <div class="add-btn-group">
+                <div class="add-btn" onclick="showInputBox(0)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
                 <div class="add-btn solid" onclick="hideInputBox(1)">
                     <span>Salvar Item</span>
                 </div>
@@ -57,16 +53,14 @@
                 <div class="add-item" contenteditable="true"></div>
             </div>
         </li>
-        <!-- Coluna Feito -->
-        <li class="drag-column done-column">
+        <!-- Coluna Em Execução -->
+        <li class="drag-column in-progress-column">
             <span class="header">
-                <h1>Feito</h1>
+                <h1>Em Execução</h1>
             </span>
-            <!-- Conteúdo Feito -->
-            <div id="done-content" class="custom-scroll-done">
-                <ul class="drag-item-list" id="done-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+            <div id="in-progress-content" class="custom-scroll-in-progress">
+                <ul class="drag-item-list" id="in-progress-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
-            <!-- Grupo de Botões de Adicionar -->
             <div class="add-btn-group">
                 <div class="add-btn solid" onclick="hideInputBox(2)">
                     <span>Salvar Item</span>
@@ -76,18 +70,33 @@
                 <div class="add-item" contenteditable="true"></div>
             </div>
         </li>
-        <!-- Coluna Em Espera -->
-        <li class="drag-column on-hold-column">
+        <!-- Coluna Entregas do Dia -->
+        <li class="drag-column todays-deliveries-column">
             <span class="header">
-                <h1>Em Espera</h1>
+                <h1>Entregas do Dia</h1>
             </span>
-            <!-- Conteúdo Em Espera -->
-            <div id="on-hold-content" class="custom-scroll">
-                <ul class="drag-item-list" id="on-hold-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+            <div id="todays-deliveries-content" class="custom-scroll-todays-deliveries">
+                <ul class="drag-item-list" id="todays-deliveries-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
-            <!-- Grupo de Botões de Adicionar -->
             <div class="add-btn-group">
                 <div class="add-btn solid" onclick="hideInputBox(3)">
+                    <span>Salvar Item</span>
+                </div>
+            </div>
+            <div class="add-container">
+                <div class="add-item" contenteditable="true"></div>
+            </div>
+        </li>
+        <!-- Coluna Atividades para Reunião -->
+        <li class="drag-column meeting-activities-column">
+            <span class="header">
+                <h1>Atividades para Reunião</h1>
+            </span>
+            <div id="meeting-activities-content" class="custom-scroll-meeting-activities">
+                <ul class="drag-item-list" id="meeting-activities-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+            </div>
+            <div class="add-btn-group">
+                <div class="add-btn solid" onclick="hideInputBox(4)">
                     <span>Salvar Item</span>
                 </div>
             </div>
@@ -113,6 +122,11 @@
             <label for="author">Autor:</label>
             <select id="author" required></select>
         </div>
+        <div>
+            <label for="company">Empresa:</label>
+            <select id="company" name="company" required></select>
+        </div>
+
         <div>
             <label for="dueDate">Data Final:</label>
             <input type="date" id="dueDate" name="dueDate" required>

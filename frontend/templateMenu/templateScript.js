@@ -205,7 +205,22 @@ function showAdminOptions() {
     let userRoles = localStorage.getItem('userRoles');
     if (userRoles !== 'Administrador') {
         document.getElementById('menuAdicionarUsuario').style.display = 'none';
+        document.getElementById('cliente').style.display = 'none';
+        document.getElementById('bancos').style.display = 'none';
     }
+    if (!['Administrador', 'Funcionario Administrativo'].includes(userRoles)) {
+        document.getElementById('menuAdicionarUsuario').style.display = 'none';
+        document.getElementById('cliente').style.display = 'none';
+        document.getElementById('bancos').style.display = 'none';
+    }
+    if (!['Administrador', 'Funcionario Administrativo', 'Funcionario de Cliente', 'Cliente'].includes(userRoles)) {
+        document.getElementById('menuAdicionarUsuario').style.display = 'none';
+        document.getElementById('cliente').style.display = 'none';
+        document.getElementById('bancos').style.display = 'none';
+        document.getElementById('Estudos').style.display = 'none';
+        document.getElementById('Extrato').style.display = 'none';
+    }
+
 }
 
 document.addEventListener('click', function(event) {

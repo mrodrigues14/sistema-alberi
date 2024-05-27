@@ -8,7 +8,7 @@ const {atualizarStatus} = require('../repositories/tarefas.repository.js');
 const {deletarTarefa} = require('../repositories/tarefas.repository.js');
 const {consultarTarefa} = require('../repositories/tarefas.repository.js');
 const {editarTarefa} = require('../repositories/tarefas.repository.js');
-const {consultarUsuarios} = require("../repositories/tarefas.repository");
+const {consultarUsuarios, consultarEmpresas} = require("../repositories/tarefas.repository");
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaInicial/paginaInicial.html'));
@@ -19,8 +19,8 @@ router.get('/erro', (req, res) => {
 });
 
 router.get('/tarefas', (req, res) => {
-    const {idcliente, idusuario} = req.query;
-    listarTarefas(idcliente, idusuario,(err, result) => {
+    const {idcliente, idusuario, isAdmin} = req.query;
+    listarTarefas(idcliente, idusuario, isAdmin === 'true', (err, result) => {
         if (err) {
             res.status(500).json(err);
         } else {
@@ -29,19 +29,22 @@ router.get('/tarefas', (req, res) => {
     });
 });
 
+
 router.post('/adicionartarefa', (req, res) => {
-    const {titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay} = req.body;
+    const { titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay } = req.body;
     console.log(titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay);
     if (!titulo || !idcliente || !dataLimite) {
-        return res.status(400).json({error: 'Dados incompletos'});
+        return res.status(400).json({ error: 'Dados incompletos' });
     }
-    adicionarTarefa(titulo, idcliente, dataLimite, idusuario, descricao,recurrenceDay, (err, result) => {
+    adicionarTarefa(titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay, (err, result) => {
         if (err) {
             return res.status(500).json(err);
         }
-        res.json({success: true});
+        res.json({ success: true });
     });
 });
+
+
 
 
 
@@ -124,6 +127,14 @@ router.get('/listaUsuarios', (req, res) => {
     });
 });
 
+router.get('/listaEmpresas', (req, res) => {
+    consultarEmpresas((err, result) => {
+        if (err) {
+            return res.status(500).json(err);
+        }
+        res.json(result);
+    });
+});
 
 
 module.exports = router;
