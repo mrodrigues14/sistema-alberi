@@ -26,18 +26,17 @@
         </div>
     </nav>
 
-    <div class="search-box-empresa" style="display: inline-block;">
-        <label for="searchInput"></label><input onfocus="loadNomeEmpresa()" type="text" id="searchInput" placeholder="Selecione uma empresa">
-        <button onclick="loadNomeEmpresa()" class="arrow-button"></button>
-        <div>
-            <ul id="nameList" class="name-list"></ul>
+    <div class="search-box-empresa">
+        <button class="selected-company" id="selectedCompany" onclick="toggleDropdown()">Selecione uma empresa</button>
+        <div class="dropdown-content" id="dropdownContent">
+            <input type="text" id="searchInput" placeholder="Digite para pesquisar">
+            <ul id="nameList" class="nomes-empresa"></ul>
         </div>
     </div>
 
     <div class="dropdown">
-        <button onclick="myFunction()" class="dropbtn usernameDisplay"></button></br>
-        <a><button class="empresaSelecionada"> teste </button></a>
-        <div id="myDropdown" class="dropdown-content">
+        <button onclick="toggleUserDropdown()" class="dropbtn usernameDisplay"></button></br>
+        <div id="userDropdown" class="dropdown-content">
             <a href="#!" onclick="showCalendarModal()">Agenda</a>
             <a href="#!" onclick="logout()">Sair</a>
         </div>

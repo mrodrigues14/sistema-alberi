@@ -4,7 +4,15 @@ const path = require('path');
 const { adicionarUsuario, listarEmpresas } = require("../repositories/usuario.repository");
 
 router.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaUsuario/usuario.html'));
+});
+
+router.get('/adicionarUsuario', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaUsuario/paginaAdicionarUsuario/paginaAdicionarUsuario.html'));
+});
+
+router.get('/editarUsuario', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaUsuario/paginaEditarUsuario/paginaEditarUsuario.html'));
 });
 
 router.get('/empresas', (req, res) => {
