@@ -45,8 +45,15 @@ function getReportFileById(reportId, callback) {
     });
 }
 
+function updateReportStatus(reportId, status, callback) {
+    mysqlConn.query(`UPDATE REPORT SET SITUACAO = ? WHERE ID = ?`, [status, reportId], (err, result) => {
+        callback(err, result);
+    });
+}
+
 module.exports = {
     inserirReport,
     getReportsByUserId,
-    getReportFileById
+    getReportFileById,
+    updateReportStatus
 };

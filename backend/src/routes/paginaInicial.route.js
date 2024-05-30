@@ -33,7 +33,7 @@ router.get('/tarefas', (req, res) => {
 router.post('/adicionartarefa', (req, res) => {
     const { titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay } = req.body;
     console.log(titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay);
-    if (!titulo || !idcliente || !dataLimite) {
+    if (!titulo || !idcliente) {
         return res.status(400).json({ error: 'Dados incompletos' });
     }
     adicionarTarefa(titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay, (err, result) => {

@@ -8,7 +8,6 @@ body {
     background-attachment: fixed;
     color: white;
     font-size: 20px;
-    overflow-y: hidden;
 }
 
 .main-title {
@@ -42,7 +41,8 @@ ul {
     position: relative;
     background-color: rgba(0, 0, 0, 0.4);
     border-radius: 10px;
-    overflow-x: hidden;
+    overflow: hidden; /* Garante que a rolagem aconteça dentro da coluna */
+    max-height: 80vh; /* Define a altura máxima para a coluna */
 }
 
 .pending-data-column .header,
@@ -66,6 +66,13 @@ ul {
     background-color: #1b6161;
 }
 
+.finished-column .header,
+.finished-column .solid,
+.finished-column .solid:hover,
+.finished-column .over {
+    background-color: #4a90e2; /* Cor azul para a coluna Finalizado */
+}
+
 .todays-deliveries-column .header,
 .todays-deliveries-column .solid,
 .todays-deliveries-column .solid:hover,
@@ -84,16 +91,18 @@ ul {
 .custom-scroll-to-do,
 .custom-scroll-doing,
 .custom-scroll-done,
-.custom-scroll {
-    overflow-y: auto;
-    max-height: 75vh;
+.custom-scroll,
+.custom-scroll-finished {
+    overflow-y: auto; /* Permite rolar dentro da coluna */
+    max-height: calc(80vh - 50px); /* Ajusta a altura máxima considerando a altura do cabeçalho */
 }
 
 .custom-scroll-pending-data::-webkit-scrollbar-track,
 .custom-scroll-to-do::-webkit-scrollbar-track,
 .custom-scroll-doing::-webkit-scrollbar-track,
 .custom-scroll-done::-webkit-scrollbar-track,
-.custom-scroll::-webkit-scrollbar-track {
+.custom-scroll::-webkit-scrollbar-track,
+.custom-scroll-finished::-webkit-scrollbar-track {
     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
     border-radius: 10px;
     background-color: rgba(255, 255, 255, 0.3);
@@ -104,7 +113,8 @@ ul {
 .custom-scroll-to-do::-webkit-scrollbar,
 .custom-scroll-doing::-webkit-scrollbar,
 .custom-scroll-done::-webkit-scrollbar,
-.custom-scroll::-webkit-scrollbar {
+.custom-scroll::-webkit-scrollbar,
+.custom-scroll-finished::-webkit-scrollbar {
     width: 10px;
 }
 
@@ -112,7 +122,8 @@ ul {
 .custom-scroll-to-do::-webkit-scrollbar-thumb,
 .custom-scroll-doing::-webkit-scrollbar-thumb,
 .custom-scroll-done::-webkit-scrollbar-thumb,
-.custom-scroll::-webkit-scrollbar-thumb {
+.custom-scroll::-webkit-scrollbar-thumb,
+.custom-scroll-finished::-webkit-scrollbar-thumb {
     border-radius: 10px;
     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
     background-color: var(--to-do);
@@ -313,8 +324,15 @@ ul {
 }
 
 .item-title {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.item-description {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 10px;
 }
 
 .item-details {
@@ -323,8 +341,21 @@ ul {
     font-size: 0.8rem;
 }
 
+#charCount {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.item-company {
+    font-size: 0.8rem;
+    color: #f0ad4e;
+    margin-top: 5px;
+}
+
 .item-date {
-    color: #f0ad4e; /* Cor de destaque para a data */
+    color: #f0ad4e;
 }
 
 .item-author {

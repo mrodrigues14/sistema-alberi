@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
 const reportForm = document.getElementById('reportForm');
 const filesInput = document.getElementById('files');
 const previewContainer = document.getElementById('preview');
+const submitBtn = document.getElementById('submitBtn');
 
 filesInput.addEventListener('change', function() {
     previewContainer.innerHTML = '';
@@ -92,6 +93,7 @@ function updateFilesInput(files) {
 if (reportForm) {
     reportForm.addEventListener('submit', function(event) {
         event.preventDefault();
+        submitBtn.disabled = true; // Desativa o botão de enviar para evitar múltiplos envios
         const formData = new FormData(this);
 
         const userId = localStorage.getItem('idusuario');
@@ -109,8 +111,10 @@ if (reportForm) {
             } else {
                 response.text().then(text => console.error('Erro ao enviar report:', text));
             }
+            submitBtn.disabled = false; // Reativa o botão após a resposta do servidor
         }).catch(error => {
             console.error('Erro ao enviar report:', error);
+            submitBtn.disabled = false; // Reativa o botão em caso de erro
         });
     });
 }
@@ -127,6 +131,7 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
         .then(reports => {
             const reportList = document.getElementById('reportList');
             reportList.innerHTML = ''; // Limpa a lista antes de adicionar novos itens
+
             if (reports.length > 0) {
                 reports.forEach(report => {
                     const listItem = document.createElement('li');
@@ -136,7 +141,8 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
                         <strong>Funcionalidade Afetada:</strong> ${report.FUNCIONALIDADE_AFETADA}<br>
                         <strong>Descrição:</strong> ${report.DESCRICAO}<br>
                         <strong>Data:</strong> ${new Date(report.DATA).toLocaleString()}<br>
-                        <strong>Situação:</strong> ${report.SITUACAO}
+                        <strong>Situação:</strong> ${report.SITUACAO}<br>
+                        ${situacao === 'Em validacao' ? `<button class="complete-btn" onclick="markAsCompleted(${report.ID})">Validar Report</button>` : ''}
                     `;
                     reportList.appendChild(listItem);
                 });
@@ -149,6 +155,25 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
             console.error('Erro ao carregar reports:', error);
         });
 }
+
+function markAsCompleted(reportId) {
+    fetch(`/report/concluir/${reportId}`, {
+        method: 'PUT'
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('Status atualizado com sucesso!');
+                const userId = localStorage.getItem('idusuario');
+                loadUserReports(userId, currentPage, 10, currentFilter); // Reload the reports
+            } else {
+                console.error('Erro ao atualizar o status');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao atualizar o status:', error);
+        });
+}
+
 
 function changePage(direction) {
     const userId = localStorage.getItem('idusuario');

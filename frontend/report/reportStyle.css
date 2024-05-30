@@ -70,6 +70,23 @@ button:hover {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    position: relative; /* Para o posicionamento do botão */
+}
+
+.complete-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background-color: #45a049; /* Roxo */
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.complete-btn:hover {
+    background-color: #5a005a;
 }
 
 .report-container, .report-list-container {
@@ -191,6 +208,10 @@ button:hover {
 
 .filter-btn.green {
     background-color: #28A745;
+}
+
+.filter-btn.purple {
+    background-color: #800080;
 }
 
 .filter-btn:hover {

@@ -1,6 +1,6 @@
 const mysqlConn = require("../base/database");
 
-function adicionarUsuario(cpf, nome, senha, role, empresas, callback) {
+function adicionarUsuario(cpf, nome, senha, role, email, empresas, callback) {
     const cpfNormalized = cpf.replace(/\D/g, '');
 
     mysqlConn.query(`SELECT * FROM USUARIOS WHERE CPF = ?`,
@@ -10,10 +10,10 @@ function adicionarUsuario(cpf, nome, senha, role, empresas, callback) {
                 return callback(err, null);
             }
             if (results.length > 0) {
-                return callback({message: 'Usuário já existe'}, null);
+                return callback({ message: 'Usuário já existe' }, null);
             }
-            mysqlConn.query(`INSERT INTO USUARIOS (NOME_DO_USUARIO, CPF, SENHA, ROLE) VALUES (?, ?, ?, ?)`,
-                [nome, cpfNormalized, senha, role],
+            mysqlConn.query(`INSERT INTO USUARIOS (NOME_DO_USUARIO, CPF, SENHA, ROLE, USUARIO_EMAIL) VALUES (?, ?, ?, ?, ?)`,
+                [nome, cpfNormalized, senha, role, email],
                 (err, result) => {
                     if (err) {
                         return callback(err, null);
@@ -37,24 +37,24 @@ function listarEmpresas(callback) {
 }
 
 function listarUsuarios(callback) {
-    mysqlConn.query(`SELECT IDUSUARIOS AS ID, NOME_DO_USUARIO AS NOME FROM USUARIOS`, (err, results) => {
+    mysqlConn.query(`SELECT IDUSUARIOS AS ID, NOME_DO_USUARIO AS NOME FROM USUARIOS ORDER BY NOME_DO_USUARIO ASC`, (err, results) => {
         callback(err, results);
     });
 }
 
 function obterUsuario(userId, callback) {
     mysqlConn.query(`
-        SELECT U.IDUSUARIOS AS ID, U.NOME_DO_USUARIO AS NOME, U.CPF, U.SENHA, U.ROLE, U.ATIVO, GROUP_CONCAT(RU.ID_EMPRESA_REFERENCIA) AS EMPRESAS
+        SELECT U.IDUSUARIOS AS ID, U.NOME_DO_USUARIO AS NOME, U.CPF, U.SENHA, U.ROLE, U.ATIVO, U.USUARIO_EMAIL AS EMAIL, GROUP_CONCAT(RU.ID_EMPRESA_REFERENCIA) AS EMPRESAS
         FROM USUARIOS U
         LEFT JOIN RELACAOUSUARIOCLIENTE RU ON U.IDUSUARIOS = RU.ID_USUARIO
         WHERE U.IDUSUARIOS = ?
-        GROUP BY U.IDUSUARIOS, U.NOME_DO_USUARIO, U.CPF, U.SENHA, U.ROLE, U.ATIVO
+        GROUP BY U.IDUSUARIOS, U.NOME_DO_USUARIO, U.CPF, U.SENHA, U.ROLE, U.ATIVO, U.USUARIO_EMAIL
     `, [userId], (err, results) => {
         if (err) {
             return callback(err, null);
         }
         if (results.length === 0) {
-            return callback({message: 'Usuário não encontrado'}, null);
+            return callback({ message: 'Usuário não encontrado' }, null);
         }
         const usuario = results[0];
         usuario.empresas = usuario.EMPRESAS ? usuario.EMPRESAS.split(',') : [];
@@ -62,14 +62,14 @@ function obterUsuario(userId, callback) {
     });
 }
 
-function editarUsuario(userId, cpf, nome, senha, role, ativo, empresas, callback) {
+function editarUsuario(userId, cpf, nome, role, ativo, email, empresas, callback) {
     const cpfNormalized = cpf.replace(/\D/g, '');
 
     mysqlConn.query(`
         UPDATE USUARIOS
-        SET NOME_DO_USUARIO = ?, CPF = ?, SENHA = ?, ROLE = ?, ATIVO = ?
+        SET NOME_DO_USUARIO = ?, CPF = ?, ROLE = ?, ATIVO = ?, USUARIO_EMAIL = ?
         WHERE IDUSUARIOS = ?
-    `, [nome, cpfNormalized, senha, role, ativo, userId], (err) => {
+    `, [nome, cpfNormalized, role, ativo, email, userId], (err) => {
         if (err) {
             return callback(err);
         }

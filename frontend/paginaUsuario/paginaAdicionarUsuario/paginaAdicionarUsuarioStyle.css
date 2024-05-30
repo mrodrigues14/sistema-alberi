@@ -93,7 +93,7 @@ button[type="button"]:nth-child(2):hover {
     border-radius: 10px;
     z-index: 9999;
     opacity: 0; /* Inicialmente invisível */
-    transition: opacity 0.5s ease; /* Adiciona uma transição suave */
+    transition: opacity 0.7s ease; /* Adiciona uma transição suave */
 }
 
 .popup.show {
@@ -102,7 +102,7 @@ button[type="button"]:nth-child(2):hover {
 }
 
 .popup.fade-in {
-    animation: fadeIn 0.5s ease; /* Adiciona uma animação de fade in */
+    animation: fadeIn 0.7s ease; /* Adiciona uma animação de fade in */
 }
 
 @keyframes fadeIn {

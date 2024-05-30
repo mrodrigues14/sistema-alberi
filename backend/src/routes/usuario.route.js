@@ -44,8 +44,9 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/add', (req, res) => {
-    const { cpf, nome, senha, role, empresas } = req.body;
-    adicionarUsuario(cpf, nome, senha, role, empresas, (err, result) => {
+    const { cpf, nome, senha, role, email, empresas } = req.body;
+
+    adicionarUsuario(cpf, nome, senha, role, email, empresas, (err, result) => {
         if (err) {
             if (err.message === 'Usuário já existe') {
                 return res.status(400).json({ error: 'Usuário já existe' });
@@ -58,8 +59,9 @@ router.post('/add', (req, res) => {
 
 router.post('/edit/:id', (req, res) => {
     const userId = req.params.id;
-    const { cpf, nome, senha, role, ativo, empresas } = req.body;
-    editarUsuario(userId, cpf, nome, senha, role, ativo, empresas, (err, result) => {
+    const { cpf, nome, role, ativo, email, empresas } = req.body;
+
+    editarUsuario(userId, cpf, nome, role, ativo, email, empresas, (err, result) => {
         if (err) {
             return res.status(500).json(err);
         }

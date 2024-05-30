@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const { inserirReport, getReportsByUserId, getReportFileById } = require('../repositories/report.repository');
+const { inserirReport, getReportsByUserId, getReportFileById , updateReportStatus} = require('../repositories/report.repository');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() }); // Usando memória para armazenamento temporário
@@ -95,5 +95,19 @@ router.get('/download/:id', (req, res) => {
         }
     });
 });
+
+router.put('/concluir/:id', (req, res) => {
+    const reportId = req.params.id;
+
+    updateReportStatus(reportId, 'Concluido', (err, result) => {
+        if (err) {
+            console.error('Erro ao atualizar status:', err);
+            res.status(500).send('Erro ao atualizar status');
+        } else {
+            res.send('Status atualizado com sucesso');
+        }
+    });
+});
+
 
 module.exports = router;

@@ -71,7 +71,7 @@ function loadUserDetails() {
         .then(data => {
             document.getElementById('cpf').value = data.CPF ? formatCPF(data.CPF) : '';
             document.getElementById('nome').value = data.NOME;
-            document.getElementById('senha').value = data.SENHA;
+            document.getElementById('email').value = data.EMAIL;
             document.getElementById('role').value = data.ROLE;
             document.getElementById('ativo').value = data.ATIVO ? 'true' : 'false';
 
@@ -110,7 +110,7 @@ function editarUsuario() {
     }
 
     const nome = document.getElementById('nome').value;
-    const senha = document.getElementById('senha').value;
+    const email = document.getElementById('email').value;
     const role = document.getElementById('role').value;
     const ativo = document.getElementById('ativo').value === 'true';
     const empresas = [];
@@ -122,7 +122,7 @@ function editarUsuario() {
     const data = {
         cpf: cpf,
         nome: nome,
-        senha: senha,
+        email: email,
         role: role,
         ativo: ativo,
         empresas: empresas
@@ -140,7 +140,7 @@ function editarUsuario() {
             if (data.error) {
                 alert(data.error);
             } else {
-                alert('Usuário atualizado com sucesso!');
+                showSuccessPopup()
                 document.getElementById('editUserForm').reset();
                 document.getElementById('editUserForm').style.display = 'none';
             }
@@ -158,4 +158,29 @@ function cancelar() {
 
 function formatCPF(cpf) {
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function showSuccessPopup() {
+    const successPopup = document.getElementById('successPopup');
+    const popupContent = successPopup.querySelector('.popup-content');
+
+    const lottiePlayer = document.createElement('dotlottie-player');
+    lottiePlayer.setAttribute('src', 'https://lottie.host/f970532a-cffa-46c6-bb0c-a868908cb65c/UR2kFoKi9D.json');
+    lottiePlayer.setAttribute('background', 'transparent');
+    lottiePlayer.setAttribute('speed', '2');
+    lottiePlayer.style.width = '300px';
+    lottiePlayer.style.height = '300px';
+    lottiePlayer.setAttribute('direction', '1');
+    lottiePlayer.setAttribute('playMode', 'normal');
+    lottiePlayer.setAttribute('autoplay', 'true');
+
+    popupContent.insertBefore(lottiePlayer, popupContent.firstChild);
+
+    successPopup.classList.add('show', 'fade-in');
+}
+
+function closePopup() {
+    const successPopup = document.getElementById('successPopup');
+    successPopup.classList.remove('show');
+    window.location.reload();
 }

@@ -9,10 +9,21 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
     `;
     let params = [];
 
-    if (isAdmin) {
+    if (idcliente !== 68) {
     } else {
         query += ' WHERE T.ID_CLIENTE = ? AND T.ID_USUARIO = ?';
         params.push(idcliente, idusuario);
+    }
+
+    if (idcliente === 68) {
+        query = `
+            SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
+            FROM TAREFAS AS T
+            INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
+            INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
+            WHERE T.ID_USUARIO = ?
+        `;
+        params = [idusuario];
     }
 
     query += ' ORDER BY T.DATA_LIMITE ASC';
@@ -25,9 +36,6 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
         }
     });
 }
-
-
-
 
 function consultarTarefa(idtarefa, idusuario, callback){
     mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE, DESCRICAO FROM TAREFAS WHERE idtarefa = ? AND ID_USUARIO =?`, [idtarefa, idusuario], function(err, result, fields) {
@@ -44,7 +52,7 @@ function adicionarTarefa(titulo, idcliente, dataLimite, idusuario, descricao, re
     const dataInicio = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z');
     const status = "A Fazer";
     mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, DATA_INICIO, ID_CLIENTE, ID_USUARIO, DESCRICAO, RECORRENCIA) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [titulo, status, dataLimite, dataInicio.toISOString().split('T')[0], idcliente, idusuario, descricao, recurrenceDay],
+        [titulo, status, dataLimite || '', dataInicio.toISOString().split('T')[0], idcliente, idusuario, descricao || '', recurrenceDay],
         (err, result, fields) => {
             if (err) {
                 callback(err, null);
@@ -53,11 +61,6 @@ function adicionarTarefa(titulo, idcliente, dataLimite, idusuario, descricao, re
             }
         });
 }
-
-
-
-
-
 
 function deletarTarefa(idtarefa, callback){
     mysqlConn.query(`DELETE FROM TAREFAS WHERE IDTAREFA = ?`, [idtarefa], (err, result) =>{
@@ -103,7 +106,7 @@ function atualizarStatus(idtarefa, newStatus, callback) {
 
 function editarTarefa(idtarefa, titulo, dataLimite, descricao, idusuario, callback){
     mysqlConn.query('UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ?, DESCRICAO = ?, ID_USUARIO = ? WHERE IDTAREFA = ?',
-        [titulo, dataLimite, descricao, idusuario, idtarefa], function(err, result){
+        [titulo, dataLimite || '', descricao || '', idusuario, idtarefa], function(err, result){
             callback(err, result);
         });
 }

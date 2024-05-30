@@ -28,39 +28,42 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const listColumns = document.querySelectorAll(".drag-item-list");
-let listArrays = [[], [], [], [], []];
+let listArrays = [[], [], [], [], [], []];
 let currentColumn;
 let draggedItem;
+
 
 function loadTasks() {
     const idcliente = localStorage.getItem('idEmpresaSelecionada');
     const idusuario = localStorage.getItem('idusuario');
     let adminRole = localStorage.getItem('userRoles');
-    console.log(adminRole)
-    let isAdmin;
-    if (adminRole === 'Administrador') {
-        isAdmin = true
-    }
+    console.log(adminRole);
+    let isAdmin = (adminRole === 'Administrador');
     fetch(`/paginaInicial/tarefas?idcliente=${idcliente}&idusuario=${idusuario}&isAdmin=${isAdmin}`)
         .then(response => response.json())
         .then(data => {
-            listArrays = [[], [], [], [], []];
+            listArrays = [[], [], [], [], [], []]; // Certifique-se de que há seis colunas
             data.forEach(task => {
                 let column = 0;
                 switch (task.STATUS) {
+                    case 'Pendentes de Dados':
+                        column = 0;
+                        break;
                     case 'A Fazer':
                         column = 1;
                         break;
                     case 'Em Execução':
                         column = 2;
                         break;
-                    case 'Entregas do Dia':
+                    case 'Finalizado':
                         column = 3;
                         break;
-                    case 'Atividade para Reunião':
+                    case 'Entregas do Dia':
                         column = 4;
                         break;
-                    case 'Pendentes de Dados':
+                    case 'Reunião':
+                        column = 5;
+                        break;
                     default:
                         column = 0;
                         break;
@@ -128,7 +131,7 @@ function loadCompanyOptions() {
 
 function formatDate(dateString) {
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
+    const day = String(date.getDate() + 1).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `Data Limite: ${day}/${month}/${year}`;
@@ -148,11 +151,13 @@ function createItemEl(columnEl, column, item, index) {
                 <div class="edit-icon" onclick="editItem(${index}, ${column}); event.stopPropagation();">&#9998;</div>
                 <div class="delete-icon" onclick="showDeleteConfirmPopup(${item.idtarefa}, '${item.title}', ${index}, ${column}); event.stopPropagation();">&#128465;</div>
             </div>
-            <h4 class="item-title">${item.title || ''} - ${item.companyName || ''}</h4>
+            <h4 class="item-title">${item.title || ''}</h4>
+            <p class="item-description">${item.description || ''}</p>
             <div class="item-details">
                 <span class="item-date">${formatDate(item.dueDate) || ''}</span>
-                <span class="item-author">${item.authorName || ''}</span> 
+                <span class="item-author">${item.authorName || ''}</span>
             </div>
+            <span class="item-company">${item.companyName || ''}</span>
         </div>
     `;
     columnEl.appendChild(listEl);
@@ -223,20 +228,21 @@ function handleSubmit(event) {
 
 function addNewItem(column = 0) {
     const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value;
+    const description = document.getElementById('description').value || "";
     const authorSelect = document.getElementById('author');
     const authorId = authorSelect.value;
     const companySelect = document.getElementById('company');
     const companyId = companySelect.value;
-    const dueDate = document.getElementById('dueDate').value;
+    const dueDate = document.getElementById('dueDate').value || "";
     const idcliente = localStorage.getItem('idEmpresaSelecionada');
 
     const statusMap = {
-        0: 'Pendente',
-        1: 'A fazer',
-        2: 'Fazendo',
-        3: 'Feito dia',
-        4: 'Reuniao'
+        0: 'Pendentes de Dados',
+        1: 'A Fazer',
+        2: 'Em Execução',
+        3: 'Finalizado',
+        4: 'Entregas do Dia',
+        5: 'Reunião'
     };
     const status = statusMap[column];
 
@@ -284,21 +290,14 @@ function editItem(index, column) {
     document.getElementById('title').value = item.title;
     document.getElementById('description').value = item.description;
 
-    // Definir o autor original
     const authorSelect = document.getElementById('author');
-    for (let i = 0; i < authorSelect.options.length; i++) {
-        if (authorSelect.options[i].value === item.author) {
-            authorSelect.selectedIndex = i;
-            break;
-        }
-    }
+    authorSelect.value = item.author;
 
-    // Ajuste para exibir a data corretamente
+
     const dueDate = new Date(item.dueDate);
     const adjustedDueDate = new Date(dueDate.getTime() + dueDate.getTimezoneOffset() * 60000);
     document.getElementById('dueDate').value = adjustedDueDate.toISOString().split('T')[0];
 
-    // Define o título do popup
     document.getElementById('popupTitle').textContent = 'Editar Tarefa';
     document.getElementById('taskPopup').style.display = 'block';
     currentColumn = column;
@@ -311,13 +310,14 @@ function editItem(index, column) {
         closePopup();
     });
 }
+
 function updateItem(index, column) {
     const taskId = document.getElementById('taskId').value;
     const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value;
+    const description = document.getElementById('description').value || "";
     const authorSelect = document.getElementById('author');
     const authorId = authorSelect.value;
-    const dueDate = document.getElementById('dueDate').value;
+    const dueDate = document.getElementById('dueDate').value || "";
 
     const item = {
         idtarefa: taskId,
@@ -384,7 +384,7 @@ function closePopup() {
 }
 
 function rebuildArrays() {
-    listArrays = [[], [], [], [], []];
+    listArrays = [[], [], [], [], [], []];
 
     listColumns.forEach((column, i) => {
         const columnTasks = column.querySelectorAll(".drag-item");
@@ -436,8 +436,9 @@ function drop(e) {
             0: 'Pendentes de Dados',
             1: 'A Fazer',
             2: 'Em Execução',
-            3: 'Entregas do Dia',
-            4: 'Atividades para Reunião'
+            3: 'Finalizado',
+            4: 'Entregas do Dia',
+            5: 'Reunião'
         };
         const newStatus = statusMap[columnId];
 
@@ -449,17 +450,15 @@ function drop(e) {
 
         updateTaskStatus(taskId, newStatus);
 
-        // Remove a tarefa da coluna antiga
         const oldColumn = Array.from(listColumns).find(column => column.contains(draggedItem));
         oldColumn.removeChild(draggedItem);
 
-        // Adiciona a tarefa na nova coluna
         listColumns[columnId].appendChild(draggedItem);
 
-        // Atualiza a lista de arrays
         const oldColumnIndex = listArrays.findIndex(column => column.some(item => item.idtarefa == taskId));
         const itemIndex = listArrays[oldColumnIndex].findIndex(item => item.idtarefa == taskId);
         const [movedItem] = listArrays[oldColumnIndex].splice(itemIndex, 1);
+        movedItem.status = newStatus;  // Atualizar o status no objeto também
         listArrays[columnId].push(movedItem);
 
         listColumns[columnId].classList.remove("over");
@@ -490,3 +489,15 @@ function drag(e) {
 function allowDrop(e) {
     e.preventDefault();
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const descriptionInput = document.getElementById('description');
+    const charCount = document.getElementById('charCount');
+    const maxLength = 500;
+
+    descriptionInput.addEventListener('input', function() {
+        const currentLength = this.value.length;
+        charCount.textContent = `${currentLength}/${maxLength}`;
+    });
+});
+

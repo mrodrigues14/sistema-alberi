@@ -59,21 +59,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-function adicionarUsuario() {
+function adicionarUsuario(event) {
+    event.preventDefault(); // Impede o envio padrão do formulário
+
     const cpfInput = document.getElementById('cpf');
     let cpf = cpfInput.value;
     cpf = cpf.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
 
     if (cpf.length !== 11) {
         alert('CPF deve conter exatamente 11 dígitos.');
-        return;
+        return false;
     }
 
     const nome = document.getElementById('nome').value;
-    const senha = '123456';
+    const email = document.getElementById('email').value;
     const role = document.getElementById('role').value;
-    const empresas = [];
 
+    if (!role) {
+        alert('Por favor, selecione uma função.');
+        return false;
+    }
+
+    const empresas = [];
     document.querySelectorAll('input[name="empresa"]:checked').forEach((checkbox) => {
         empresas.push(checkbox.value);
     });
@@ -81,7 +88,7 @@ function adicionarUsuario() {
     const data = {
         cpf: cpf,
         nome: nome,
-        senha: senha,
+        email: email,
         role: role,
         empresas: empresas
     };
@@ -99,17 +106,24 @@ function adicionarUsuario() {
                 alert(data.error);
             } else {
                 showSuccessPopup();
+                resetForm();
             }
         })
         .catch((error) => {
             console.error('Error:', error);
             alert('Erro ao adicionar usuário.');
         });
+
+    return false;
+}
+function resetForm() {
+    document.getElementById('addUserForm').reset();
 }
 
 function cancelar() {
     document.getElementById('cpf').value = '';
     document.getElementById('nome').value = '';
+    document.getElementById('email').value = '';
     document.getElementById('role').value = '';
     document.querySelectorAll('input[name="empresa"]:checked').forEach((checkbox) => {
         checkbox.checked = false;

@@ -13,7 +13,7 @@ router.post('/consultarEmpresas', (req, res) => {
     const userName = req.session.username;
 
     if (userRole === 'Administrador') {
-        db.query('SELECT NOME, IDCLIENTE FROM CLIENTE', (error, results) => {
+        db.query('SELECT NOME, IDCLIENTE FROM CLIENTE ORDER BY NOME ASC', (error, results) => {
             if (error) {
                 console.error('Erro durante a busca por empresa no banco de dados:', error);
                 return res.status(500).send('Server error');
@@ -31,6 +31,7 @@ router.post('/consultarEmpresas', (req, res) => {
             FROM CLIENTE c 
             JOIN RELACAOUSUARIOCLIENTE ruc ON c.IDCLIENTE = ruc.ID_EMPRESA_REFERENCIA
             WHERE ruc.ID_USUARIO = ?
+            ORDER BY c.NOME ASC
         `, [userId], (error, results) => {
             if (error) {
                 console.error('Erro durante a busca por empresa no banco de dados:', error);

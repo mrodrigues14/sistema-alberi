@@ -1,13 +1,3 @@
-function myFunction() {
-    document.getElementById("myDropdown").classList.toggle("show");
-    document.querySelector('.dropbtn').classList.toggle('active');
-    var empresaSelecionada = document.querySelector('.empresaSelecionada');
-    if (document.querySelector('.dropbtn').classList.contains('active')) {
-        empresaSelecionada.style.borderRadius = '0';
-    } else {
-        empresaSelecionada.style.borderRadius = '0 0 5px 5px';
-    }
-}
 
 function loadAndDisplayUsername() {
     fetch('/api/usuario-logado')
@@ -26,6 +16,23 @@ function loadAndDisplayUsername() {
                 console.log(data.role);
                 console.log(data.idusuario);
                 showAdminOptions();
+
+                fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        const empresaDefault = data.empresas.find(empresa => empresa.IDCLIENTE === 68);
+                        if (empresaDefault) {
+                            updateNomeEmpresa('Todos Clientes', 68);
+                            localStorage.setItem('nomeEmpresaSelecionada', 'Todos Clientes');
+                            localStorage.setItem('idEmpresaSelecionada', '68');
+                        } else {
+                            console.warn('Empresa padrão não encontrada');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro na requisição:', error);
+                        showNoEmpresasMessage(error.message);
+                    });
             } else {
                 window.location.href = '/';
             }
@@ -35,6 +42,8 @@ function loadAndDisplayUsername() {
             window.location.href = '/';
         });
 }
+
+
 
 function toggleDropdown() {
     var dropdown = document.getElementById("dropdownContent");
@@ -46,6 +55,7 @@ function toggleDropdown() {
         loadAndDisplayEmpresas(); // Chamar função para carregar e exibir empresas
     }
 }
+
 function toggleUserDropdown() {
     var dropdown = document.getElementById("userDropdown");
     if (dropdown.style.display === "block") {
@@ -54,6 +64,7 @@ function toggleUserDropdown() {
         dropdown.style.display = "block";
     }
 }
+
 function loadAndDisplayEmpresas() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => response.json())
@@ -67,8 +78,6 @@ function loadAndDisplayEmpresas() {
         });
 }
 
-
-
 document.addEventListener('click', function(event) {
     var dropdown = document.getElementById("dropdownContent");
     if (!event.target.closest('.search-box-empresa')) {
@@ -77,7 +86,10 @@ document.addEventListener('click', function(event) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    handleEmpresa();
+    loadAndDisplayUsername();
     loadNomeEmpresa();
+    addClickEventToListItems();
 });
 
 function loadNomeEmpresa() {
@@ -101,13 +113,18 @@ function loadNomeEmpresa() {
                     empresaSelecionada(li.dataset.nome, li.dataset.id);
                 }
             });
+
+            const empresaDefault = empresas.find(empresa => empresa.IDCLIENTE === '68');
+            if (empresaDefault) {
+                updateNomeEmpresa("Todos Clientes", empresaDefault.IDCLIENTE);
+            }
+
         })
         .catch(error => {
             console.error('Erro na requisição:', error);
             showNoEmpresasMessage(error.message);
         });
 }
-
 
 function updateList(filter, empresas) {
     var list = document.getElementById('nameList');
@@ -128,7 +145,6 @@ function updateList(filter, empresas) {
     list.style.display = filteredData.length ? 'block' : 'none';
 }
 
-
 function empresaSelecionada(nomeEmpresa, idEmpresa) {
     console.log('Setting empresa:', nomeEmpresa, idEmpresa);
     localStorage.setItem('nomeEmpresaSelecionada', nomeEmpresa);
@@ -136,7 +152,6 @@ function empresaSelecionada(nomeEmpresa, idEmpresa) {
     updateNomeEmpresa(nomeEmpresa, idEmpresa);
     window.location.reload()
 }
-
 
 function updateNomeEmpresa(nomeEmpresa, idEmpresa) {
     console.log('Updating display for:', nomeEmpresa, idEmpresa);
@@ -170,7 +185,7 @@ function getStoredEmpresaName() {
 
 function addClickEventToListItems() {
     var list = document.getElementById('nameList');
-    var dropdown = document.getElementById("dropdownContent"); // Definir dropdown aqui
+    var dropdown = document.getElementById("dropdownContent");
 
     list.addEventListener('click', function(e) {
         const li = e.target.closest('li');
@@ -181,7 +196,6 @@ function addClickEventToListItems() {
         }
     });
 }
-
 
 function showNoEmpresasMessage(message) {
     var messageElement = document.getElementById('noEmpresasMessage');
@@ -203,25 +217,47 @@ function closeNoEmpresasMessage() {
 
 function showAdminOptions() {
     let userRoles = localStorage.getItem('userRoles');
-    if (userRoles !== 'Administrador') {
-        document.getElementById('menuAdicionarUsuario').style.display = 'none';
-        document.getElementById('cliente').style.display = 'none';
-        document.getElementById('bancos').style.display = 'none';
-    }
-    if (!['Administrador', 'Funcionario Administrativo'].includes(userRoles)) {
-        document.getElementById('menuAdicionarUsuario').style.display = 'none';
-        document.getElementById('cliente').style.display = 'none';
-        document.getElementById('bancos').style.display = 'none';
-    }
-    if (!['Administrador', 'Funcionario Administrativo', 'Funcionario de Cliente', 'Cliente'].includes(userRoles)) {
-        document.getElementById('menuAdicionarUsuario').style.display = 'none';
-        document.getElementById('cliente').style.display = 'none';
-        document.getElementById('bancos').style.display = 'none';
-        document.getElementById('Estudos').style.display = 'none';
-        document.getElementById('Extrato').style.display = 'none';
+
+    if (userRoles !== 'Administrador' && userRoles !== 'Configurador') {
+        const adicionarUsuarioElement = document.getElementById('menuAdicionarUsuario');
+        const clienteElement = document.getElementById('cliente');
+        const bancosElement = document.getElementById('bancos');
+
+        if (adicionarUsuarioElement) adicionarUsuarioElement.style.display = 'none';
+        if (clienteElement) clienteElement.style.display = 'none';
+        if (bancosElement) bancosElement.style.display = 'none';
     }
 
+    if (userRoles !== 'Configurador') {
+        const rubricasElement = document.getElementById('rubricas');
+        if (rubricasElement) rubricasElement.style.display = 'none';
+    }
+
+    if (!['Administrador', 'Usuário Interno'].includes(userRoles)) {
+        const adicionarUsuarioElement = document.getElementById('menuAdicionarUsuario');
+        const clienteElement = document.getElementById('cliente');
+        const bancosElement = document.getElementById('bancos');
+
+        if (adicionarUsuarioElement) adicionarUsuarioElement.style.display = 'none';
+        if (clienteElement) clienteElement.style.display = 'none';
+        if (bancosElement) bancosElement.style.display = 'none';
+    }
+
+    if (!['Administrador', 'Usuário Interno', 'Usuário Externo'].includes(userRoles)) {
+        const adicionarUsuarioElement = document.getElementById('menuAdicionarUsuario');
+        const clienteElement = document.getElementById('cliente');
+        const bancosElement = document.getElementById('bancos');
+        const estudosElement = document.getElementById('Estudos');
+        const extratoElement = document.getElementById('Extrato');
+
+        if (adicionarUsuarioElement) adicionarUsuarioElement.style.display = 'none';
+        if (clienteElement) clienteElement.style.display = 'none';
+        if (bancosElement) bancosElement.style.display = 'none';
+        if (estudosElement) estudosElement.style.display = 'none';
+        if (extratoElement) extratoElement.style.display = 'none';
+    }
 }
+
 
 document.addEventListener('click', function(event) {
     var list = document.getElementById('nameList');
@@ -275,10 +311,3 @@ window.onclick = function(event) {
         }
     }
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    handleEmpresa();
-    loadAndDisplayUsername();
-    loadAndDisplayEmpresas(); // Certificar-se de carregar e exibir empresas ao carregar a página
-    addClickEventToListItems();
-});

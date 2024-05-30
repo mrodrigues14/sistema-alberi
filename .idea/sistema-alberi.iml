@@ -11,5 +11,6 @@
     <orderEntry type="library" name="chart.js" level="application" />
     <orderEntry type="library" name="d3.v7" level="application" />
     <orderEntry type="library" name="@lottiefiles/lottie-player" level="application" />
+    <orderEntry type="library" name="email" level="application" />
   </component>
 </module>
