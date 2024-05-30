@@ -14,23 +14,65 @@
             <h2>Adicionar Cliente</h2>
             <form id="formAdd" action="/cadastro" method="post">
                 <div class="form-group">
-                    <label for="nomeEmpresa">Nome da Empresa:</label>
+                    <label for="nomeEmpresa">Nome Empresarial/Razão Social:</label>
                     <input type="text" id="nomeEmpresa" name="nomeEmpresa" required>
                 </div>
                 <div class="form-group">
-                    <label for="seletorCNPJ">Tipo:</label>
-                    <select id="seletorCNPJ" name="seletorCNPJ">
-                        <option value="0">CPF</option>
-                        <option value="1">CNPJ</option>
-                    </select>
+                    <label for="cnpj">CNPJ:</label>
+                    <input type="text" id="cnpj" name="cnpj">
                 </div>
                 <div class="form-group">
-                    <input type="text" id="cpfCnpj" name="cpfCnpj" placeholder="CPF ou CNPJ">
+                    <label for="endereco">Endereço:</label>
+                    <input type="text" id="endereco" name="endereco">
+                </div>
+                <div class="form-group">
+                    <label for="cep">CEP:</label>
+                    <input type="text" id="cep" name="cep">
+                </div>
+                <div class="form-group">
+                    <label for="nomeResponsavel">Nome do Responsável Legal:</label>
+                    <input type="text" id="nomeResponsavel" name="nomeResponsavel">
+                </div>
+                <div class="form-group">
+                    <label for="cpfResponsavel">CPF do Responsável Legal:</label>
+                    <input type="text" id="cpfResponsavel" name="cpfResponsavel">
+                </div>
+                <div class="form-group">
+                    <label for="inscricaoEstadual">Inscrição Estadual:</label>
+                    <input type="text" id="inscricaoEstadual" name="inscricaoEstadual">
+                </div>
+                <div class="form-group">
+                    <label for="cnaePrincipal">CNAE Principal:</label>
+                    <input type="text" id="cnaePrincipal" name="cnaePrincipal">
                 </div>
                 <div class="form-group">
                     <label for="telefone">Telefone:</label>
                     <input type="text" id="telefone" name="telefone" placeholder="Telefone (XX) XXXXX-XXXX">
                 </div>
+                <div id="socio-section">
+                    <h3>Sócios</h3>
+                    <div class="form-group">
+                        <label for="socioNome">Nome do Sócio:</label>
+                        <input type="text" id="socioNome" name="socioNome[]">
+                    </div>
+                    <div class="form-group">
+                        <label for="socioCpf">CPF do Sócio:</label>
+                        <input type="text" id="socioCpf" name="socioCpf[]">
+                    </div>
+                    <div class="form-group">
+                        <label for="socioEndereco">Endereço do Sócio:</label>
+                        <input type="text" id="socioEndereco" name="socioEndereco[]">
+                    </div>
+                    <div class="form-group">
+                        <label for="socioCep">CEP do Sócio:</label>
+                        <input type="text" id="socioCep" name="socioCep[]">
+                    </div>
+                    <div class="form-group">
+                        <label for="socioTelefone">Telefone do Sócio:</label>
+                        <input type="text" id="socioTelefone" name="socioTelefone[]">
+                    </div>
+                </div>
+                <button type="button" onclick="addSocio()">Adicionar Sócio</button>
                 <input type="hidden" name="idcliente">
                 <div class="buttons">
                     <input type="submit" value="Adicionar" id="addButton">
@@ -40,7 +82,7 @@
 
         <div id="Remover-conta">
             <h2>Remover Cliente</h2>
-            <form id="formRemove" action="/cadastro/remover" method="post">
+            <form id="formRemove" action="/cadastro/remover" method="post" onsubmit="return confirmDelete()">
                 <div class="form-group">
                     <label for="selectBanco">Nome da Empresa a ser removida:</label>
                     <select id="selectBanco" name="selectNomeEmpresa"></select>

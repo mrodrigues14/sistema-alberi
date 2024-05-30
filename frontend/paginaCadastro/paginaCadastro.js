@@ -56,3 +56,37 @@ function loadEmpresaDetails() {
             console.error('Erro ao carregar detalhes da empresa:', error);
         });
 }
+
+function addSocio() {
+    const socioSection = document.getElementById('socio-section');
+    const socioHtml = `
+        <div class="form-group">
+            <label for="socioNome">Nome do Sócio:</label>
+            <input type="text" name="socioNome[]">
+        </div>
+        <div class="form-group">
+            <label for="socioCpf">CPF do Sócio:</label>
+            <input type="text" name="socioCpf[]">
+        </div>
+        <div class="form-group">
+            <label for="socioEndereco">Endereço do Sócio:</label>
+            <input type="text" name="socioEndereco[]">
+        </div>
+        <div class="form-group">
+            <label for="socioCep">CEP do Sócio:</label>
+            <input type="text" name="socioCep[]">
+        </div>
+        <div class="form-group">
+            <label for="socioTelefone">Telefone do Sócio:</label>
+            <input type="text" name="socioTelefone[]">
+        </div>`;
+    const newDiv = document.createElement('div');
+    newDiv.innerHTML = socioHtml;
+    socioSection.appendChild(newDiv);
+}
+
+function confirmDelete() {
+    const selectBanco = document.getElementById('selectBanco');
+    const selectedOption = selectBanco.options[selectBanco.selectedIndex].text;
+    return confirm(`Tem certeza que deseja excluir o Cliente ${selectedOption}?`);
+}
