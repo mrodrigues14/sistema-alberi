@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
+
     fetch('/usuario/empresas')
         .then(response => response.json())
         .then(data => {
@@ -152,5 +153,6 @@ function showSuccessPopup() {
 function closePopup() {
     const successPopup = document.getElementById('successPopup');
     successPopup.classList.remove('show');
+    cancelar();
     window.location.reload();
 }

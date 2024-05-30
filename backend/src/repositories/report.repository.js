@@ -2,7 +2,7 @@ const mysqlConn = require("../base/database");
 
 function inserirReport(titulo, descricao, data, arquivos, ID_USUARIO, prioridade, tipoArquivo, funcionalidadeAfetada, callback = () => {}) {
     const situacao = 'Não iniciado'; // Valor padrão para a coluna SITUACAO
-    mysqlConn.query(`INSERT INTO REPORT (TITULO, DESCRICAO, DATA, ARQUIVOS, ID_USUARIO, PRIORIDADE, TIPO_ARQUIVO, FUNCIONALIDADE_AFETADA, SITUACAO) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    mysqlConn.query(`INSERT INTO REPORT (TITULO, DESCRICAO, DATA, ARQUIVO, ID_USUARIO, PRIORIDADE, TIPO, FUNCIONALIDADE_AFETADA, SITUACAO) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [titulo, descricao, data, arquivos, ID_USUARIO, prioridade, tipoArquivo, funcionalidadeAfetada, situacao],
         (err, result, fields) => {
             callback(err, result);
