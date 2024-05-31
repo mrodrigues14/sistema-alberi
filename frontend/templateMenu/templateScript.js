@@ -219,45 +219,52 @@ function closeNoEmpresasMessage() {
 
 function showAdminOptions() {
     let userRoles = localStorage.getItem('userRoles');
+    const currentPage = window.location.pathname;
+    const redirectionFlag = localStorage.getItem('redirectionDone');
 
-    if (userRoles !== 'Administrador' && userRoles !== 'Configurador') {
-        const adicionarUsuarioElement = document.getElementById('menuAdicionarUsuario');
-        const clienteElement = document.getElementById('cliente');
-        const bancosElement = document.getElementById('bancos');
+    const elementsToHideForRoles = {
+        'Usuário Interno': ['rubricas'],
+        'Usuário Externo': ['rubricas', 'menuAdicionarUsuario', 'cliente', 'bancos', 'Estudos', 'Extrato'],
+        'default': ['menuAdicionarUsuario', 'cliente', 'bancos', 'Estudos', 'Extrato', 'rubricas']
+    };
 
-        if (adicionarUsuarioElement) adicionarUsuarioElement.style.display = 'none';
-        if (clienteElement) clienteElement.style.display = 'none';
-        if (bancosElement) bancosElement.style.display = 'none';
+    const adicionarUsuarioElement = document.getElementById('menuAdicionarUsuario');
+    const clienteElement = document.getElementById('cliente');
+    const bancosElement = document.getElementById('bancos');
+    const estudosElement = document.getElementById('Estudos');
+    const extratoElement = document.getElementById('Extrato');
+    const rubricasElement = document.getElementById('rubricas');
+
+    const roleElements = {
+        'menuAdicionarUsuario': adicionarUsuarioElement,
+        'cliente': clienteElement,
+        'bancos': bancosElement,
+        'Estudos': estudosElement,
+        'Extrato': extratoElement,
+        'rubricas': rubricasElement
+    };
+
+    // Redirecionar Usuário Externo para a página inicial em branco, se não já estiver lá
+    if (userRoles === 'Usuário Externo' && currentPage !== '/templateMenu' && !redirectionFlag) {
+        localStorage.setItem('redirectionDone', 'true');
+        window.location.href = '/templateMenu';
+        return; // Exit the function if the user is Usuário Externo
     }
 
-    if (userRoles !== 'Configurador') {
-        const rubricasElement = document.getElementById('rubricas');
-        if (rubricasElement) rubricasElement.style.display = 'none';
+    // Mostrar todos os elementos para Administrador e Configurador
+    if (userRoles === 'Administrador' || userRoles === 'Configurador') {
+        Object.values(roleElements).forEach(element => {
+            if (element) element.style.display = 'block';
+        });
+        return; // Exit the function if the user is Administrador or Configurador
     }
 
-    if (!['Administrador', 'Usuário Interno'].includes(userRoles)) {
-        const adicionarUsuarioElement = document.getElementById('menuAdicionarUsuario');
-        const clienteElement = document.getElementById('cliente');
-        const bancosElement = document.getElementById('bancos');
-
-        if (adicionarUsuarioElement) adicionarUsuarioElement.style.display = 'none';
-        if (clienteElement) clienteElement.style.display = 'none';
-        if (bancosElement) bancosElement.style.display = 'none';
-    }
-
-    if (!['Administrador', 'Usuário Interno', 'Usuário Externo'].includes(userRoles)) {
-        const adicionarUsuarioElement = document.getElementById('menuAdicionarUsuario');
-        const clienteElement = document.getElementById('cliente');
-        const bancosElement = document.getElementById('bancos');
-        const estudosElement = document.getElementById('Estudos');
-        const extratoElement = document.getElementById('Extrato');
-
-        if (adicionarUsuarioElement) adicionarUsuarioElement.style.display = 'none';
-        if (clienteElement) clienteElement.style.display = 'none';
-        if (bancosElement) bancosElement.style.display = 'none';
-        if (estudosElement) estudosElement.style.display = 'none';
-        if (extratoElement) extratoElement.style.display = 'none';
-    }
+    // Ocultar elementos com base no papel do usuário
+    const elementsToHide = elementsToHideForRoles[userRoles] || elementsToHideForRoles['default'];
+    elementsToHide.forEach(elementId => {
+        const element = roleElements[elementId];
+        if (element) element.style.display = 'none';
+    });
 }
 
 
