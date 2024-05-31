@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const script = document.createElement('script');
             script.src = '/templateMenu/templateScript.js';
             script.onload = function() {
-                loadAndDisplayUsername();
                 handleEmpresa();
                 loadNomeEmpresa();
             };
@@ -91,10 +90,11 @@ function adicionarUsuario(event) {
         nome: nome,
         email: email,
         role: role,
-        empresas: empresas
+        empresas: empresas,
+        senha: 123456
     };
 
-    fetch('/usuario/adicionarUsuario', {
+    fetch('/usuario/add', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
