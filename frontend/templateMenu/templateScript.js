@@ -17,22 +17,24 @@ function loadAndDisplayUsername() {
                 console.log(data.idusuario);
                 showAdminOptions();
 
-                fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        const empresaDefault = data.empresas.find(empresa => empresa.IDCLIENTE === 68);
-                        if (empresaDefault) {
-                            updateNomeEmpresa('Todos Clientes', 68);
-                            localStorage.setItem('nomeEmpresaSelecionada', 'Todos Clientes');
-                            localStorage.setItem('idEmpresaSelecionada', '68');
-                        } else {
-                            console.warn('Empresa padrão não encontrada');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erro na requisição:', error);
-                        showNoEmpresasMessage(error.message);
-                    });
+                if (!localStorage.getItem('idEmpresaSelecionada')) {
+                    fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            const empresaDefault = data.empresas.find(empresa => empresa.IDCLIENTE === 68);
+                            if (empresaDefault) {
+                                updateNomeEmpresa(empresaDefault.NOME, empresaDefault.IDCLIENTE);
+                                localStorage.setItem('nomeEmpresaSelecionada', empresaDefault.NOME);
+                                localStorage.setItem('idEmpresaSelecionada', empresaDefault.IDCLIENTE);
+                            } else {
+                                console.warn('Empresa padrão não encontrada');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro na requisição:', error);
+                            showNoEmpresasMessage(error.message);
+                        });
+                }
             } else {
                 window.location.href = '/';
             }

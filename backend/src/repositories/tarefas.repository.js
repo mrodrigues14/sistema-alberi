@@ -10,21 +10,25 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
     let params = [];
 
     if (idcliente !== 68) {
-    } else {
-        query += ' WHERE T.ID_CLIENTE = ? AND T.ID_USUARIO = ?';
-        params.push(idcliente, idusuario);
-    }
-
-    if (idcliente === 68) {
         query = `
-            SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
-            FROM TAREFAS AS T
-            INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
-            INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
-            WHERE T.ID_USUARIO = ?
-        `;
+        SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
+        FROM TAREFAS AS T
+        INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
+        INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
+        WHERE T.ID_CLIENTE = ? AND T.ID_USUARIO = ?
+    `;
+        params.push(idcliente, idusuario);
+    } else {
+        query = `
+        SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
+        FROM TAREFAS AS T
+        INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
+        INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
+        WHERE T.ID_USUARIO = ?
+    `;
         params = [idusuario];
     }
+
 
     query += ' ORDER BY T.DATA_LIMITE ASC';
 
