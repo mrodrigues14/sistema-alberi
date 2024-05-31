@@ -94,7 +94,7 @@ function adicionarUsuario(event) {
         empresas: empresas
     };
 
-    fetch('/usuario/add', {
+    fetch('/usuario/adicionarUsuario', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
