@@ -85,13 +85,17 @@ function adicionarUsuario(event) {
         empresas.push(checkbox.value);
     });
 
+    if (!empresas.includes('68')) {
+        empresas.push('68');
+    }
+
     const data = {
         cpf: cpf,
         nome: nome,
         email: email,
         role: role,
         empresas: empresas,
-        senha: 123456
+        senha: "$2b$10$vct7oGqYuA2x9WGd/G3oS.mbTOIEXf7bGJC3vETN4j9ij8qj8IA9m"
     };
 
     fetch('/usuario/add', {
@@ -101,22 +105,24 @@ function adicionarUsuario(event) {
         },
         body: JSON.stringify(data)
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-            } else {
-                showSuccessPopup();
-                resetForm();
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert('Erro ao adicionar usuário.');
-        });
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            showSuccessPopup();
+            resetForm();
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('Erro ao adicionar usuário.');
+    });
 
     return false;
 }
+
+
 function resetForm() {
     document.getElementById('addUserForm').reset();
 }

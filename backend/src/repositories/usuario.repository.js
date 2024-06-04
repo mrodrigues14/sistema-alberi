@@ -31,7 +31,7 @@ function adicionarUsuario(cpf, nome, senha, role, email, empresas, callback) {
 }
 
 function listarEmpresas(callback) {
-    mysqlConn.query(`SELECT IDCLIENTE, NOME FROM CLIENTE`, (err, results) => {
+    mysqlConn.query(`SELECT IDCLIENTE, NOME FROM CLIENTE ORDER BY NOME ASC`, (err, results) => {
         callback(err, results);
     });
 }
