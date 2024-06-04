@@ -1,32 +1,25 @@
 const mysqlConn = require('../base/database.js');
 
 function listarTarefas(idcliente, idusuario, isAdmin, callback) {
-    let query = `
-        SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
-        FROM TAREFAS AS T
-        INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
-        INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
-    `;
     let params = [];
 
-    if (idcliente !== 68) {
+    if (idcliente === "68") {
         query = `
         SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
         FROM TAREFAS AS T
         INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
         INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
-        WHERE T.ID_CLIENTE = ? AND T.ID_USUARIO = ?
     `;
-        params.push(idcliente, idusuario);
+        params.push(idcliente);
     } else {
         query = `
         SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.DATA_LIMITE, T.DATA_INICIO, T.DATA_CONCLUSAO, T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
         FROM TAREFAS AS T
         INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
         INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
-        WHERE T.ID_USUARIO = ?
+        WHERE T.ID_CLIENTE = ?
     `;
-        params = [idusuario];
+        params = [idcliente];
     }
 
 

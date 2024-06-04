@@ -47,12 +47,10 @@ textarea {
 }
 
 button {
-    color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    margin-left: 10px;
 }
 
 .salvarButtonEditar {
@@ -65,6 +63,7 @@ button {
 
 .cancelarButtonEditar {
     background-color: #555555;
+    margin-left: 10px;
 }
 
 .cancelarButtonEditar:hover {
@@ -73,12 +72,21 @@ button {
 
 .deletarButtonEditar{
     background-color: #DC3545;
+    margin-left: 10px;
 }
 
 .deletarButtonEditar:hover{
     background-color: #c82333;
 }
 
+#submitBtn{
+    background-color: #45a049;
+    color: #fff;
+}
+
+#submitBtn:hover{
+    background-color: #3e8e41;
+}
 .report-list-container ul {
     list-style-type: none;
     padding: 0;
@@ -333,3 +341,4 @@ button {
     font-size: 12px;
     line-height: 12px;
 }
+

@@ -47,14 +47,20 @@ function loadAndDisplayUsername() {
 
 
 
-function toggleDropdown() {
-    var dropdown = document.getElementById("dropdownContent");
+function toggleDropdown(dropdownId) {
+    var dropdown = document.getElementById(dropdownId);
     if (dropdown.style.display === "block") {
         dropdown.style.display = "none";
     } else {
+        // Fechar outros dropdowns abertos
+        document.querySelectorAll('.dropdown-content').forEach(function(content) {
+            content.style.display = 'none';
+        });
         dropdown.style.display = "block";
-        document.getElementById("searchInput").focus();
-        loadAndDisplayEmpresas(); // Chamar função para carregar e exibir empresas
+        if (dropdownId === 'dropdownContent') {
+            document.getElementById("searchInput").focus();
+            loadAndDisplayEmpresas();
+        }
     }
 }
 
@@ -275,15 +281,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-document.addEventListener('click', function(event) {
-    var menu = document.getElementById('menuToggle');
-    var targetElement = event.target;
-
-    if (!menu.contains(targetElement)) {
-        var checkbox = document.querySelector('#menuToggle input[type="checkbox"]');
-        checkbox.checked = false;
-    }
-});
 
 function logout() {
     fetch('/api/logout', {

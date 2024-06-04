@@ -9,37 +9,70 @@
 <body class="custom-interface">
 <div class="navbar-all">
     <nav role="navigation">
-        <div id="menuToggle">
-            <input type="checkbox" />
-            <span></span>
-            <span></span>
-            <span></span>
-            <ul id="menu">
-                <a href="/paginaInicial" id="tarefas"><li>Menu inicial</li></a>
-                <a href="/estudos" id="Estudos"><li>Estudos</li></a>
-                <a href="/insercao" id="Extrato" ><li>Extrato bancário</li></a>
-                <a href="/dados" id="bancos"><li>Cadastro de bancos</li></a>
-                <a href="/cadastro" id="cliente"><li>Configuração de Cliente</li></a>
-                <a href="/usuario" id="menuAdicionarUsuario" ><li>Configuração de Usuário</li></a>
-                <a href="/report" id="report"><li>Reportar Falha ou melhoria</li></a>
-            </ul>
-        </div>
+        <ul id="menu" class="menu-inline">
+            <li>
+                <a href="/paginaInicial"><button class="menu-item">Menu inicial</button></a>
+            </li>
+            <li>
+                <button class="menu-item" onclick="toggleDropdown('estudosDropdown')">Estudos</button>
+                <div class="dropdown-content" id="estudosDropdown">
+                    <a href="/estudos/resumoMensal">Resumo Mensal</a>
+                    <a href="/estudos/resumoFin">Resumo financeiro</a>
+                    <a href="/estudos/resumoAnual">Resumo Anual</a>
+                    <a href="/estudos/faturamento">Reusmo Faturamento Mensal</a>
+                    <a href="/estudos/resumoDaConta">Resumo da Conta</a>
+                    <a href="/estudos/metas">Metas</a>
+                </div>
+            </li>
+            <li>
+                <button class="menu-item" onclick="toggleDropdown('extratoDropdown')">Extrato bancário</button>
+                <div class="dropdown-content" id="extratoDropdown">
+                    <a href="/insercao">Inserir extrato</a>
+                    <a href="/consulta">Consultar extrato</a>
+                    <a href="/rubricas" id="rubricas" >Rubricas</a>
+                    <a href="/fornecedor">Adicionar fornecedor</a>
+                    <a href="/dados">Adicionar Banco</a>
+                </div>
+            </li>
+            <li>
+                <button class="menu-item" onclick="toggleDropdown('clienteDropdown')">Configuração de Cliente</button>
+                <div class="dropdown-content" id="clienteDropdown">
+                    <a href="/cadastro">Cadastro de Cliente</a>
+                </div>
+            </li>
+            <li>
+                <button class="menu-item" onclick="toggleDropdown('usuarioDropdown')">Configuração de Usuário</button>
+                <div class="dropdown-content" id="usuarioDropdown">
+                    <a href="/usuario/adicionarUsuario">Adicionar Usuário</a>
+                    <a href="/usuario/editarUsuario">Editar Usuário</a>
+
+                </div>
+            </li>
+            <li>
+                <a href="/report" id="report"><button class="menu-item" onclick="toggleDropdown('reportDropdown')"><li>Reportar Falha ou melhoria</li></button></a>
+            </li>
+        </ul>
     </nav>
 
     <div class="search-box-empresa">
-        <button class="selected-company" id="selectedCompany" onclick="toggleDropdown()">Selecione uma empresa</button>
+        <button class="selected-company" id="selectedCompany" onclick="toggleDropdown('dropdownContent')">Selecione uma empresa</button>
         <div class="dropdown-content" id="dropdownContent">
             <input type="text" id="searchInput" placeholder="Digite para pesquisar">
             <ul id="nameList" class="nomes-empresa"></ul>
         </div>
     </div>
 
-    <div class="dropdown">
-        <button onclick="toggleUserDropdown()" class="dropbtn usernameDisplay"></button></br>
-        <div id="userDropdown" class="dropdown-content">
-            <a href="#!" onclick="showCalendarModal()">Agenda</a>
-            <a href="#!" onclick="logout()">Sair</a>
-        </div>
+    <div >
+        <ul class="menu-inline" >
+            <li >
+                <button onclick="toggleUserDropdown()" class="dropbtn usernameDisplay menu-item" style="border: 2px solid #ccc; padding: 15px;     background-color: #99b3b6;
+"></button></br>
+                <div id="userDropdown" class="dropdown-content">
+                    <a href="#!" onclick="showCalendarModal()">Agenda</a>
+                    <a href="#!" onclick="logout()">Sair</a>
+                </div>
+            </li>
+        </ul>
     </div>
 </div>
 
@@ -49,7 +82,7 @@
     <button class="close-button" onclick="closeNoEmpresasMessage()">X</button>
     <p id="noEmpresasMessageText"></p>
 </div>
-
+<hr>
 <script src="templateScript.js"></script>
 </body>
 </html>
