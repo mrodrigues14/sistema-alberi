@@ -47,16 +47,36 @@ textarea {
 }
 
 button {
-    background-color: #4CAF50;
     color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    margin-left: 10px;
 }
 
-button:hover {
+.salvarButtonEditar {
     background-color: #45a049;
+}
+
+.salvarButtonEditar:hover {
+    background-color: #3e8e41;
+}
+
+.cancelarButtonEditar {
+    background-color: #555555;
+}
+
+.cancelarButtonEditar:hover {
+    background-color: #353535;
+}
+
+.deletarButtonEditar{
+    background-color: #DC3545;
+}
+
+.deletarButtonEditar:hover{
+    background-color: #c82333;
 }
 
 .report-list-container ul {
@@ -70,23 +90,48 @@ button:hover {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    position: relative; /* Para o posicionamento do botão */
+    position: relative;
 }
 
-.complete-btn {
+.button-group {
     position: absolute;
-    right: 10px;
     top: 10px;
-    background-color: #45a049; /* Roxo */
-    color: white;
+    right: 10px;
+    display: flex;
+    gap: 5px; /* Espaço entre os botões */
+}
+
+.button-group button {
     padding: 5px 10px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    color: white;
+    font-size: 12px;
 }
 
-.complete-btn:hover {
-    background-color: #5a005a;
+.button-group .edit-btn {
+    background-color: #007BFF;
+}
+
+.button-group .edit-btn:hover {
+    background-color: #0056b3;
+}
+
+.button-group .complete-btn {
+    background-color: #28A745;
+}
+
+.button-group .complete-btn:hover {
+    background-color: #218838;
+}
+
+.button-group .reject-btn {
+    background-color: #DC3545;
+}
+
+.button-group .reject-btn:hover {
+    background-color: #C82333;
 }
 
 .report-container, .report-list-container {
@@ -103,20 +148,20 @@ button:hover {
 .popup {
     display: none;
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 20px;
-    border-radius: 10px;
     z-index: 9999;
+    justify-content: center;
+    align-items: center;
     opacity: 0; /* Inicialmente invisível */
     transition: opacity 0.5s ease; /* Adiciona uma transição suave */
 }
 
 .popup.show {
-    display: block;
+    display: flex;
     opacity: 1; /* Torna o popup visível */
 }
 
@@ -134,7 +179,13 @@ button:hover {
 }
 
 .popup-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
     text-align: center;
+    color: #333;
+    max-width: 600px;
+    width: 80%;
 }
 
 .popup-content p {
@@ -142,7 +193,6 @@ button:hover {
 }
 
 .popup-content button {
-    background-color: #4CAF50;
     color: white;
     padding: 10px 20px;
     margin-top: 20px;
@@ -151,8 +201,20 @@ button:hover {
     cursor: pointer;
 }
 
-.popup-content button:hover {
+.popup-content .salvarButtonEditar {
     background-color: #45a049;
+}
+
+.popup-content .salvarButtonEditar:hover {
+    background-color: #3e8e41;
+}
+
+.popup-content .cancelarButtonEditar {
+    background-color: #555555;
+}
+
+.popup-content .cancelarButtonEditar:hover {
+    background-color: #353535;
 }
 
 /* CSS para centralizar os botões de paginação */
@@ -212,6 +274,10 @@ button:hover {
 
 .filter-btn.purple {
     background-color: #800080;
+}
+
+.filter-btn.red {
+    background-color: #DC3545;
 }
 
 .filter-btn:hover {

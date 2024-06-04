@@ -1,9 +1,9 @@
 const mysqlConn = require("../base/database");
 
 function inserirReport(titulo, descricao, data, arquivos, ID_USUARIO, prioridade, tipoArquivo, funcionalidadeAfetada, callback = () => {}) {
-    const situacao = 'Não iniciado'; // Valor padrão para a coluna SITUACAO
-    mysqlConn.query(`INSERT INTO REPORT (TITULO, DESCRICAO, DATA, ARQUIVO, ID_USUARIO, PRIORIDADE, TIPO, FUNCIONALIDADE_AFETADA, SITUACAO) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [titulo, descricao, data, arquivos, ID_USUARIO, prioridade, tipoArquivo, funcionalidadeAfetada, situacao],
+    const situacao = 'Não iniciado';
+    mysqlConn.query(`INSERT INTO REPORT (TITULO, DESCRICAO, DATA, ARQUIVO, ID_USUARIO, PRIORIDADE, TIPO, FUNCIONALIDADE_AFETADA, SITUACAO, DESCRICAO_RECUSA) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [titulo, descricao, data, arquivos, ID_USUARIO, prioridade, tipoArquivo, funcionalidadeAfetada, situacao, null],
         (err, result, fields) => {
             callback(err, result);
         });
@@ -31,19 +31,17 @@ function getReportsByUserId(ID_USUARIO, page, limit, situacao, callback) {
     });
 }
 
-function getReportFileById(reportId, callback) {
-    mysqlConn.query(`SELECT ARQUIVOS FROM REPORT WHERE ID = ?`, [reportId], (err, result) => {
+function getReportFilesByRange(callback) {
+    const query = "SELECT ID, TITULO, ARQUIVO FROM REPORT/*  WHERE SITUACAO IN ('Em desenvolvimento', 'Não iniciado') */";
+    mysqlConn.query(query, (err, result) => {
         if (err) {
             callback(err, null);
         } else {
-            if (result.length > 0) {
-                callback(null, result[0].ARQUIVOS);
-            } else {
-                callback(new Error("Report not found"), null);
-            }
+            callback(null, result);
         }
     });
 }
+
 
 function updateReportStatus(reportId, status, callback) {
     mysqlConn.query(`UPDATE REPORT SET SITUACAO = ? WHERE ID = ?`, [status, reportId], (err, result) => {
@@ -51,9 +49,52 @@ function updateReportStatus(reportId, status, callback) {
     });
 }
 
+function recusarReport(reportId, motivo, callback) {
+    const situacao = 'Recusado';
+    mysqlConn.query(`UPDATE REPORT SET SITUACAO = ?, DESCRICAO_RECUSA = ? WHERE ID = ?`, [situacao, motivo, reportId], (err, result) => {
+        callback(err, result);
+    });
+}
+
+function editarReport(reportId, titulo, descricao, arquivos, callback) {
+    mysqlConn.query(`UPDATE REPORT SET TITULO = ?, DESCRICAO = ?, ARQUIVO = ? WHERE ID = ?`,
+        [titulo, descricao, arquivos, reportId],
+        (err, result) => {
+            callback(err, result);
+        });
+}
+
+function getReportById(reportId, callback) {
+    mysqlConn.query(`SELECT * FROM REPORT WHERE ID = ?`, [reportId], (err, result) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            if (result.length > 0) {
+                callback(null, result[0]);
+            } else {
+                callback(new Error('Relatório não encontrado'), null);
+            }
+        }
+    });
+}
+
+function deletarReport(reportId, callback) {
+    mysqlConn.query('DELETE FROM REPORT WHERE ID = ?', [reportId], (err, result) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
 module.exports = {
     inserirReport,
     getReportsByUserId,
-    getReportFileById,
-    updateReportStatus
+    getReportFilesByRange,
+    updateReportStatus,
+    recusarReport,
+    editarReport,
+    getReportById,
+    deletarReport
 };

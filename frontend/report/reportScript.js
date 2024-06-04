@@ -142,7 +142,12 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
                         <strong>Descrição:</strong> ${report.DESCRICAO}<br>
                         <strong>Data:</strong> ${new Date(report.DATA).toLocaleString()}<br>
                         <strong>Situação:</strong> ${report.SITUACAO}<br>
-                        ${situacao === 'Em validacao' ? `<button class="complete-btn" onclick="markAsCompleted(${report.ID})">Validar Report</button>` : ''}
+                        ${report.DESCRICAO_RECUSA ? `<strong>Motivo da Recusa:</strong> ${report.DESCRICAO_RECUSA}<br>` : ''}
+                        <div class="button-group">
+                            ${situacao !== 'Concluido' ? `<button class="edit-btn" onclick="openEditPopup(${report.ID})">Editar Chamado</button>` : ''}
+                            ${situacao === 'Em validacao' ? `<button class="complete-btn" onclick="markAsCompleted(${report.ID})">Concluir Chamado</button>` : ''}
+                            ${situacao === 'Em validacao' ? `<button class="reject-btn" onclick="openRejectPopup(${report.ID})">Recusar Chamado</button>` : ''}
+                        </div>
                     `;
                     reportList.appendChild(listItem);
                 });
@@ -173,7 +178,6 @@ function markAsCompleted(reportId) {
             console.error('Erro ao atualizar o status:', error);
         });
 }
-
 
 function changePage(direction) {
     const userId = localStorage.getItem('idusuario');
@@ -216,3 +220,162 @@ const userId = localStorage.getItem('idusuario');
 if (userId) {
     loadUserReports(userId, 1, 10);
 }
+
+function openRejectPopup(reportId) {
+    const rejectPopup = document.getElementById('rejectPopup');
+    rejectPopup.dataset.reportId = reportId;
+    rejectPopup.classList.add('show', 'fade-in');
+}
+
+function closeRejectPopup() {
+    const rejectPopup = document.getElementById('rejectPopup');
+    rejectPopup.classList.remove('show');
+}
+
+function submitRejection() {
+    const rejectPopup = document.getElementById('rejectPopup');
+    const reportId = rejectPopup.dataset.reportId;
+    const rejectReason = document.getElementById('rejectReason').value;
+
+    if (!rejectReason.trim()) {
+        alert('Por favor, descreva o motivo da recusa.');
+        return;
+    }
+
+    fetch(`/report/recusar/${reportId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ motivo: rejectReason })
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('Chamado recusado com sucesso!');
+                const userId = localStorage.getItem('idusuario');
+                loadUserReports(userId, currentPage, 10, currentFilter); // Reload the reports
+                closeRejectPopup();
+            } else {
+                response.text().then(text => console.error('Erro ao recusar chamado:', text));
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao recusar chamado:', error);
+        });
+}
+
+function openEditPopup(reportId) {
+    const editPopup = document.getElementById('editPopup');
+    editPopup.dataset.reportId = reportId;
+    fetch(`/report/getReport/${reportId}`)
+        .then(response => response.json())
+        .then(report => {
+            document.getElementById('editTitle').value = report.TITULO;
+            document.getElementById('editDescription').value = report.DESCRICAO;
+
+            const editPreview = document.getElementById('editPreview');
+            editPreview.innerHTML = '';
+
+            if (report.ARQUIVO) {
+                const files = JSON.parse(report.ARQUIVO);
+                files.forEach(file => {
+                    const previewElement = document.createElement('div');
+                    previewElement.classList.add('preview-item');
+
+                    const removeButton = document.createElement('button');
+                    removeButton.classList.add('remove-preview');
+                    removeButton.innerHTML = '&times;';
+                    removeButton.addEventListener('click', () => {
+                        editPreview.removeChild(previewElement);
+                    });
+
+                    previewElement.appendChild(removeButton);
+
+                    if (file.type === 'PDF') {
+                        const pdfPreview = document.createElement('object');
+                        pdfPreview.data = `data:application/pdf;base64,${file.data}`;
+                        pdfPreview.type = 'application/pdf';
+                        pdfPreview.classList.add('preview-object');
+                        previewElement.appendChild(pdfPreview);
+                    } else if (file.type === 'WORD') {
+                        const wordIcon = document.createElement('img');
+                        wordIcon.src = '/path/to/generic-file-icon.png'; // Substitua pelo caminho correto do ícone genérico
+                        wordIcon.classList.add('preview-image');
+                        previewElement.appendChild(wordIcon);
+                    } else if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = `data:image/${file.type.split('/')[1]};base64,${file.data}`;
+                        img.classList.add('preview-image');
+                        previewElement.appendChild(img);
+                    } else {
+                        const fileIcon = document.createElement('img');
+                        fileIcon.src = '/path/to/generic-file-icon.png'; // Substitua pelo caminho correto do ícone genérico
+                        fileIcon.classList.add('preview-image');
+                        previewElement.appendChild(fileIcon);
+                    }
+
+                    editPreview.appendChild(previewElement);
+                });
+            }
+
+            editPopup.classList.add('show', 'fade-in');
+        })
+        .catch(error => {
+            console.error('Erro ao carregar detalhes do chamado para edição:', error);
+        });
+}
+
+function closeEditPopup() {
+    const editPopup = document.getElementById('editPopup');
+    editPopup.classList.remove('show');
+}
+
+function submitEdit() {
+    const editPopup = document.getElementById('editPopup');
+    const reportId = editPopup.dataset.reportId;
+    const editForm = document.getElementById('editForm');
+    const formData = new FormData(editForm);
+
+    fetch(`/report/editar/${reportId}`, {
+        method: 'PUT',
+        body: formData
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('Chamado atualizado com sucesso!');
+                const userId = localStorage.getItem('idusuario');
+                loadUserReports(userId, currentPage, 10, currentFilter); // Reload the reports
+                closeEditPopup();
+            } else {
+                response.text().then(text => console.error('Erro ao atualizar chamado:', text));
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao atualizar chamado:', error);
+        });
+}
+
+function deleteReport() {
+    const editPopup = document.getElementById('editPopup');
+    const reportId = editPopup.dataset.reportId;
+
+    if (confirm('Tem certeza que deseja deletar este chamado?')) {
+        fetch(`/report/deletar/${reportId}`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Chamado deletado com sucesso!');
+                    const userId = localStorage.getItem('idusuario');
+                    loadUserReports(userId, currentPage, 10, currentFilter); // Reload the reports
+                    closeEditPopup();
+                } else {
+                    response.text().then(text => console.error('Erro ao deletar chamado:', text));
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao deletar chamado:', error);
+            });
+    }
+}
+
