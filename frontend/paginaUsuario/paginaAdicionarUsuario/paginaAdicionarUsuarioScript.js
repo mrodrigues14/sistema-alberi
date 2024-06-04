@@ -20,30 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
-
-    fetch('/paginaUsuario/usuario.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('menu-container-usuario').innerHTML = data;
-
-            var link = document.createElement('link');
-            link.href = '/paginaUsuario/usuarioStyle.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
-
-            var script = document.createElement('script');
-            script.src = '/paginaUsuario/usuarioScript.js';
-            script.onload = function() {
-                loadAndDisplayUsername();
-                handleEmpresa();
-            };
-            document.body.appendChild(script);
-        })
-        .catch(error => {
-            console.error('Erro ao carregar o template:', error);
-        });
-
     fetch('/usuario/empresas')
         .then(response => response.json())
         .then(data => {
