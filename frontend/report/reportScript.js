@@ -276,48 +276,6 @@ function openEditPopup(reportId) {
             const editPreview = document.getElementById('editPreview');
             editPreview.innerHTML = '';
 
-            if (report.ARQUIVO) {
-                const files = JSON.parse(report.ARQUIVO);
-                files.forEach(file => {
-                    const previewElement = document.createElement('div');
-                    previewElement.classList.add('preview-item');
-
-                    const removeButton = document.createElement('button');
-                    removeButton.classList.add('remove-preview');
-                    removeButton.innerHTML = '&times;';
-                    removeButton.addEventListener('click', () => {
-                        editPreview.removeChild(previewElement);
-                    });
-
-                    previewElement.appendChild(removeButton);
-
-                    if (file.type === 'PDF') {
-                        const pdfPreview = document.createElement('object');
-                        pdfPreview.data = `data:application/pdf;base64,${file.data}`;
-                        pdfPreview.type = 'application/pdf';
-                        pdfPreview.classList.add('preview-object');
-                        previewElement.appendChild(pdfPreview);
-                    } else if (file.type === 'WORD') {
-                        const wordIcon = document.createElement('img');
-                        wordIcon.src = '/path/to/generic-file-icon.png'; // Substitua pelo caminho correto do ícone genérico
-                        wordIcon.classList.add('preview-image');
-                        previewElement.appendChild(wordIcon);
-                    } else if (file.type.startsWith('image/')) {
-                        const img = document.createElement('img');
-                        img.src = `data:image/${file.type.split('/')[1]};base64,${file.data}`;
-                        img.classList.add('preview-image');
-                        previewElement.appendChild(img);
-                    } else {
-                        const fileIcon = document.createElement('img');
-                        fileIcon.src = '/path/to/generic-file-icon.png'; // Substitua pelo caminho correto do ícone genérico
-                        fileIcon.classList.add('preview-image');
-                        previewElement.appendChild(fileIcon);
-                    }
-
-                    editPreview.appendChild(previewElement);
-                });
-            }
-
             editPopup.classList.add('show', 'fade-in');
         })
         .catch(error => {
