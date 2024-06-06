@@ -1,4 +1,55 @@
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        await loadTemplateAndStyles();
+    } catch (error) {
+        console.error('Erro ao carregar o template:', error);
+    }
 
+    initializePage();
+});
+
+async function loadTemplateAndStyles() {
+    const cachedCSS = localStorage.getItem('templateCSS');
+    const cachedHTML = localStorage.getItem('templateHTML');
+
+    if (cachedCSS && cachedHTML) {
+        applyCSS(cachedCSS);
+        applyHTML(cachedHTML);
+    } else {
+        const [cssData, htmlData] = await Promise.all([
+            fetchText('/templateMenu/styletemplate.css'),
+            fetchText('/templateMenu/template.html')
+        ]);
+
+        localStorage.setItem('templateCSS', cssData);
+        localStorage.setItem('templateHTML', htmlData);
+
+        applyCSS(cssData);
+        applyHTML(htmlData);
+    }
+
+    const script = document.createElement('script');
+    script.src = '/templateMenu/templateScript.js';
+    script.onload = function() {
+        loadAndDisplayUsername();
+        handleEmpresa();
+    };
+    document.body.appendChild(script);
+}
+
+function fetchText(url) {
+    return fetch(url).then(response => response.text());
+}
+
+function applyCSS(cssData) {
+    const style = document.createElement('style');
+    style.textContent = cssData;
+    document.head.appendChild(style);
+}
+
+function applyHTML(htmlData) {
+    document.getElementById('menu-container').innerHTML = htmlData;
+}
 
 function formatDate(dateString) {
     const date = new Date(dateString);
@@ -14,55 +65,44 @@ function getStoredEmpresaName() {
     return localStorage.getItem('nomeEmpresaSelecionada');
 }
 
-window.onload = function() {
-    fetch('/templateMenu/template.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('menu-container').innerHTML = data;
-
-            var link = document.createElement('link');
-            link.href = '/templateMenu/styletemplate.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
-
-            var script = document.createElement('script');
-            script.src = '/templateMenu/templateScript.js';
-            script.onload = function () {
-                loadAndDisplayUsername();
-                handleEmpresa();
-            };
-            document.body.appendChild(script);
-        })
-        .catch(error => {
-            console.error('Erro ao carregar o template:', error);
-        });
-
+function initializePage() {
     const nomeEmpresa = getStoredEmpresaName();
-    fetch(`insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
-        .then(response => response.json())
-        .then(data => {
-            let idcliente = data[0].IDCLIENTE;
-            fetch(`/insercao/dados?idcliente=${idcliente}`)
-                .then(response => response.json())
-                .then(data => {
-                    const select = document.getElementById('seletorBanco');
-                    data.forEach(banco => {
-                        const option = document.createElement('option');
-                        option.value = banco.IDBANCO;
-                        option.textContent = banco.NOME_TIPO;
-                        select.appendChild(option);
-                    });
-                })
-        })
 
-    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+    fetch(`insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
         .then(response => response.json())
         .then(data => {
             if (data && data.length > 0) {
                 console.log('Dados da empresa recebidos:', data);
-                idEmpresa = data[0].IDCLIENTE
+                idEmpresa = data[0].IDCLIENTE;
                 console.log('idEmpresa definido como:', idEmpresa);
+
+                fetch(`/insercao/dados?idcliente=${idEmpresa}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById('seletorBanco');
+                        data.forEach(banco => {
+                            const option = document.createElement('option');
+                            option.value = banco.IDBANCO;
+                            option.textContent = banco.NOME_TIPO;
+                            select.appendChild(option);
+                        });
+                    });
+
+                fetch(`/fornecedor/listar?idcliente=${idEmpresa}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById('seletorFornecedor');
+                        const semFornecedor = document.createElement('option');
+                        semFornecedor.value = '';
+                        semFornecedor.textContent = 'Sem fornecedor';
+                        select.appendChild(semFornecedor);
+                        data.forEach(fornecedor => {
+                            const option = document.createElement('option');
+                            option.value = fornecedor.IDFORNECEDOR;
+                            option.textContent = fornecedor.NOME_TIPO;
+                            select.appendChild(option);
+                        });
+                    });
             } else {
                 console.error('Dados da empresa não retornados ou vazios');
             }
@@ -70,7 +110,7 @@ window.onload = function() {
         .catch(error => {
             console.error('Erro ao carregar dados da empresa:', error);
         });
-};
+}
 
 $(document).ready(function() {
     $('#seletorMesAno').datepicker({
@@ -104,7 +144,6 @@ function formatDateToFirstOfMonth(mesAnoString) {
     return `${ano}-${mes}-01`;
 }
 
-
 function buscarDados() {
     const idBanco = document.getElementById('seletorBanco').value;
     const mesAno = $('#seletorMesAno').val();
@@ -129,8 +168,6 @@ function formatarValorNumerico(valor) {
     return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-
-
 function atualizarTabela(dados) {
     console.log('Atualizando tabela com:', dados);
     const tbody = document.getElementById('consulta').querySelector('tbody');
@@ -147,7 +184,7 @@ function atualizarTabela(dados) {
 
         const entradaCell = row.insertCell();
         const saidaCell = row.insertCell();
-        if (item.TIPO_DE_TRANSACAO == 'ENTRADA') {
+        if (item.TIPO_DE_TRANSACAO === 'ENTRADA') {
             entradaCell.textContent = formatarValorNumerico(item.VALOR);
             saidaCell.textContent = "";
             saldo += parseFloat(item.VALOR);
@@ -161,13 +198,11 @@ function atualizarTabela(dados) {
 
         const deleteCell = row.insertCell();
         deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
-                                        <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
-                                        <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-                                        </form>
-
+                                    <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
+                                    <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                                </form>
                                 <button onclick="editarExtrato(${item.IDEXTRATO})">EDITAR</button>
-                                <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
-                                `;
+                                <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>`;
     });
     fetchSaldoInicialEFinal(saldo);
 }
@@ -191,9 +226,8 @@ function fetchSaldoInicialEFinal(saldoAtual) {
             const saldoFinal = saldoAtual + saldoinicial;
             const table2 = document.getElementById('saldoFinalTable');
             const tbodysaldofinal = table2.querySelector('tbody');
-            tbodysaldofinal.innerHTML = '';
-            const row = tbodysaldofinal.insertRow();
-            row.insertCell().textContent = formatarValorNumerico(saldoFinal);
+            const rowFinal = tbodysaldofinal.insertRow();
+            rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
         });
 }
 
@@ -323,8 +357,6 @@ function gerarPDF() {
     doc.save(nomeArquivo);
 }
 
-
-
 function gerarExcel() {
     var wb = XLSX.utils.table_to_book(document.getElementById('consulta'), { sheet: "Sheet1" });
     wb.Sheets['Sheet1']['A2'].z = 'yyyy-mm-dd';
@@ -337,7 +369,7 @@ function editarExtrato(idExtrato) {
     const iframe = document.createElement('iframe');
     iframe.src = urlDeEdicao;
     iframe.style.width = "100%";
-    iframe.style.height = "100%"
+    iframe.style.height = "100%";
 
     const iframeContainer = document.getElementById('iframe-container');
     iframeContainer.innerHTML = '';
@@ -345,4 +377,3 @@ function editarExtrato(idExtrato) {
 
     iframeContainer.style.display = 'block';
 }
-

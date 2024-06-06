@@ -1,43 +1,54 @@
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('/templateMenu/template.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('menu-container').innerHTML = data;
-            const link = document.createElement('link');
-            link.href = '/templateMenu/styletemplate.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
-
-            const script = document.createElement('script');
-            script.src = '/templateMenu/templateScript.js';
-            script.onload = function() {
-                loadAndDisplayUsername();
-                handleEmpresa();
-                loadNomeEmpresa();
-            };
-            document.body.appendChild(script);
-        })
-        .catch(error => {
-            console.error('Erro ao carregar o template:', error);
-        });
-
-    fetch('/usuario/listar')
-        .then(response => response.json())
-        .then(data => {
-            const userSelect = document.getElementById('userSelect');
-            data.forEach(usuario => {
-                const option = document.createElement('option');
-                option.value = usuario.ID;
-                option.textContent = usuario.NOME;
-                userSelect.appendChild(option);
-            });
-        })
-        .catch(error => {
-            console.error('Erro ao carregar usuários:', error);
-        });
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        await loadTemplateAndStyles();
+    } catch (error) {
+        console.error('Erro ao carregar o template:', error);
+    }
 });
 
+async function loadTemplateAndStyles() {
+    const cachedCSS = localStorage.getItem('templateCSS');
+    const cachedHTML = localStorage.getItem('templateHTML');
+
+    if (cachedCSS && cachedHTML) {
+        applyCSS(cachedCSS);
+        applyHTML(cachedHTML);
+    } else {
+        const [cssData, htmlData] = await Promise.all([
+            fetchText('/templateMenu/styletemplate.css'),
+            fetchText('/templateMenu/template.html')
+        ]);
+
+        localStorage.setItem('templateCSS', cssData);
+        localStorage.setItem('templateHTML', htmlData);
+
+        applyCSS(cssData);
+        applyHTML(htmlData);
+    }
+
+    const script = document.createElement('script');
+    script.src = '/templateMenu/templateScript.js';
+    script.onload = function() {
+        loadAndDisplayUsername();
+        handleEmpresa();
+        loadNomeEmpresa();
+    };
+    document.body.appendChild(script);
+}
+
+function fetchText(url) {
+    return fetch(url).then(response => response.text());
+}
+
+function applyCSS(cssData) {
+    const style = document.createElement('style');
+    style.textContent = cssData;
+    document.head.appendChild(style);
+}
+
+function applyHTML(htmlData) {
+    document.getElementById('menu-container').innerHTML = htmlData;
+}
 function loadUserDetails() {
     const userId = document.getElementById('userSelect').value;
     if (!userId) {

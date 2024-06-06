@@ -1,29 +1,54 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Carregar o template do menu
-    fetch('/templateMenu/template.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('menu-container').innerHTML = data;
-
-            var link = document.createElement('link');
-            link.href = '/templateMenu/styletemplate.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
-
-            var script = document.createElement('script');
-            script.src = '/templateMenu/templateScript.js';
-            script.onload = function() {
-                loadAndDisplayUsername();
-                handleEmpresa();
-                loadNomeEmpresa();
-            };
-            document.body.appendChild(script);
-        })
-        .catch(error => {
-            console.error('Erro ao carregar o template:', error);
-        });
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        await loadTemplateAndStyles();
+    } catch (error) {
+        console.error('Erro ao carregar o template:', error);
+    }
 });
+
+async function loadTemplateAndStyles() {
+    const cachedCSS = localStorage.getItem('templateCSS');
+    const cachedHTML = localStorage.getItem('templateHTML');
+
+    if (cachedCSS && cachedHTML) {
+        applyCSS(cachedCSS);
+        applyHTML(cachedHTML);
+    } else {
+        const [cssData, htmlData] = await Promise.all([
+            fetchText('/templateMenu/styletemplate.css'),
+            fetchText('/templateMenu/template.html')
+        ]);
+
+        localStorage.setItem('templateCSS', cssData);
+        localStorage.setItem('templateHTML', htmlData);
+
+        applyCSS(cssData);
+        applyHTML(htmlData);
+    }
+
+    const script = document.createElement('script');
+    script.src = '/templateMenu/templateScript.js';
+    script.onload = function() {
+        loadAndDisplayUsername();
+        handleEmpresa();
+        loadNomeEmpresa();
+    };
+    document.body.appendChild(script);
+}
+
+function fetchText(url) {
+    return fetch(url).then(response => response.text());
+}
+
+function applyCSS(cssData) {
+    const style = document.createElement('style');
+    style.textContent = cssData;
+    document.head.appendChild(style);
+}
+
+function applyHTML(htmlData) {
+    document.getElementById('menu-container').innerHTML = htmlData;
+}
 
 const reportForm = document.getElementById('reportForm');
 const filesInput = document.getElementById('files');
@@ -135,11 +160,12 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
             if (reports.length > 0) {
                 reports.forEach(report => {
                     const listItem = document.createElement('li');
+                    const formattedDescription = report.DESCRICAO.replace(/\n/g, '<br>');
                     listItem.innerHTML = `
-                        <strong>Título:</strong> ${report.TITULO}<br>
+                        <strong>Nº: ${report.ID} Título:</strong> ${report.TITULO}<br>
                         <strong>Tipo:</strong> ${report.PRIORIDADE}<br>
                         <strong>Funcionalidade Afetada:</strong> ${report.FUNCIONALIDADE_AFETADA}<br>
-                        <strong>Descrição:</strong> ${report.DESCRICAO}<br>
+                        <strong>Descrição:</strong> ${formattedDescription}<br>
                         <strong>Data:</strong> ${new Date(report.DATA).toLocaleString()}<br>
                         <strong>Situação:</strong> ${report.SITUACAO}<br>
                         ${report.DESCRICAO_RECUSA ? `<strong>Motivo da Recusa:</strong> ${report.DESCRICAO_RECUSA}<br>` : ''}
@@ -207,12 +233,12 @@ function showSuccessPopup() {
     popupContent.insertBefore(lottiePlayer, popupContent.firstChild);
 
     successPopup.classList.add('show', 'fade-in');
+    showLoadingBar();
 }
 
-// Função para fechar o popup de sucesso
 function closePopup() {
     const successPopup = document.getElementById('successPopup');
-    successPopup.classList.remove('show'); // Remove a classe para esconder o popup
+    successPopup.classList.remove('show');
     window.location.reload();
 }
 
@@ -236,18 +262,22 @@ function submitRejection() {
     const rejectPopup = document.getElementById('rejectPopup');
     const reportId = rejectPopup.dataset.reportId;
     const rejectReason = document.getElementById('rejectReason').value;
+    const rejectFiles = document.getElementById('rejectFiles').files;
 
     if (!rejectReason.trim()) {
         alert('Por favor, descreva o motivo da recusa.');
         return;
     }
 
+    const formData = new FormData();
+    formData.append('motivo', rejectReason);
+    for (let i = 0; i < rejectFiles.length; i++) {
+        formData.append('files', rejectFiles[i]);
+    }
+
     fetch(`/report/recusar/${reportId}`, {
         method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ motivo: rejectReason })
+        body: formData
     })
         .then(response => {
             if (response.ok) {
@@ -271,7 +301,8 @@ function openEditPopup(reportId) {
         .then(response => response.json())
         .then(report => {
             document.getElementById('editTitle').value = report.TITULO;
-            document.getElementById('editDescription').value = report.DESCRICAO;
+            document.getElementById('editDescription').value = report.DESCRICAO.replace(/\n/g, '\n');
+            document.getElementById('editComment').value = '';
 
             const editPreview = document.getElementById('editPreview');
             editPreview.innerHTML = '';
@@ -282,6 +313,7 @@ function openEditPopup(reportId) {
             console.error('Erro ao carregar detalhes do chamado para edição:', error);
         });
 }
+
 
 function closeEditPopup() {
     const editPopup = document.getElementById('editPopup');
@@ -325,7 +357,7 @@ function deleteReport() {
                 if (response.ok) {
                     console.log('Chamado deletado com sucesso!');
                     const userId = localStorage.getItem('idusuario');
-                    loadUserReports(userId, currentPage, 10, currentFilter); // Reload the reports
+                    loadUserReports(userId, currentPage, 10, currentFilter);
                     closeEditPopup();
                 } else {
                     response.text().then(text => console.error('Erro ao deletar chamado:', text));
@@ -337,3 +369,26 @@ function deleteReport() {
     }
 }
 
+function addComment() {
+    const commentTextarea = document.getElementById('editComment');
+    const descriptionTextarea = document.getElementById('editDescription');
+    const comment = commentTextarea.value.trim();
+    const username = localStorage.getItem('username');
+
+    if (comment) {
+        const currentDateTime = new Date().toLocaleString();
+        const formattedComment = `**Comentário de ${username} - ${currentDateTime}:** ***${comment}***\n`;
+        descriptionTextarea.value += '\n' + formattedComment;
+        commentTextarea.value = '';
+
+        submitEdit();
+    } else {
+        alert('Por favor, insira um comentário.');
+    }
+}
+
+function showLoadingBar() {
+    setTimeout(() => {
+        closePopup();
+    }, 3000);
+}

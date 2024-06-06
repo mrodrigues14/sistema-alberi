@@ -12,8 +12,20 @@ router.post('/consultarEmpresas', (req, res) => {
     const userRole = req.session.role;
     const userName = req.session.username;
 
-    if (userRole === 'Administrador' || userRole === 'Configurador' ) {
-        db.query('SELECT NOME, IDCLIENTE FROM CLIENTE ORDER BY NOME ASC', (error, results) => {
+    const queryAdministrador = `
+        SELECT NOME, IDCLIENTE FROM CLIENTE
+        ORDER BY (NOME = 'Todos Clientes') DESC, NOME ASC
+    `;
+    const queryUsuario = `
+        SELECT c.NOME, c.IDCLIENTE 
+        FROM CLIENTE c 
+        JOIN RELACAOUSUARIOCLIENTE ruc ON c.IDCLIENTE = ruc.ID_EMPRESA_REFERENCIA
+        WHERE ruc.ID_USUARIO = ?
+        ORDER BY (c.NOME = 'Todos Clientes') DESC, c.NOME ASC
+    `;
+
+    if (userRole === 'Administrador' || userRole === 'Configurador') {
+        db.query(queryAdministrador, (error, results) => {
             if (error) {
                 console.error('Erro durante a busca por empresa no banco de dados:', error);
                 return res.status(500).send('Server error');
@@ -26,13 +38,7 @@ router.post('/consultarEmpresas', (req, res) => {
             }
         });
     } else {
-        db.query(`
-            SELECT c.NOME, c.IDCLIENTE 
-            FROM CLIENTE c 
-            JOIN RELACAOUSUARIOCLIENTE ruc ON c.IDCLIENTE = ruc.ID_EMPRESA_REFERENCIA
-            WHERE ruc.ID_USUARIO = ?
-            ORDER BY c.NOME ASC
-        `, [userId], (error, results) => {
+        db.query(queryUsuario, [userId], (error, results) => {
             if (error) {
                 console.error('Erro durante a busca por empresa no banco de dados:', error);
                 return res.status(500).send('Server error');

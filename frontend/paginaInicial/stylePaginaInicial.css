@@ -476,14 +476,6 @@ ul {
     cursor: pointer;
 }
 
-#confirmDeleteButton:hover {
-    background-color: #7c0303;
-}
-
-#confirmDeleteButton {
-    background-color: red;
-}
-
 #cancelarDelete {
     background-color: #4CAF50;
 }
@@ -523,4 +515,21 @@ select {
     background-repeat: no-repeat;
     background-position: right 10px top 50%;
     background-size: 10px;
+}
+
+.cancelarButtonEditar {
+    background-color: #555555;
+}
+
+.cancelarButtonEditar:hover {
+    background-color: #353535;
+}
+
+.deletarButtonEditar{
+    background-color: #DC3545;
+    margin-left: 10px;
+}
+
+.deletarButtonEditar:hover{
+    background-color: #c82333;
 }

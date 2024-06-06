@@ -1,3 +1,59 @@
+document.addEventListener('DOMContentLoaded', async function() {
+    loadUserOptions();
+    loadCompanyOptions();
+    loadTasks();
+
+    try {
+        await loadTemplateAndStyles();
+    } catch (error) {
+        console.error('Erro ao carregar o template:', error);
+    }
+
+    initializePage();
+});
+
+async function loadTemplateAndStyles() {
+    const cachedCSS = localStorage.getItem('templateCSS');
+    const cachedHTML = localStorage.getItem('templateHTML');
+
+    if (cachedCSS && cachedHTML) {
+        applyCSS(cachedCSS);
+        applyHTML(cachedHTML);
+    } else {
+        const [cssData, htmlData] = await Promise.all([
+            fetchText('/templateMenu/styletemplate.css'),
+            fetchText('/templateMenu/template.html')
+        ]);
+
+        localStorage.setItem('templateCSS', cssData);
+        localStorage.setItem('templateHTML', htmlData);
+
+        applyCSS(cssData);
+        applyHTML(htmlData);
+    }
+
+    const script = document.createElement('script');
+    script.src = '/templateMenu/templateScript.js';
+    script.onload = function() {
+        loadAndDisplayUsername();
+        handleEmpresa();
+    };
+    document.body.appendChild(script);
+}
+
+function fetchText(url) {
+    return fetch(url).then(response => response.text());
+}
+
+function applyCSS(cssData) {
+    const style = document.createElement('style');
+    style.textContent = cssData;
+    document.head.appendChild(style);
+}
+
+function applyHTML(htmlData) {
+    document.getElementById('menu-container').innerHTML = htmlData;
+}
 
 function formatDate(dateString) {
     const date = new Date(dateString);
@@ -12,65 +68,41 @@ function getStoredEmpresaName() {
 }
 
 let IDCLIENTE = 0;
-let IDBANCO = 0 ;
-window.onload = function() {
-    fetch('/templateMenu/template.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('menu-container').innerHTML = data;
+let IDBANCO = 0;
 
-            var link = document.createElement('link');
-            link.href = '/templateMenu/styletemplate.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
-
-            var script = document.createElement('script');
-            script.src = '/templateMenu/templateScript.js';
-            script.onload = function() {
-                loadAndDisplayUsername();
-                handleEmpresa();
-            };
-            document.body.appendChild(script);
-        })
-        .catch(error => {
-            console.error('Erro ao carregar o template:', error);
-        });
-
-
+function initializePage() {
     fetch(`/insercao/dados-empresa?nomeEmpresa=${getStoredEmpresaName()}`)
-    .then(response => response.json())
-    .then(data => {
-        IDCLIENTE = data[0].IDCLIENTE;
-        fetch(`/insercao/ultimas-insercoes?idcliente=${IDCLIENTE}`)
-            .then(response => response.json())
-            .then(data => {
-                const table = document.getElementById('ultimasInsercoes');
-                const tbody = table.querySelector('tbody');
-                tbody.innerHTML = '';
+        .then(response => response.json())
+        .then(data => {
+            IDCLIENTE = data[0].IDCLIENTE;
+            fetch(`/insercao/ultimas-insercoes?idcliente=${IDCLIENTE}`)
+                .then(response => response.json())
+                .then(data => {
+                    const table = document.getElementById('ultimasInsercoes');
+                    const tbody = table.querySelector('tbody');
+                    tbody.innerHTML = '';
 
-                data.forEach(insercao => {
-                    const row = tbody.insertRow();
-                    row.insertCell().textContent = formatDate(insercao.DATA);
-                    row.insertCell().textContent = insercao.CATEGORIA;
-                    row.insertCell().textContent = insercao.NOME_FORNECEDOR;
-                    row.insertCell().textContent = insercao.DESCRICAO;
-                    row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
-                    row.insertCell().textContent = insercao.NOME_BANCO;
-                    row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
+                    data.forEach(insercao => {
+                        const row = tbody.insertRow();
+                        row.insertCell().textContent = formatDate(insercao.DATA);
+                        row.insertCell().textContent = insercao.CATEGORIA;
+                        row.insertCell().textContent = insercao.NOME_FORNECEDOR;
+                        row.insertCell().textContent = insercao.DESCRICAO;
+                        row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
+                        row.insertCell().textContent = insercao.NOME_BANCO;
+                        row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
+                        row.insertCell().textContent = formatarValorFinanceiro(insercao.VALOR);
 
-                    row.insertCell().textContent = formatarValorFinanceiro(insercao.VALOR);
-
-                    const deleteCell = row.insertCell();
-                    deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
-                                        <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
-                                        <button type="submit" class="delete-btn" style="width: 2vw;  cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-                                    </form>`;
+                        const deleteCell = row.insertCell();
+                        deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
+                                                <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
+                                                <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                                            </form>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar os dados:', error);
                 });
-            })
-            .catch(error => {
-                console.error('Erro ao carregar os dados:', error);
-            });
         })
 
     const nomeEmpresa = getStoredEmpresaName();
@@ -103,7 +135,7 @@ window.onload = function() {
             console.error('Erro ao carregar dados da empresa:', error);
         });
 
-    fetch(`insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
         .then(response => response.json())
         .then(data => {
             let idcliente = data[0].IDCLIENTE;
@@ -114,7 +146,7 @@ window.onload = function() {
                     data.forEach(banco => {
                         const option = document.createElement('option');
                         option.value = banco.IDBANCO;
-                        IDBANCO = option.value
+                        IDBANCO = option.value;
                         option.textContent = banco.NOME_TIPO;
                         select.appendChild(option);
                     });
@@ -141,7 +173,7 @@ window.onload = function() {
                     });
                 })
         })
-};
+}
 
 function construirArvoreDeCategorias(categorias) {
     let mapa = {};
@@ -175,12 +207,12 @@ function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
     });
 }
 
-    function abrirPopUp(){
+function abrirPopUp() {
     document.getElementById("popup").style.display = "block";
     document.getElementById("sobreposicao").style.display = "block";
 }
 
-function fecharPopUp(){
+function fecharPopUp() {
     document.getElementById("popup").style.display = "none";
     document.getElementById("sobreposicao").style.display = "none";
     location.reload();
@@ -201,7 +233,6 @@ function mostrarPopupCarregamento() {
     }
 }
 
-
 function fecharPopupCarregamento() {
     document.getElementById('loadingPopup').style.display = 'none';
 }
@@ -209,7 +240,6 @@ function fecharPopupCarregamento() {
 function formatarValorFinanceiro(valor) {
     return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-
 
 function lerExcel() {
     var input = document.getElementById('excelFile');
@@ -286,7 +316,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     idBancoPost.value = seletorBanco.value;
 });
-
 
 $(document).ready(function() {
     $('#seletorFornecedor').select2({

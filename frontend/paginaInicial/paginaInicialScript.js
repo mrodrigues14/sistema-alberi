@@ -1,31 +1,58 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     loadUserOptions();
     loadCompanyOptions();
     loadTasks();
 
-    fetch('/templateMenu/template.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('menu-container').innerHTML = data;
-            const link = document.createElement('link');
-            link.href = '/templateMenu/styletemplate.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
-
-            const script = document.createElement('script');
-            script.src = '/templateMenu/templateScript.js';
-            script.onload = function() {
-                loadAndDisplayUsername();
-                handleEmpresa();
-                loadNomeEmpresa();
-            };
-            document.body.appendChild(script);
-        })
-        .catch(error => {
-            console.error('Erro ao carregar o template:', error);
-        });
+    try {
+        await loadTemplateAndStyles();
+    } catch (error) {
+        console.error('Erro ao carregar o template:', error);
+    }
 });
+
+async function loadTemplateAndStyles() {
+    const cachedCSS = localStorage.getItem('templateCSS');
+    const cachedHTML = localStorage.getItem('templateHTML');
+
+    if (cachedCSS && cachedHTML) {
+        applyCSS(cachedCSS);
+        applyHTML(cachedHTML);
+    } else {
+        const [cssData, htmlData] = await Promise.all([
+            fetchText('/templateMenu/styletemplate.css'),
+            fetchText('/templateMenu/template.html')
+        ]);
+
+        localStorage.setItem('templateCSS', cssData);
+        localStorage.setItem('templateHTML', htmlData);
+
+        applyCSS(cssData);
+        applyHTML(htmlData);
+    }
+
+    const script = document.createElement('script');
+    script.src = '/templateMenu/templateScript.js';
+    script.onload = function() {
+        loadAndDisplayUsername();
+        handleEmpresa();
+        loadNomeEmpresa();
+    };
+    document.body.appendChild(script);
+}
+
+function fetchText(url) {
+    return fetch(url).then(response => response.text());
+}
+
+function applyCSS(cssData) {
+    const style = document.createElement('style');
+    style.textContent = cssData;
+    document.head.appendChild(style);
+}
+
+function applyHTML(htmlData) {
+    document.getElementById('menu-container').innerHTML = htmlData;
+}
 
 const listColumns = document.querySelectorAll(".drag-item-list");
 let listArrays = [[], [], [], [], [], []];
@@ -55,13 +82,13 @@ function loadTasks() {
                     case 'Em Execução':
                         column = 2;
                         break;
-                    case 'Finalizado':
+                    case 'Entregas do Dia':
                         column = 3;
                         break;
-                    case 'Entregas do Dia':
+                    case 'Reunião':
                         column = 4;
                         break;
-                    case 'Reunião':
+                    case 'Finalizado':
                         column = 5;
                         break;
                     default:
@@ -73,13 +100,15 @@ function loadTasks() {
                     idtarefa: task.IDTAREFA,
                     title: task.TITULO,
                     dueDate: task.DATA_LIMITE,
+                    finalDate: task.DATA_CONCLUSAO || "",
                     author: task.ID_USUARIO,
                     authorName: task.NOME_DO_USUARIO,
-                    companyId: task.IDEMPRESA,
+                    companyId: task.ID_CLIENTE,
                     companyName: task.NOME,
                     status: task.STATUS,
                     description: task.DESCRICAO || ""
                 };
+
 
                 listArrays[column].push(itemObject);
             });
@@ -104,7 +133,6 @@ function loadUserOptions() {
                 option.textContent = user.NOME_DO_USUARIO;
                 select.appendChild(option);
             });
-            // Pré-seleciona o usuário logado
             select.value = loggedUserId;
         })
         .catch(error => {
@@ -112,29 +140,45 @@ function loadUserOptions() {
         });
 }
 function loadCompanyOptions() {
-    fetch('/paginaInicial/listaEmpresas')
+    return fetch('/seletorEmpresa/consultarEmpresas', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
         .then(response => response.json())
         .then(data => {
             const select = document.getElementById('company');
+            const selectedCompanyId = localStorage.getItem('idEmpresaSelecionada');
+
             select.innerHTML = '';
-            data.forEach(company => {
+            data.empresas.forEach(company => {
                 const option = document.createElement('option');
                 option.value = company.IDCLIENTE;
                 option.textContent = company.NOME;
+                if (company.IDCLIENTE == selectedCompanyId) {
+                    option.selected = true;
+                }
                 select.appendChild(option);
             });
         })
         .catch(error => {
             console.error('Erro ao carregar empresas:', error);
+            throw error;
         });
 }
 
+
 function formatDate(dateString) {
+    if (!dateString || dateString === '0000-00-00' || new Date(dateString).toString() === 'Invalid Date') {
+        return 'N/A';
+    }
+
     const date = new Date(dateString);
     const day = String(date.getDate() + 1).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    return `Data Limite: ${day}/${month}/${year}`;
+    return `${day}/${month}/${year}`;
 }
 
 function createItemEl(columnEl, column, item, index) {
@@ -145,6 +189,14 @@ function createItemEl(columnEl, column, item, index) {
     listEl.setAttribute("ondragstart", "drag(event)");
     listEl.setAttribute("data-idtarefa", item.idtarefa);
     listEl.setAttribute("onclick", `showTaskDetails(${index}, ${column})`);
+
+    let dateText;
+    if (item.finalDate) {
+        dateText = `Data Conclusão: ${formatDate(item.finalDate)}`;
+    } else {
+        dateText = `Data Limite: ${formatDate(item.dueDate)}`;
+    }
+
     listEl.innerHTML = `
         <div class="item-content">
             <div class="item-header">
@@ -154,7 +206,7 @@ function createItemEl(columnEl, column, item, index) {
             <h4 class="item-title">${item.title || ''}</h4>
             <p class="item-description">${item.description || ''}</p>
             <div class="item-details">
-                <span class="item-date">${formatDate(item.dueDate) || ''}</span>
+                <span class="item-date">${dateText || ''}</span>
                 <span class="item-author">${item.authorName || ''}</span>
             </div>
             <span class="item-company">${item.companyName || ''}</span>
@@ -162,6 +214,7 @@ function createItemEl(columnEl, column, item, index) {
     `;
     columnEl.appendChild(listEl);
 }
+
 
 function showTaskDetails(index, column) {
     const item = listArrays[column][index];
@@ -196,7 +249,7 @@ function updateDOM() {
     });
 }
 
-function showInputBox(column = 0) {
+function showInputBox(column) {
     currentColumn = column;
     document.getElementById('taskPopup').style.display = 'block';
     document.getElementById('taskId').value = '';
@@ -226,7 +279,7 @@ function handleSubmit(event) {
     closePopup();
 }
 
-function addNewItem(column = 0) {
+function addNewItem() {
     const title = document.getElementById('title').value;
     const description = document.getElementById('description').value || "";
     const authorSelect = document.getElementById('author');
@@ -240,11 +293,11 @@ function addNewItem(column = 0) {
         0: 'Pendentes de Dados',
         1: 'A Fazer',
         2: 'Em Execução',
-        3: 'Finalizado',
-        4: 'Entregas do Dia',
-        5: 'Reunião'
+        3: 'Entregas do Dia',
+        4: 'Reunião',
+        5: 'Finalizado'
     };
-    const status = statusMap[column];
+    const status = statusMap[currentColumn];
 
     const itemObject = {
         titulo: title,
@@ -279,12 +332,13 @@ function addNewItem(column = 0) {
         });
 }
 
+
 function addToColumn(column, itemObject) {
     listArrays[column].push(itemObject);
     updateDOM();
 }
 
-function editItem(index, column) {
+async function editItem(index, column) {
     const item = listArrays[column][index];
     document.getElementById('taskId').value = item.idtarefa;
     document.getElementById('title').value = item.title;
@@ -293,6 +347,8 @@ function editItem(index, column) {
     const authorSelect = document.getElementById('author');
     authorSelect.value = item.author;
 
+    const companySelect = document.getElementById('company');
+    companySelect.value = item.companyId; // Corrigido para usar item.companyId em vez de item.companyName
 
     const dueDate = new Date(item.dueDate);
     const adjustedDueDate = new Date(dueDate.getTime() + dueDate.getTimezoneOffset() * 60000);
@@ -317,6 +373,8 @@ function updateItem(index, column) {
     const description = document.getElementById('description').value || "";
     const authorSelect = document.getElementById('author');
     const authorId = authorSelect.value;
+    const companySelect = document.getElementById('company');
+    const companyId = companySelect.value;
     const dueDate = document.getElementById('dueDate').value || "";
 
     const item = {
@@ -324,7 +382,8 @@ function updateItem(index, column) {
         titulo: title,
         descricao: description,
         dataLimite: dueDate,
-        idusuario: authorId
+        idusuario: authorId,
+        idempresa: companyId
     };
 
     fetch('/paginaInicial/editartarefa', {
@@ -436,9 +495,9 @@ function drop(e) {
             0: 'Pendentes de Dados',
             1: 'A Fazer',
             2: 'Em Execução',
-            3: 'Finalizado',
-            4: 'Entregas do Dia',
-            5: 'Reunião'
+            3: 'Entregas do Dia',
+            4: 'Reunião',
+            5: 'Finalizado'
         };
         const newStatus = statusMap[columnId];
 
@@ -448,8 +507,6 @@ function drop(e) {
             return;
         }
 
-        updateTaskStatus(taskId, newStatus);
-
         const oldColumn = Array.from(listColumns).find(column => column.contains(draggedItem));
         oldColumn.removeChild(draggedItem);
 
@@ -458,8 +515,15 @@ function drop(e) {
         const oldColumnIndex = listArrays.findIndex(column => column.some(item => item.idtarefa == taskId));
         const itemIndex = listArrays[oldColumnIndex].findIndex(item => item.idtarefa == taskId);
         const [movedItem] = listArrays[oldColumnIndex].splice(itemIndex, 1);
+
+        if (newStatus === 'Finalizado' && !movedItem.finalDate) {
+            movedItem.finalDate = new Date().toISOString().split('T')[0]; // Define a data de finalização
+        }
+
         movedItem.status = newStatus;  // Atualizar o status no objeto também
         listArrays[columnId].push(movedItem);
+
+        updateTaskStatus(taskId, newStatus, movedItem.finalDate);
 
         listColumns[columnId].classList.remove("over");
         updateDOM();
@@ -467,12 +531,18 @@ function drop(e) {
     }
 }
 
+function updateTaskStatus(idtarefa, newStatus, finalDate) {
+    const body = { idtarefa, newStatus };
 
-function updateTaskStatus(idtarefa, newStatus) {
+    // Inclua finalDate se estiver presente
+    if (newStatus === 'Finalizado' && finalDate) {
+        body.finalDate = finalDate;
+    }
+
     fetch('/paginaInicial/atualizartarefa', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ idtarefa, newStatus })
+        body: JSON.stringify(body)
     })
         .then(response => response.json())
         .then(data => {
@@ -480,7 +550,6 @@ function updateTaskStatus(idtarefa, newStatus) {
         })
         .catch(error => console.error('Error updating status:', error));
 }
-
 function drag(e) {
     draggedItem = e.target.closest('.drag-item');
     dragging = true;

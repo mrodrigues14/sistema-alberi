@@ -24,7 +24,11 @@
                 <ul class="drag-item-list" id="pending-data-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
             <div class="add-btn-group">
-                <div class="add-btn solid" onclick="hideInputBox(0)">
+                <div class="add-btn" onclick="showInputBox(0)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
+                <div class="add-btn solid" onclick="hideInputBox(1)">
                     <span>Salvar Item</span>
                 </div>
             </div>
@@ -41,7 +45,7 @@
                 <ul class="drag-item-list" id="to-do-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
             <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(0)">
+                <div class="add-btn" onclick="showInputBox(1)">
                     <span class="plus-sign">+</span>
                     <span>Adicionar Item</span>
                 </div>
@@ -62,7 +66,11 @@
                 <ul class="drag-item-list" id="in-progress-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
             <div class="add-btn-group">
-                <div class="add-btn solid" onclick="hideInputBox(2)">
+                <div class="add-btn" onclick="showInputBox(2)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
+                <div class="add-btn solid" onclick="hideInputBox(1)">
                     <span>Salvar Item</span>
                 </div>
             </div>
@@ -70,23 +78,7 @@
                 <div class="add-item" contenteditable="true"></div>
             </div>
         </li>
-        <!-- Coluna Escrita Finalizada -->
-        <li class="drag-column finished-column">
-    <span class="header">
-        <h1>Finalizado</h1>
-    </span>
-            <div id="finished-content" class="custom-scroll-finished">
-                <ul class="drag-item-list" id="finished-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
-            </div>
-            <div class="add-btn-group">
-                <div class="add-btn solid" onclick="hideInputBox(3)">
-                    <span>Salvar Item</span>
-                </div>
-            </div>
-            <div class="add-container">
-                <div class="add-item" contenteditable="true"></div>
-            </div>
-        </li>
+
 
         <!-- Coluna Entregas do Dia -->
         <li class="drag-column todays-deliveries-column">
@@ -97,7 +89,11 @@
                 <ul class="drag-item-list" id="todays-deliveries-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
             <div class="add-btn-group">
-                <div class="add-btn solid" onclick="hideInputBox(4)">
+                <div class="add-btn" onclick="showInputBox(3)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
+                <div class="add-btn solid" onclick="hideInputBox(1)">
                     <span>Salvar Item</span>
                 </div>
             </div>
@@ -114,7 +110,32 @@
                 <ul class="drag-item-list" id="meeting-activities-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
             </div>
             <div class="add-btn-group">
-                <div class="add-btn solid" onclick="hideInputBox(5)">
+                <div class="add-btn" onclick="showInputBox(4)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
+                <div class="add-btn solid" onclick="hideInputBox(1)">
+                    <span>Salvar Item</span>
+                </div>
+            </div>
+            <div class="add-container">
+                <div class="add-item" contenteditable="true"></div>
+            </div>
+        </li>
+        <!-- Coluna Escrita Finalizada -->
+        <li class="drag-column finished-column">
+            <span class="header">
+                <h1>Finalizados</h1>
+            </span>
+            <div id="finished-content" class="custom-scroll-finished">
+                <ul class="drag-item-list" id="finished-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+            </div>
+            <div class="add-btn-group">
+                <div class="add-btn" onclick="showInputBox(5)">
+                    <span class="plus-sign">+</span>
+                    <span>Adicionar Item</span>
+                </div>
+                <div class="add-btn solid" onclick="hideInputBox(1)">
                     <span>Salvar Item</span>
                 </div>
             </div>
@@ -167,8 +188,8 @@
 <div id="deleteConfirmPopup" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px;">
     <h2>Confirmação de Exclusão</h2>
     <p id="deleteTaskTitle">Tem certeza de que deseja excluir a tarefa?</p>
-    <button id="confirmDeleteButton">Excluir</button>
-    <button onclick="closeDeleteConfirmPopup()">Cancelar</button>
+    <button id="confirmDeleteButton" class="deletarButtonEditar" >Excluir</button>
+    <button onclick="closeDeleteConfirmPopup()" class="cancelarButtonEditar" >Cancelar</button>
 </div>
 
 <!-- Script -->

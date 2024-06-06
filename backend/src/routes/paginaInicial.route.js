@@ -31,12 +31,12 @@ router.get('/tarefas', (req, res) => {
 
 
 router.post('/adicionartarefa', (req, res) => {
-    const { titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay } = req.body;
-    console.log(titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay);
+    const { titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay , status} = req.body;
+    console.log(titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay, status);
     if (!titulo || !idcliente) {
         return res.status(400).json({ error: 'Dados incompletos' });
     }
-    adicionarTarefa(titulo, idcliente, dataLimite, idusuario, descricao, recurrenceDay, (err, result) => {
+    adicionarTarefa(titulo, status, idcliente, dataLimite, idusuario, descricao, recurrenceDay, (err, result) => {
         if (err) {
             return res.status(500).json(err);
         }
@@ -49,8 +49,8 @@ router.post('/adicionartarefa', (req, res) => {
 
 
 router.post('/atualizartarefa', (req, res) => {
-    const {idtarefa, newStatus} = req.body;
-    atualizarStatus(idtarefa, newStatus, (err, result) => {
+    const { idtarefa, newStatus, finalDate } = req.body;
+    atualizarStatus(idtarefa, newStatus, finalDate, (err, result) => {
         if (err) {
             res.status(500).json(err);
         } else {
@@ -65,13 +65,13 @@ router.get('/editartarefa', (req, res) => {
 
 router.post('/editartarefa', (req, res) => {
     console.log("Received data:", req.body);
-    const { idtarefa, titulo, descricao, dataLimite, idusuario } = req.body;
+    const { idtarefa, titulo, descricao, dataLimite, idusuario, idempresa } = req.body;
 
-    if (!titulo || !idtarefa || !dataLimite || !descricao) {
+    if (!titulo) {
         res.status(400).json({error: 'Missing fields'});
         return;
     }
-    editarTarefa(idtarefa, titulo, dataLimite, descricao, idusuario, (err, result) => {
+    editarTarefa(idtarefa, titulo, dataLimite, descricao, idusuario, idempresa, (err, result) => {
         if (err) {
             console.error('Erro ao atualizar a tarefa:', err);
             res.status(500).json({ error: 'Erro ao atualizar a tarefa' });
@@ -80,6 +80,7 @@ router.post('/editartarefa', (req, res) => {
         }
     });
 });
+
 
 
 
