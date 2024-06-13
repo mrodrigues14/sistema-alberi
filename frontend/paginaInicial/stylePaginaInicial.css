@@ -91,10 +91,13 @@ ul {
 .custom-scroll-to-do,
 .custom-scroll-doing,
 .custom-scroll-done,
+.custom-scroll-in-progress,
+.custom-scroll-todays-deliveries,
+.custom-scroll-meeting-activities,
 .custom-scroll,
 .custom-scroll-finished {
-    overflow-y: auto; /* Permite rolar dentro da coluna */
-    max-height: calc(80vh - 50px); /* Ajusta a altura máxima considerando a altura do cabeçalho */
+    overflow-y: scroll;
+    max-height: calc(70vh - 50px); /
 }
 
 .custom-scroll-pending-data::-webkit-scrollbar-track,
@@ -102,7 +105,10 @@ ul {
 .custom-scroll-doing::-webkit-scrollbar-track,
 .custom-scroll-done::-webkit-scrollbar-track,
 .custom-scroll::-webkit-scrollbar-track,
-.custom-scroll-finished::-webkit-scrollbar-track {
+.custom-scroll-finished::-webkit-scrollbar-track,
+.custom-scroll-in-progress::-webkit-scrollbar-track,
+.custom-scroll-todays-deliveries::-webkit-scrollbar-track,
+.custom-scroll-meeting-activities::-webkit-scrollbar-track{
     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
     border-radius: 10px;
     background-color: rgba(255, 255, 255, 0.3);
@@ -114,7 +120,10 @@ ul {
 .custom-scroll-doing::-webkit-scrollbar,
 .custom-scroll-done::-webkit-scrollbar,
 .custom-scroll::-webkit-scrollbar,
-.custom-scroll-finished::-webkit-scrollbar {
+.custom-scroll-finished::-webkit-scrollbar,
+.custom-scroll-in-progress::-webkit-scrollbar,
+.custom-scroll-todays-deliveries::-webkit-scrollbar,
+.custom-scroll-meeting-activities::-webkit-scrollbar{
     width: 10px;
 }
 
@@ -123,7 +132,10 @@ ul {
 .custom-scroll-doing::-webkit-scrollbar-thumb,
 .custom-scroll-done::-webkit-scrollbar-thumb,
 .custom-scroll::-webkit-scrollbar-thumb,
-.custom-scroll-finished::-webkit-scrollbar-thumb {
+.custom-scroll-finished::-webkit-scrollbar-thumb,
+.custom-scroll-in-progress::-webkit-scrollbar-thumb,
+.custom-scroll-todays-deliveries::-webkit-scrollbar-thumb,
+.custom-scroll-meeting-activities::-webkit-scrollbar-thumb{
     border-radius: 10px;
     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
     background-color: var(--to-do);
