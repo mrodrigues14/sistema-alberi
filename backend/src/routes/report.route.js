@@ -48,6 +48,8 @@ router.post('/adicionar', upload.array('files', 10), async (req, res) => {
                 } else {
                     detectedFileType = 'IMAGE';
                 }
+            } else if (fileTypeResult.mime.startsWith('video/')) {
+                detectedFileType = 'VIDEO';
             } else {
                 detectedFileType = fileTypeResult.ext.toUpperCase();
             }
