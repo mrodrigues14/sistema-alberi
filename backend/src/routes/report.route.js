@@ -86,7 +86,7 @@ router.get('/listar', (req, res) => {
     });
 });
 
-router.put('/recusar/:id', (req, res) => {
+router.post('/recusar/:id', (req, res) => {
     const reportId = req.params.id;
     const { motivo } = req.body;
 

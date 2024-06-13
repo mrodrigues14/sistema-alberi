@@ -73,6 +73,16 @@ function toggleUserDropdown() {
     }
 }
 
+function toggleMenu() {
+    var menu = document.getElementById('menu');
+    if (menu.classList.contains('show')) {
+        menu.classList.remove('show');
+    } else {
+        menu.classList.add('show');
+    }
+}
+
+
 function loadAndDisplayEmpresas() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => response.json())
@@ -98,6 +108,13 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAndDisplayUsername();
     loadNomeEmpresa();
     addClickEventToListItems();
+
+    document.addEventListener('click', function(event) {
+        var menu = document.getElementById('menu');
+        if (!event.target.closest('.hamburger-menu') && !event.target.closest('#menu')) {
+            menu.classList.remove('show');
+        }
+    });
 });
 
 function loadNomeEmpresa() {

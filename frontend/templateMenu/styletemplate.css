@@ -255,9 +255,22 @@ body {
     color: #000;
 }
 
+.hamburger-menu {
+    display: none;
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
 @media screen and (max-width: 768px) {
+    .navbar-all {
+        flex-direction: column;
+    }
+
     .navbar-all .menu-inline {
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: center;
     }
 
     .navbar-all .menu-inline li {
@@ -266,9 +279,32 @@ body {
 
     .navbar-all .search-box-empresa {
         margin-left: 0;
+        width: 100%;
+    }
+
+    .navbar-all .selected-company {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .navbar-all .menu-item {
+        min-width: 100%;
+        margin: 5px 0;
+    }
+
+    .navbar-all .dropdown {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .navbar-all .dropdown-content {
+        width: 100%;
+    }
+    .hamburger-menu {
+        display: block;
     }
 }
 
-hr{
+hr {
     margin: 0;
 }

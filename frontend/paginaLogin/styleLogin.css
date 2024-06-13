@@ -102,25 +102,6 @@ body {
     height: auto;
 }
 
-@media screen and (max-width: 768px) {
-    .login {
-        width: 70%;
-        margin-top: -10rem;
-    }
-
-    .login h1 {
-        font-size: 40px;
-    }
-
-    .login h2 {
-        font-size: 20px;
-    }
-
-    .login-container form {
-        max-width: 300px;
-    }
-}
-
 /* Media Query para dispositivos móveis */
 @media screen and (max-width: 480px) {
     .login {
@@ -129,11 +110,12 @@ body {
     }
 
     .login h1 {
-        font-size: 30px;
+        font-size: 40px;
     }
 
     .login h2 {
-        font-size: 18px;
+        font-size: 25px;
+        margin-bottom: 6vh;
     }
 
     .login-container form {
@@ -149,6 +131,7 @@ body {
 
     .loginBackground {
         height: auto;
+        display: none;
     }
 
     .loginBackground img {
@@ -168,7 +151,7 @@ body {
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    font-size: 16px; /* You can adjust the size if needed */
+    font-size: 16px;
     user-select: none;
 }
 
@@ -181,7 +164,7 @@ button {
     font-size: 18px;
     cursor: pointer;
     outline: none;
-    margin-top: 20px; /* Adjust as needed for your layout */
+    margin-top: 20px;
 }
 
 button:hover {
@@ -198,7 +181,6 @@ button:hover {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgb(0,0,0);
     background-color: rgba(0,0,0,0.4);
     padding-top: 60px;
 }

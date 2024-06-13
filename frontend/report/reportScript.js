@@ -261,23 +261,20 @@ function closeRejectPopup() {
 function submitRejection() {
     const rejectPopup = document.getElementById('rejectPopup');
     const reportId = rejectPopup.dataset.reportId;
-    const rejectReason = document.getElementById('rejectReason').value;
+    const motivo = document.getElementById('rejectReason').value;
     const rejectFiles = document.getElementById('rejectFiles').files;
 
-    if (!rejectReason.trim()) {
+    if (!motivo.trim()) {
         alert('Por favor, descreva o motivo da recusa.');
         return;
     }
 
-    const formData = new FormData();
-    formData.append('motivo', rejectReason);
-    for (let i = 0; i < rejectFiles.length; i++) {
-        formData.append('files', rejectFiles[i]);
-    }
-
     fetch(`/report/recusar/${reportId}`, {
-        method: 'PUT',
-        body: formData
+        method: 'POST',
+        body: JSON.stringify({ motivo: motivo }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
     })
         .then(response => {
             if (response.ok) {
@@ -293,7 +290,6 @@ function submitRejection() {
             console.error('Erro ao recusar chamado:', error);
         });
 }
-
 function openEditPopup(reportId) {
     const editPopup = document.getElementById('editPopup');
     editPopup.dataset.reportId = reportId;
