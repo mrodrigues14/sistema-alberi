@@ -162,6 +162,7 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
                     const listItem = document.createElement('li');
                     const formattedDescription = report.DESCRICAO.replace(/\n/g, '<br>');
                     listItem.innerHTML = `
+                        <strong>Autor: </strong> ${report.NOME_DO_USUARIO}<br>
                         <strong>Nº: ${report.ID} Título:</strong> ${report.TITULO}<br>
                         <strong>Tipo:</strong> ${report.PRIORIDADE}<br>
                         <strong>Funcionalidade Afetada:</strong> ${report.FUNCIONALIDADE_AFETADA}<br>

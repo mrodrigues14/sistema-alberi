@@ -11,15 +11,19 @@ function inserirReport(titulo, descricao, data, arquivos, ID_USUARIO, prioridade
 
 function getReportsByUserId(ID_USUARIO, page, limit, situacao, callback) {
     const offset = (page - 1) * limit;
-    let query = `SELECT * FROM REPORT WHERE ID_USUARIO = ?`;
-    let params = [ID_USUARIO];
+    let query = `
+        SELECT R.*, U.NOME_DO_USUARIO 
+        FROM REPORT R
+        JOIN USUARIOS U ON R.ID_USUARIO = U.IDUSUARIOS
+    `;
+    let params = [];
 
     if (situacao) {
-        query += ` AND SITUACAO = ?`;
+        query += `WHERE R.SITUACAO = ? `;
         params.push(situacao);
     }
 
-    query += ` ORDER BY DATA DESC LIMIT ? OFFSET ?`;
+    query += `ORDER BY R.DATA DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
 
     mysqlConn.query(query, params, (err, results) => {
@@ -30,6 +34,7 @@ function getReportsByUserId(ID_USUARIO, page, limit, situacao, callback) {
         }
     });
 }
+
 
 function getReportFilesByRange(callback) {
     const query = "SELECT ID, TITULO, ARQUIVO FROM REPORT/*  WHERE SITUACAO IN ('Em desenvolvimento', 'Não iniciado') */";
