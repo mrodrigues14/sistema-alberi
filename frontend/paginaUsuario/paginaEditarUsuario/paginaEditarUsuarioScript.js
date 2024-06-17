@@ -1,10 +1,31 @@
 document.addEventListener('DOMContentLoaded', async function() {
     try {
         await loadTemplateAndStyles();
+        loadUsers();
     } catch (error) {
         console.error('Erro ao carregar o template:', error);
     }
 });
+
+async function loadUsers() {
+    try {
+        const response = await fetch('/usuario/listar');
+        const usuarios = await response.json();
+        const userSelect = document.getElementById('userSelect');
+
+        userSelect.innerHTML = ''; // Limpa os itens anteriores
+
+        usuarios.forEach(usuario => {
+            const option = document.createElement('option');
+            option.value = usuario.ID;
+            option.textContent = usuario.NOME;
+            userSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+    }
+}
+
 
 async function loadTemplateAndStyles() {
     const cachedCSS = localStorage.getItem('templateCSS');
@@ -49,49 +70,58 @@ function applyCSS(cssData) {
 function applyHTML(htmlData) {
     document.getElementById('menu-container').innerHTML = htmlData;
 }
-function loadUserDetails() {
+
+async function loadUserDetails() {
     const userId = document.getElementById('userSelect').value;
     if (!userId) {
         return;
     }
 
-    fetch(`/usuario/${userId}`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('cpf').value = data.CPF ? formatCPF(data.CPF) : '';
-            document.getElementById('nome').value = data.NOME;
-            document.getElementById('email').value = data.EMAIL;
-            document.getElementById('role').value = data.ROLE;
-            document.getElementById('ativo').value = data.ATIVO ? 'true' : 'false';
+    try {
+        const response = await fetch(`/usuario/${userId}`);
+        const data = await response.json();
 
-            fetch('/usuario/empresas')
-                .then(response => response.json())
-                .then(empresas => {
-                    const empresasList = document.getElementById('empresas-list');
-                    empresasList.innerHTML = '';
-                    empresas.forEach(empresa => {
-                        const isChecked = data.EMPRESAS.includes(empresa.IDCLIENTE) ? 'checked' : '';
-                        const label = document.createElement('label');
-                        label.innerHTML = `<input type="checkbox" name="empresa" value="${empresa.IDCLIENTE}" ${isChecked}> ${empresa.NOME}`;
-                        empresasList.appendChild(label);
-                    });
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar empresas:', error);
-                });
+        document.getElementById('cpf').value = data.CPF ? formatCPF(data.CPF) : '';
+        document.getElementById('nome').value = data.NOME;
+        document.getElementById('email').value = data.EMAIL;
+        document.getElementById('role').value = data.ROLE;
+        document.getElementById('ativo').value = data.ATIVO ? 'true' : 'false';
 
-            document.getElementById('editUserForm').style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Erro ao carregar detalhes do usuário:', error);
+        const empresasResponse = await fetch('/usuario/empresas');
+        const empresas = await empresasResponse.json();
+        const empresasList = document.getElementById('empresas-list');
+        empresasList.innerHTML = '';
+
+        const todosClienteOption = document.createElement('label');
+        todosClienteOption.innerHTML = `<input type="checkbox" name="empresa" value="68" id="todos"> Todos Clientes`;
+        empresasList.appendChild(todosClienteOption);
+
+        empresas.forEach(empresa => {
+            const isChecked = data.EMPRESAS && data.EMPRESAS.includes(empresa.IDCLIENTE) ? 'checked' : '';
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="checkbox" name="empresa" value="${empresa.IDCLIENTE}" ${isChecked}> ${empresa.NOME}`;
+            empresasList.appendChild(label);
         });
+
+        const todosCheckbox = document.getElementById('todos');
+        todosCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="empresa"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = todosCheckbox.checked;
+            });
+        });
+
+        document.getElementById('editUserForm').style.display = 'block';
+    } catch (error) {
+        console.error('Erro ao carregar detalhes do usuário:', error);
+    }
 }
 
 function editarUsuario() {
     const userId = document.getElementById('userSelect').value;
     const cpfInput = document.getElementById('cpf');
     let cpf = cpfInput.value;
-    cpf = cpf.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+    cpf = cpf.replace(/\D/g, '');
 
     if (cpf.length !== 11) {
         alert('CPF deve conter exatamente 11 dígitos.');
