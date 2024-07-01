@@ -155,7 +155,7 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
         .then(response => response.json())
         .then(reports => {
             const reportList = document.getElementById('reportList');
-            reportList.innerHTML = ''; // Limpa a lista antes de adicionar novos itens
+            reportList.innerHTML = '';
 
             if (reports.length > 0) {
                 reports.forEach(report => {
@@ -171,7 +171,7 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
                         <strong>Situação:</strong> ${report.SITUACAO}<br>
                         ${report.DESCRICAO_RECUSA ? `<strong>Motivo da Recusa:</strong> ${report.DESCRICAO_RECUSA}<br>` : ''}
                         <div class="button-group">
-                            ${situacao !== 'Concluido' ? `<button class="edit-btn" onclick="openEditPopup(${report.ID})">Editar Chamado</button>` : ''}
+                            ${situacao !== 'Concluido' ? `<button class="edit-btn button-group-editar" onclick="openEditPopup(${report.ID})">Editar Chamado</button>` : ''}
                             ${situacao === 'Em validacao' ? `<button class="complete-btn" onclick="markAsCompleted(${report.ID})">Concluir Chamado</button>` : ''}
                             ${situacao === 'Em validacao' ? `<button class="reject-btn" onclick="openRejectPopup(${report.ID})">Recusar Chamado</button>` : ''}
                         </div>
@@ -298,6 +298,8 @@ function openEditPopup(reportId) {
         .then(response => response.json())
         .then(report => {
             document.getElementById('editTitle').value = report.TITULO;
+            document.getElementById('editPriority').value = report.PRIORIDADE;
+            document.getElementById('editFunctionality').value = report.FUNCIONALIDADE_AFETADA;
             document.getElementById('editDescription').value = report.DESCRICAO.replace(/\n/g, '\n');
             document.getElementById('editComment').value = '';
 
@@ -310,7 +312,6 @@ function openEditPopup(reportId) {
             console.error('Erro ao carregar detalhes do chamado para edição:', error);
         });
 }
-
 
 function closeEditPopup() {
     const editPopup = document.getElementById('editPopup');
@@ -331,7 +332,7 @@ function submitEdit() {
             if (response.ok) {
                 console.log('Chamado atualizado com sucesso!');
                 const userId = localStorage.getItem('idusuario');
-                loadUserReports(userId, currentPage, 10, currentFilter); // Reload the reports
+                loadUserReports(userId, currentPage, 10, currentFilter);
                 closeEditPopup();
             } else {
                 response.text().then(text => console.error('Erro ao atualizar chamado:', text));

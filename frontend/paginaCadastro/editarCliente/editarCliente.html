@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar e Remover Clientes</title>
+    <link rel="stylesheet" href="/paginaCadastro/editarCliente/editarClienteStyle.css">
+</head>
+<body>
+<div id="menu-container"></div>
+<div class="container">
+    <h2>Editar e Remover Clientes</h2>
+    <div id="select-cliente">
+        <div class="form-group">
+            <label for="selectEmpresa">Nome da Empresa a ser editada:</label>
+            <select id="selectEmpresa" name="selectEmpresa" onclick="loadEmpresaOptions()" onchange="loadEmpresaDetails()"></select>
+        </div>
+    </div>
+    <div id="editar-remover" style="display:none;">
+        <form id="formEdit" action="/cadastro/editar" method="post">
+            <div class="form-group">
+                <label for="nomeEmpresaEdit">Novo Nome da Empresa:</label>
+                <input type="text" id="nomeEmpresaEdit" name="nomeEmpresaEdit">
+            </div>
+            <div class="form-group">
+                <label for="cpfCnpjEdit">CPF ou CNPJ:</label>
+                <input type="text" id="cpfCnpjEdit" name="cpfCnpjEdit">
+            </div>
+            <div class="buttons">
+                <input type="submit" value="Confirmar Edição" id="editarButton">
+                <button type="button" onclick="cancelEdit()" id="cancelButton">Cancelar</button>
+                <button type="button" onclick="confirmDelete()" id="deleteButton" class="delete-button">Deletar Cliente</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="/paginaCadastro/editarCliente/editarClienteScript.js"></script>
+</body>
+</html>

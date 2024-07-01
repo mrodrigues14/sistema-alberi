@@ -30,7 +30,7 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
         params = [idcliente];
     }
 
-    query += ' ORDER BY T.DATA_LIMITE ASC';
+    query += ' ORDER BY T.TITULO ASC';
 
     mysqlConn.query(query, params, function(err, result, fields) {
         if (err) {
@@ -77,7 +77,6 @@ function deletarTarefa(idtarefa, callback){
 }
 
 function atualizarStatus(idtarefa, newStatus, finalDate, callback) {
-    // First, get the current status of the task
     mysqlConn.query('SELECT STATUS FROM TAREFAS WHERE IDTAREFA = ?', [idtarefa], function(err, results) {
         if (err) {
             console.error('Database error:', err);

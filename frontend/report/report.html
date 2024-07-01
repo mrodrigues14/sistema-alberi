@@ -95,32 +95,48 @@
 
 <div id="editPopup" class="popup">
     <div class="popup-content">
+        <span class="close" onclick="closeEditPopup()">&times;</span>
         <h2>Editar Chamado</h2>
-        <form id="editForm" enctype="multipart/form-data">
+        <form id="editForm">
             <div class="form-group">
-                <label for="editTitle">Título</label>
+                <label for="editTitle">Título:</label>
                 <input type="text" id="editTitle" name="title" required>
             </div>
             <div class="form-group">
-                <label for="editDescription">Descrição</label>
-                <textarea id="editDescription" name="description" required></textarea>
+                <label for="editPriority">Prioridade:</label>
+                <select id="editPriority" name="priority">
+                    <option value="ERRO GRAVE">ERRO GRAVE</option>
+                    <option value="ERRO MEDIO">ERRO MÉDIO</option>
+                    <option value="ERRO PEQUENO">ERRO PEQUENO</option>
+                    <option value="MELHORIA CURTO PRAZO">MELHORIA DE CURTO PRAZO</option>
+                    <option value="MELHORIA MEDIO PRAZO">MELHORIA DE MÉDIO PRAZO</option>
+                    <option value="MELHORIA LONGO PRAZO">MELHORIA DE LONGO PRAZO</option>
+                </select>
             </div>
             <div class="form-group">
-                <label for="editComment">Adicionar Comentário</label>
-                <textarea id="editComment" name="comment"></textarea>
-                <button type="button" class="salvarButtonEditar" onclick="addComment()">Adicionar Comentário</button>
+                <label for="editFunctionality">Funcionalidade Afetada:</label>
+                <select id="editFunctionality" name="functionality">
+                    <option value="Extrato">Extrato</option>
+                    <option value="Tarefas">Tarefas</option>
+                    <option value="Estudos">Estudos</option>
+                    <option value="Usuário">Usuário</option>
+                </select>
             </div>
             <div class="form-group">
-                <label for="editFiles">Anexar novo documento (PDF, Imagens, Word):</label>
-                <input type="file" id="editFiles" name="files" accept=".pdf, .docx, .doc, image/*" multiple>
+                <label for="editDescription">Descrição:</label>
+                <textarea id="editDescription" name="description" rows="5" required></textarea>
             </div>
-            <div id="editPreview" class="preview-container"></div>
-            <div class="buttons">
-                <button type="button" class="salvarButtonEditar" onclick="submitEdit()">Salvar</button>
-                <button type="button" class="cancelarButtonEditar" onclick="closeEditPopup()">Cancelar</button>
-                <button type="button" class="deletarButtonEditar" onclick="deleteReport()">Deletar Chamado</button>
+            <div class="form-group">
+                <label for="editComment">Adicionar Comentário:</label>
+                <textarea id="editComment" rows="2"></textarea>
+            </div>
+            <div class="button-group">
+                <button type="button" class="complete-btn" onclick="submitEdit()">Salvar Alterações</button>
+                <button type="button" class="add-coment" onclick="addComment()">Adicionar Comentário</button>
+                <button type="button" class="reject-btn" onclick="deleteReport()">Deletar Chamado</button>
             </div>
         </form>
+        <div id="editPreview"></div>
     </div>
 </div>
 

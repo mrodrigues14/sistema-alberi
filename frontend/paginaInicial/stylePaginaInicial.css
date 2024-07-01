@@ -264,7 +264,8 @@ ul {
     }
 
     .drag-column {
-        margin: 10px;
+        max-width: 40rem;
+        margin: 10px auto auto auto;
     }
 }
 
@@ -335,13 +336,13 @@ ul {
 }
 
 .item-title {
-    font-size: 1.5rem;
+    font-size: 1.0rem;
     font-weight: bold;
     margin-bottom: 5px;
 }
 
 .item-description {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #ccc;
     margin-bottom: 10px;
 }
@@ -349,7 +350,7 @@ ul {
 .item-details {
     display: flex;
     justify-content: space-between;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
 }
 
 #charCount {
@@ -360,7 +361,7 @@ ul {
 }
 
 .item-company {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: #f0ad4e;
     margin-top: 5px;
 }

@@ -44,6 +44,7 @@ textarea {
 .buttons {
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
 }
 
 button {
@@ -63,30 +64,29 @@ button {
 
 .cancelarButtonEditar {
     background-color: #555555;
-    margin-left: 10px;
 }
 
 .cancelarButtonEditar:hover {
     background-color: #353535;
 }
 
-.deletarButtonEditar{
+.deletarButtonEditar {
     background-color: #DC3545;
-    margin-left: 10px;
 }
 
-.deletarButtonEditar:hover{
+.deletarButtonEditar:hover {
     background-color: #c82333;
 }
 
-#submitBtn{
+#submitBtn {
     background-color: #45a049;
     color: #fff;
 }
 
-#submitBtn:hover{
+#submitBtn:hover {
     background-color: #3e8e41;
 }
+
 .report-list-container ul {
     list-style-type: none;
     padding: 0;
@@ -101,12 +101,20 @@ button {
     position: relative;
 }
 
-.button-group {
+.button-group-editar {
     position: absolute;
     top: 10px;
     right: 10px;
     display: flex;
-    gap: 5px; /* Espaço entre os botões */
+    gap: 5px;
+}
+.add-coment{
+    background-color: gray;
+}
+.button-group {
+    display: flex;
+    gap: 5px;
+    justify-content: space-between;
 }
 
 .button-group button {
@@ -118,6 +126,9 @@ button {
     font-size: 12px;
 }
 
+.add-coment:hover{
+    background-color: #202020;
+}
 .button-group .edit-btn {
     background-color: #007BFF;
 }
@@ -193,6 +204,8 @@ button {
     text-align: center;
     color: #333;
     max-width: 600px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .popup-content p {
@@ -341,3 +354,53 @@ button {
     line-height: 12px;
 }
 
+.popup-content .form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.popup-content .form-group label {
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.popup-content .form-group input[type="text"],
+.popup-content .form-group textarea,
+.popup-content .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+.popup-content .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    width: 100%;
+}
+
+.close {
+    left: 33rem;
+    position: relative;
+    background-color: #DC3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 18px;
+    transition: background-color 0.3s ease;
+}
+
+.close:hover {
+    background-color: #C82333;
+}

@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('Erro ao carregar o template:', error);
     }
 
-    loadEmpresaOptions();
+    const userRole = localStorage.getItem('userRoles');
+    document.getElementById('userRole').value = userRole;
 });
 
 async function loadTemplateAndStyles() {
@@ -51,40 +52,25 @@ function applyHTML(htmlData) {
     document.getElementById('menu-container').innerHTML = htmlData;
 }
 
-function loadEmpresaOptions() {
-    fetch('/cadastro/empresas')
-        .then(response => response.json())
-        .then(data => {
-            let selectBanco = document.getElementById('selectBanco');
-            let selectEmpresa = document.getElementById('selectEmpresa');
-            data.forEach(empresa => {
-                let option = document.createElement('option');
-                option.value = empresa.NOME;
-                option.text = empresa.NOME;
-                selectBanco.appendChild(option);
+function toggleClienteForm() {
+    const tipoCliente = document.getElementById('tipoCliente').value;
+    const formFisica = document.getElementById('form-fisica');
+    const formJuridica = document.getElementById('form-juridica');
+    const adicionarCliente = document.getElementById('Adicionar-cliente');
 
-                let optionEdit = document.createElement('option');
-                optionEdit.value = empresa.NOME;
-                optionEdit.text = empresa.NOME;
-                selectEmpresa.appendChild(optionEdit);
-            });
-        })
-        .catch(error => {
-            console.error('Erro ao carregar empresas:', error);
-        });
-}
-
-function loadEmpresaDetails() {
-    const empresaNome = document.getElementById('selectEmpresa').value;
-    fetch(`/cadastro/empresa/${empresaNome}`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('nomeEmpresaEdit').value = data.NOME;
-            document.getElementById('cpfCnpjEdit').value = data.CPF || data.CNPJ || '';
-        })
-        .catch(error => {
-            console.error('Erro ao carregar detalhes da empresa:', error);
-        });
+    if (tipoCliente === 'fisica') {
+        formFisica.style.display = 'block';
+        formJuridica.style.display = 'none';
+        adicionarCliente.style.display = 'block';
+    } else if (tipoCliente === 'juridica') {
+        formFisica.style.display = 'none';
+        formJuridica.style.display = 'block';
+        adicionarCliente.style.display = 'block';
+    } else {
+        formFisica.style.display = 'none';
+        formJuridica.style.display = 'none';
+        adicionarCliente.style.display = 'none';
+    }
 }
 
 function addSocio() {
@@ -115,8 +101,11 @@ function addSocio() {
     socioSection.appendChild(newDiv);
 }
 
-function confirmDelete() {
-    const selectBanco = document.getElementById('selectBanco');
-    const selectedOption = selectBanco.options[selectBanco.selectedIndex].text;
-    return confirm(`Tem certeza que deseja excluir o Cliente ${selectedOption}?`);
+function confirmAdd() {
+    const userRole = localStorage.getItem('userRoles');
+    if (userRole !== 'Administrador' && userRole !== 'Configurador') {
+        alert('Você não tem permissão para adicionar um cliente.');
+        return false;
+    }
+    return true;
 }

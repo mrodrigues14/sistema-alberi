@@ -174,10 +174,7 @@ function formatDate(dateString) {
         return 'N/A';
     }
 
-    const date = new Date(dateString);
-    const day = String(date.getDate() + 1).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
+    const [year, month, day] = dateString.split('-');
     return `${day}/${month}/${year}`;
 }
 
@@ -204,7 +201,7 @@ function createItemEl(columnEl, column, item, index) {
                 <div class="delete-icon" onclick="showDeleteConfirmPopup(${item.idtarefa}, '${item.title}', ${index}, ${column}); event.stopPropagation();">&#128465;</div>
             </div>
             <h4 class="item-title">${item.title || ''}</h4>
-            <p class="item-description">${item.description || ''}</p>
+            <!-- <p class="item-description">${item.description || ''}</p>-->
             <div class="item-details">
                 <span class="item-date">${dateText || ''}</span>
                 <span class="item-author">${item.authorName || ''}</span>
@@ -350,9 +347,13 @@ async function editItem(index, column) {
     const companySelect = document.getElementById('company');
     companySelect.value = item.companyId; // Corrigido para usar item.companyId em vez de item.companyName
 
-    const dueDate = new Date(item.dueDate);
-    const adjustedDueDate = new Date(dueDate.getTime() + dueDate.getTimezoneOffset() * 60000);
-    document.getElementById('dueDate').value = adjustedDueDate.toISOString().split('T')[0];
+    if (item.dueDate === '0000-00-00' || !item.dueDate) {
+        document.getElementById('dueDate').value = ''; // Deixe o campo vazio se a data for '0000-00-00'
+    } else {
+        const dueDate = new Date(item.dueDate);
+        const adjustedDueDate = new Date(dueDate.getTime() + dueDate.getTimezoneOffset() * 60000);
+        document.getElementById('dueDate').value = adjustedDueDate.toISOString().split('T')[0];
+    }
 
     document.getElementById('popupTitle').textContent = 'Editar Tarefa';
     document.getElementById('taskPopup').style.display = 'block';
@@ -516,14 +517,19 @@ function drop(e) {
         const itemIndex = listArrays[oldColumnIndex].findIndex(item => item.idtarefa == taskId);
         const [movedItem] = listArrays[oldColumnIndex].splice(itemIndex, 1);
 
-        if (newStatus === 'Finalizado' && !movedItem.finalDate) {
-            movedItem.finalDate = new Date().toISOString().split('T')[0]; // Define a data de finalização
+        let finalDate = '';
+        if (newStatus === 'Finalizado') {
+            const now = new Date();
+            const offset = -3;
+            now.setHours(now.getUTCHours() + offset);
+            finalDate = now.toISOString().split('T')[0];
+            movedItem.finalDate = finalDate;
         }
 
         movedItem.status = newStatus;  // Atualizar o status no objeto também
         listArrays[columnId].push(movedItem);
 
-        updateTaskStatus(taskId, newStatus, movedItem.finalDate);
+        updateTaskStatus(taskId, newStatus, finalDate);
 
         listColumns[columnId].classList.remove("over");
         updateDOM();
@@ -534,7 +540,6 @@ function drop(e) {
 function updateTaskStatus(idtarefa, newStatus, finalDate) {
     const body = { idtarefa, newStatus };
 
-    // Inclua finalDate se estiver presente
     if (newStatus === 'Finalizado' && finalDate) {
         body.finalDate = finalDate;
     }
@@ -562,7 +567,7 @@ function allowDrop(e) {
 document.addEventListener('DOMContentLoaded', function() {
     const descriptionInput = document.getElementById('description');
     const charCount = document.getElementById('charCount');
-    const maxLength = 500;
+    const maxLength = 1000;
 
     descriptionInput.addEventListener('input', function() {
         const currentLength = this.value.length;

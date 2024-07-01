@@ -172,7 +172,7 @@ router.put('/recusar/:id', (req, res) => {
 
 router.put('/editar/:id', upload.array('files', 10), async (req, res) => {
     const reportId = req.params.id;
-    const { title, description } = req.body;
+    const { title, description, priority, functionality } = req.body;
     const files = req.files;
 
     const fileDetails = await Promise.all(files.map(async (file) => {
@@ -206,7 +206,7 @@ router.put('/editar/:id', upload.array('files', 10), async (req, res) => {
 
     const arquivos = JSON.stringify(fileDetails);
 
-    editarReport(reportId, title, description, arquivos, (err, result) => {
+    editarReport(reportId, title, description, arquivos, priority, functionality, (err, result) => {
         if (err) {
             console.error('Erro ao atualizar report:', err);
             res.status(500).send('Erro ao atualizar report');

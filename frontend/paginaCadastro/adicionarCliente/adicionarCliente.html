@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar e Remover Clientes</title>
+    <link rel="stylesheet" href="/paginaCadastro/editarCliente/editarClienteStyle.css">
+</head>
+<body>
+<div id="menu-container"></div>
+<div class="container">
+    <h2>Editar e Remover Clientes</h2>
+    <div id="select-cliente">
+        <div class="form-group">
+            <label for="selectEmpresa">Nome da Empresa a ser editada:</label>
+            <select id="selectEmpresa" name="selectEmpresa" onclick="loadEmpresaOptions()" onchange="loadEmpresaDetails()"></select>
+        </div>
+    </div>
+    <div id="editar-remover" style="display:none;">
+        <form id="formEdit" action="/cadastro/editar" method="post" onsubmit="editClient(event)">
+            <div class="form-group">
+                <label for="nomeEmpresaEdit">Novo Nome da Empresa:</label>
+                <input type="text" id="nomeEmpresaEdit" name="nomeEmpresaEdit">
+            </div>
+            <div class="form-group">
+                <label for="telefoneEdit">Telefone:</label>
+                <input type="text" id="telefoneEdit" name="telefoneEdit">
+            </div>
+            <div class="form-group">
+                <label for="enderecoEdit">Endereço:</label>
+                <input type="text" id="enderecoEdit" name="enderecoEdit">
+            </div>
+            <div class="form-group">
+                <label for="cepEdit">CEP:</label>
+                <input type="text" id="cepEdit" name="cepEdit">
+            </div>
+            <div class="form-group">
+                <label for="cpfCnpjEdit">CPF ou CNPJ:</label>
+                <input type="text" id="cpfCnpjEdit" name="cpfCnpjEdit" readonly>
+            </div>
+            <div id="cnpj-fields" style="display:none;">
+                <div class="form-group">
+                    <label for="nomeResponsavelEdit">Nome do Responsável:</label>
+                    <input type="text" id="nomeResponsavelEdit" name="nomeResponsavelEdit">
+                </div>
+                <div class="form-group">
+                    <label for="cpfResponsavelEdit">CPF do Responsável:</label>
+                    <input type="text" id="cpfResponsavelEdit" name="cpfResponsavelEdit">
+                </div>
+                <div class="form-group">
+                    <label for="inscricaoEstadualEdit">Inscrição Estadual:</label>
+                    <input type="text" id="inscricaoEstadualEdit" name="inscricaoEstadualEdit">
+                </div>
+                <div class="form-group">
+                    <label for="cnaePrincipalEdit">CNAE Principal:</label>
+                    <input type="text" id="cnaePrincipalEdit" name="cnaePrincipalEdit">
+                </div>
+                <div id="socios-section">
+                    <h3>Sócios</h3>
+                    <div id="socios-container"></div>
+                    <button type="button" onclick="addSocio()">Adicionar Sócio</button>
+                </div>
+            </div>
+            <div class="buttons">
+                <input type="submit" value="Confirmar Edição" id="editarButton">
+                <button type="button" onclick="cancelEdit()" id="cancelButton">Cancelar</button>
+                <button type="button" onclick="confirmDelete()" id="deleteButton" class="delete-button">Deletar Cliente</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="/paginaCadastro/editarCliente/editarClienteScript.js"></script>
+</body>
+</html>

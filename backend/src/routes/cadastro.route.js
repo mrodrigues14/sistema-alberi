@@ -4,7 +4,11 @@ const path = require('path');
 const { adicionar, listar, remover, editar, obterEmpresa } = require('../repositories/cadastro.repository');
 
 router.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../../frontend/paginaCadastro/paginaCadastro.html'));
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaCadastro/adicionarCliente/adicionarCliente.html'));
+});
+
+router.get('/editarCliente', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaCadastro/editarCliente/editarCliente.html'));
 });
 
 router.post('/', async (req, res) => {
@@ -25,7 +29,9 @@ router.get('/empresas', (req, res) => {
 
 router.post('/remover', (req, res) => {
     const { selectNomeEmpresa } = req.body;
-    remover(selectNomeEmpresa, (err, result) => {
+    const userRole = req.body.userRole;
+
+    remover(selectNomeEmpresa, userRole, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao remover dados");

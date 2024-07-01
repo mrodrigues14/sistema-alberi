@@ -66,11 +66,22 @@ function listar(callback) {
     });
 }
 
-function remover(nome, callback) {
-    // Primeiro, obtenha o ID do cliente a ser removido
+function remover(nome, userRole, callback) {
+    if (userRole !== 'Administrador' && userRole !== 'Configurador') {
+        const error = new Error('Usuário não autorizado para realizar esta operação');
+        console.error(error.message);
+        return callback(error, null);
+    }
+
     mysqlConn.query('SELECT IDCLIENTE FROM CLIENTE WHERE NOME = ?', [nome], (error, results, fields) => {
         if (error) {
             console.error('Erro ao buscar o ID do cliente:', error);
+            return callback(error, null);
+        }
+
+        if (results.length === 0) {
+            const error = new Error('Cliente não encontrado');
+            console.error(error.message);
             return callback(error, null);
         }
 
@@ -99,6 +110,7 @@ function remover(nome, callback) {
         });
     });
 }
+
 
 function obterEmpresa(nome, callback) {
     mysqlConn.query('SELECT * FROM CLIENTE WHERE NOME = ?', [nome], (error, results, fields) => {

@@ -61,13 +61,14 @@ function recusarReport(reportId, motivo, callback) {
     });
 }
 
-function editarReport(reportId, titulo, descricao, arquivos, callback) {
-    mysqlConn.query(`UPDATE REPORT SET TITULO = ?, DESCRICAO = ?, ARQUIVO = ? WHERE ID = ?`,
-        [titulo, descricao, arquivos, reportId],
+function editarReport(reportId, titulo, descricao, arquivos, prioridade, funcionalidadeAfetada, callback) {
+    mysqlConn.query(`UPDATE REPORT SET TITULO = ?, DESCRICAO = ?, ARQUIVO = ?, PRIORIDADE = ?, FUNCIONALIDADE_AFETADA = ? WHERE ID = ?`,
+        [titulo, descricao, arquivos, prioridade, funcionalidadeAfetada, reportId],
         (err, result) => {
             callback(err, result);
         });
 }
+
 
 function getReportById(reportId, callback) {
     mysqlConn.query(`SELECT * FROM REPORT WHERE ID = ?`, [reportId], (err, result) => {
