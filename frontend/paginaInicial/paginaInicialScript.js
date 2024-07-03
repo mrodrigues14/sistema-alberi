@@ -202,10 +202,10 @@ function createItemEl(columnEl, column, item, index) {
             </div>
             <h4 class="item-title">${item.title || ''}</h4>
             <!-- <p class="item-description">${item.description || ''}</p>-->
-            <div class="item-details">
+            <!--<div class="item-details">
                 <span class="item-date">${dateText || ''}</span>
                 <span class="item-author">${item.authorName || ''}</span>
-            </div>
+            </div>-->
             <span class="item-company">${item.companyName || ''}</span>
         </div>
     `;
@@ -345,10 +345,10 @@ async function editItem(index, column) {
     authorSelect.value = item.author;
 
     const companySelect = document.getElementById('company');
-    companySelect.value = item.companyId; // Corrigido para usar item.companyId em vez de item.companyName
+    companySelect.value = item.companyId;
 
     if (item.dueDate === '0000-00-00' || !item.dueDate) {
-        document.getElementById('dueDate').value = ''; // Deixe o campo vazio se a data for '0000-00-00'
+        document.getElementById('dueDate').value = '';
     } else {
         const dueDate = new Date(item.dueDate);
         const adjustedDueDate = new Date(dueDate.getTime() + dueDate.getTimezoneOffset() * 60000);
@@ -526,7 +526,7 @@ function drop(e) {
             movedItem.finalDate = finalDate;
         }
 
-        movedItem.status = newStatus;  // Atualizar o status no objeto também
+        movedItem.status = newStatus;
         listArrays[columnId].push(movedItem);
 
         updateTaskStatus(taskId, newStatus, finalDate);

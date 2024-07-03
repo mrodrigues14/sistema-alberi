@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     clearLocalStorageOnFirstLoad();
+    clearCacheOnFirstLoad();
     handleEmpresa();
     loadAndDisplayUsername();
     loadNomeEmpresa();
@@ -21,6 +22,17 @@ function clearLocalStorageOnFirstLoad() {
     if (!localStorage.getItem('isPageReloaded')) {
         localStorage.clear();
         localStorage.setItem('isPageReloaded', 'true');
+    }
+}
+
+function clearCacheOnFirstLoad() {
+    if (!localStorage.getItem('isCacheCleared')) {
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                for (let name of names) caches.delete(name);
+            });
+        }
+        localStorage.setItem('isCacheCleared', 'true');
     }
 }
 

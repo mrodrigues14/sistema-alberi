@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
+    clearLocalStorageOnFirstLoad();
+    clearCacheOnFirstLoad();
+
     const loginForm = document.getElementById('loginForm');
     const forgotPasswordLink = document.getElementById('forgotPasswordLink');
     const forgotPasswordModal = document.getElementById('forgotPasswordModal');
@@ -143,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.success) {
                     alert('Senha redefinida com sucesso.');
                     resetPasswordModal.style.display = 'none';
-                    localStorage.removeItem('resetToken'); // Remove o token após a redefinição
+                    localStorage.removeItem('resetToken');
                     window.location.href = '/';
                 } else {
                     showModalError(data.message);
@@ -160,5 +163,23 @@ document.addEventListener('DOMContentLoaded', function () {
         const errorMessage = document.getElementById('errorMessage');
         errorMessage.textContent = message;
         modal.style.display = "block";
+    }
+
+    function clearLocalStorageOnFirstLoad() {
+        if (!localStorage.getItem('isPageReloaded')) {
+            localStorage.clear();
+            localStorage.setItem('isPageReloaded', 'true');
+        }
+    }
+
+    function clearCacheOnFirstLoad() {
+        if (!localStorage.getItem('isCacheCleared')) {
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    for (let name of names) caches.delete(name);
+                });
+            }
+            localStorage.setItem('isCacheCleared', 'true');
+        }
     }
 });
