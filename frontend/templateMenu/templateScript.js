@@ -1,3 +1,28 @@
+document.addEventListener('DOMContentLoaded', function() {
+    clearLocalStorageOnFirstLoad();
+    handleEmpresa();
+    loadAndDisplayUsername();
+    loadNomeEmpresa();
+    addClickEventToListItems();
+
+    document.addEventListener('click', function(event) {
+        closeAllDropdowns(event);
+    });
+
+    document.addEventListener('click', function(event) {
+        var menu = document.getElementById('menu');
+        if (!event.target.closest('.hamburger-menu') && !event.target.closest('#menu')) {
+            menu.classList.remove('show');
+        }
+    });
+});
+
+function clearLocalStorageOnFirstLoad() {
+    if (!localStorage.getItem('isPageReloaded')) {
+        localStorage.clear();
+        localStorage.setItem('isPageReloaded', 'true');
+    }
+}
 
 function loadAndDisplayUsername() {
     fetch('/api/usuario-logado')
@@ -45,17 +70,12 @@ function loadAndDisplayUsername() {
         });
 }
 
-
-
 function toggleDropdown(dropdownId) {
     var dropdown = document.getElementById(dropdownId);
     if (dropdown.style.display === "block") {
         dropdown.style.display = "none";
     } else {
-        // Fechar outros dropdowns abertos
-        document.querySelectorAll('.dropdown-content').forEach(function(content) {
-            content.style.display = 'none';
-        });
+        closeAllDropdowns();
         dropdown.style.display = "block";
         if (dropdownId === 'dropdownContent') {
             document.getElementById("searchInput").focus();
@@ -69,6 +89,7 @@ function toggleUserDropdown() {
     if (dropdown.style.display === "block") {
         dropdown.style.display = "none";
     } else {
+        closeAllDropdowns();
         dropdown.style.display = "block";
     }
 }
@@ -82,7 +103,6 @@ function toggleMenu() {
     }
 }
 
-
 function loadAndDisplayEmpresas() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => response.json())
@@ -95,27 +115,6 @@ function loadAndDisplayEmpresas() {
             showNoEmpresasMessage(error.message);
         });
 }
-
-document.addEventListener('click', function(event) {
-    var dropdown = document.getElementById("dropdownContent");
-    if (!event.target.closest('.search-box-empresa')) {
-        dropdown.style.display = 'none';
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    handleEmpresa();
-    loadAndDisplayUsername();
-    loadNomeEmpresa();
-    addClickEventToListItems();
-
-    document.addEventListener('click', function(event) {
-        var menu = document.getElementById('menu');
-        if (!event.target.closest('.hamburger-menu') && !event.target.closest('#menu')) {
-            menu.classList.remove('show');
-        }
-    });
-});
 
 function loadNomeEmpresa() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
@@ -175,7 +174,7 @@ function empresaSelecionada(nomeEmpresa, idEmpresa) {
     localStorage.setItem('nomeEmpresaSelecionada', nomeEmpresa);
     localStorage.setItem('idEmpresaSelecionada', idEmpresa);
     updateNomeEmpresa(nomeEmpresa, idEmpresa);
-    window.location.reload()
+    window.location.reload();
 }
 
 function updateNomeEmpresa(nomeEmpresa, idEmpresa) {
@@ -267,22 +266,19 @@ function showAdminOptions() {
         'rubricas': rubricasElement
     };
 
-    // Redirecionar Usuário Externo para a página inicial em branco, se não já estiver lá
     if (userRoles === 'Usuário Externo' && currentPage !== '/templateMenu' && !redirectionFlag) {
         localStorage.setItem('redirectionDone', 'true');
         window.location.href = '/templateMenu';
-        return; // Exit the function if the user is Usuário Externo
+        return;
     }
 
-    // Mostrar todos os elementos para Administrador e Configurador
     if (userRoles === 'Administrador' || userRoles === 'Configurador') {
         Object.values(roleElements).forEach(element => {
             if (element) element.style.display = 'block';
         });
-        return; // Exit the function if the user is Administrador or Configurador
+        return;
     }
 
-    // Ocultar elementos com base no papel do usuário
     const elementsToHide = elementsToHideForRoles[userRoles] || elementsToHideForRoles['default'];
     elementsToHide.forEach(elementId => {
         const element = roleElements[elementId];
@@ -290,6 +286,15 @@ function showAdminOptions() {
     });
 }
 
+function closeAllDropdowns(event) {
+    var dropdowns = document.querySelectorAll('.dropdown-content');
+    dropdowns.forEach(function(dropdown) {
+        if (event && event.target.closest('.menu-item, .selected-company, .usernameDisplay')) {
+            return;
+        }
+        dropdown.style.display = 'none';
+    });
+}
 
 document.addEventListener('click', function(event) {
     var list = document.getElementById('nameList');
@@ -298,7 +303,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-
 function logout() {
     fetch('/api/logout', {
         method: 'POST',
@@ -306,10 +310,7 @@ function logout() {
     })
         .then(response => {
             if (response.ok) {
-                localStorage.removeItem('idUsuario');
-                localStorage.removeItem('userRoles');
-                localStorage.removeItem('nomeEmpresaSelecionada');
-                localStorage.removeItem('idEmpresaSelecionada');
+                localStorage.clear();
                 window.location.href = '/';
             } else {
                 throw new Error('Erro ao fazer logout');
