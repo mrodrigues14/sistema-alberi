@@ -106,7 +106,8 @@ function loadTasks() {
                     companyId: task.ID_CLIENTE,
                     companyName: task.NOME,
                     status: task.STATUS,
-                    description: task.DESCRICAO || ""
+                    description: task.DESCRICAO || "",
+                    apelido: task.APELIDO
                 };
 
 
@@ -206,7 +207,7 @@ function createItemEl(columnEl, column, item, index) {
                 <span class="item-date">${dateText || ''}</span>
                 <span class="item-author">${item.authorName || ''}</span>
             </div>-->
-            <span class="item-company">${item.companyName || ''}</span>
+            <span class="item-company">${item.apelido || ''}</span>
         </div>
     `;
     columnEl.appendChild(listEl);
@@ -220,13 +221,24 @@ function showTaskDetails(index, column) {
     const detailAuthor = document.getElementById('detailAuthor');
     const detailDueDate = document.getElementById('detailDueDate');
     const taskDetailPopup = document.getElementById('taskDetailPopup');
+    const detailCompanyName = document.getElementById('detailCompanyName');
 
     if (detailTitle && detailDescription && detailAuthor && detailDueDate && taskDetailPopup) {
         detailTitle.textContent = item.title;
         detailDescription.textContent = item.description;
         detailAuthor.textContent = item.authorName;
-        detailDueDate.textContent = formatDate(item.dueDate);
+        detailCompanyName.textContent = item.companyName;
+
+        if (item.finalDate) {
+            detailDueDate.previousElementSibling.textContent = 'Data de Conclusão:';
+            detailDueDate.textContent = formatDate(item.finalDate);
+        } else {
+            detailDueDate.previousElementSibling.textContent = 'Data de Vencimento:';
+            detailDueDate.textContent = formatDate(item.dueDate);
+        }
+
         taskDetailPopup.style.display = 'block';
+        document.getElementById('drag-container').classList.add('blur');
     } else {
         console.error('One or more elements are missing from the DOM.');
     }
@@ -234,7 +246,9 @@ function showTaskDetails(index, column) {
 
 function closeDetailPopup() {
     document.getElementById('taskDetailPopup').style.display = 'none';
+    document.getElementById('drag-container').classList.remove('blur');
 }
+
 
 function updateDOM() {
     listColumns.forEach((column, i) => {
@@ -261,6 +275,9 @@ function showInputBox(column) {
     const form = document.getElementById('taskForm');
     form.removeEventListener('submit', handleSubmit);
     form.addEventListener('submit', handleSubmit);
+
+    document.getElementById('drag-container').classList.add('blur');
+
 }
 
 function handleSubmit(event) {
@@ -358,6 +375,8 @@ async function editItem(index, column) {
     document.getElementById('popupTitle').textContent = 'Editar Tarefa';
     document.getElementById('taskPopup').style.display = 'block';
     currentColumn = column;
+    document.getElementById('drag-container').classList.add('blur');
+
 
     const form = document.getElementById('taskForm');
     form.removeEventListener('submit', handleSubmit);
@@ -441,6 +460,8 @@ function deleteTask(idtarefa, index, column) {
 
 function closePopup() {
     document.getElementById('taskPopup').style.display = 'none';
+    document.getElementById('drag-container').classList.remove('blur');
+
 }
 
 function rebuildArrays() {

@@ -7,7 +7,7 @@
 </head>
 <body>
 <div id="menu-container"></div>
-<div class="drag-container">
+<div id="drag-container" class="drag-container">
     <ul class="drag-list">
         <!-- Coluna Pendentes de Dados -->
         <li class="drag-column pending-data-column">
@@ -169,14 +169,27 @@
         <button type="button" class="cancelarButtonTarefa" onclick="closePopup()">Cancelar</button>
     </form>
 </div>
-
 <div id="taskDetailPopup" style="display:none;">
     <h2 id="detailTitle"></h2>
-    <p id="detailDescription"></p>
-    <p id="detailAuthor"></p>
-    <p id="detailDueDate"></p>
+    <div id="detailDescriptionContainer">
+        <label>Descrição:</label>
+        <p id="detailDescription"></p>
+    </div>
+    <div id="detailAuthorContainer">
+        <label>Autor:</label>
+        <p id="detailAuthor"></p>
+    </div>
+    <div id="detailDueDateContainer">
+        <label>Data de Vencimento:</label>
+        <p id="detailDueDate"></p>
+    </div>
+    <div id="detailCompanyNameContainer">
+        <label>Empresa:</label>
+        <p id="detailCompanyName"></p>
+    </div>
     <button onclick="closeDetailPopup()">Fechar</button>
 </div>
+
 
 <!-- Popup de confirmação de exclusão -->
 <div id="deleteConfirmPopup" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px;">

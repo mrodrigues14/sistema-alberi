@@ -2,6 +2,7 @@ const mysqlConn = require('../base/database.js');
 
 function listarTarefas(idcliente, idusuario, isAdmin, callback) {
     let params = [];
+    let query = '';
 
     if (idcliente === "68") {
         query = `
@@ -9,28 +10,27 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
                IFNULL(T.DATA_LIMITE, '0000-00-00') AS DATA_LIMITE,
                IFNULL(T.DATA_INICIO, '0000-00-00') AS DATA_INICIO,
                IFNULL(T.DATA_CONCLUSAO, '0000-00-00') AS DATA_CONCLUSAO,
-               T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
+               T.ID_CLIENTE, C.NOME, C.APELIDO, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
         FROM TAREFAS AS T
         INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
         INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
+        ORDER BY T.TITULO ASC
     `;
-        params.push(idcliente);
     } else {
         query = `
         SELECT T.IDTAREFA, T.TITULO, T.STATUS,
                IFNULL(T.DATA_LIMITE, '0000-00-00') AS DATA_LIMITE,
                IFNULL(T.DATA_INICIO, '0000-00-00') AS DATA_INICIO,
                IFNULL(T.DATA_CONCLUSAO, '0000-00-00') AS DATA_CONCLUSAO,
-               T.ID_CLIENTE, C.NOME, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
+               T.ID_CLIENTE, C.NOME, C.APELIDO, T.ID_USUARIO, U.NOME_DO_USUARIO, T.DESCRICAO
         FROM TAREFAS AS T
         INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
         INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
         WHERE T.ID_CLIENTE = ?
+        ORDER BY T.TITULO ASC
     `;
-        params = [idcliente];
+        params.push(idcliente);
     }
-
-    query += ' ORDER BY T.TITULO ASC';
 
     mysqlConn.query(query, params, function(err, result, fields) {
         if (err) {
@@ -122,10 +122,19 @@ function atualizarStatus(idtarefa, newStatus, finalDate, callback) {
 }
 
 function editarTarefa(idtarefa, titulo, dataLimite, descricao, idusuario, idempresa, callback) {
-    mysqlConn.query('UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ?, DESCRICAO = ?, ID_USUARIO = ?, ID_CLIENTE = ? WHERE IDTAREFA = ?',
-        [titulo, dataLimite || '', descricao || '', idusuario, idempresa, idtarefa], function(err, result) {
-            callback(err, result);
-        });
+    const query = 'UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ?, DESCRICAO = ?, ID_USUARIO = ?, ID_CLIENTE = ? WHERE IDTAREFA = ?';
+    const params = [titulo, dataLimite || '', descricao || '', idusuario, idempresa, idtarefa];
+
+    mysqlConn.query(query, params, function(err, result) {
+        if (err) {
+            console.error('Erro ao atualizar tarefa:', err);
+        } else if (result.affectedRows === 0) {
+            console.warn('Nenhuma tarefa foi atualizada. Verifique se o IDTAREFA é válido:', idtarefa);
+        } else {
+            console.log('Tarefa atualizada com sucesso:', result);
+        }
+        callback(err, result);
+    });
 }
 
 function consultarUsuarios(callback){

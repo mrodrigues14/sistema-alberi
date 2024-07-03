@@ -63,13 +63,13 @@ input[type="submit"]:hover {
 }
 
 button[type="button"] {
-    background-color: #008CBA;
+    background-color: #777777;
     color: #fff;
     margin-left: 10px;
 }
 
 button[type="button"]:hover {
-    background-color: #007BB5;
+    background-color: #505050;
 }
 
 button.delete-button {
@@ -78,4 +78,13 @@ button.delete-button {
 
 button.delete-button:hover {
     background-color: #e53935;
+}
+
+button.confirmar{
+    background-color: #4CAF50;
+}
+
+button.confirmar:hover{
+    background-color: #46a14a;
+
 }

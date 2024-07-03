@@ -64,11 +64,10 @@ router.get('/editartarefa', (req, res) => {
 });
 
 router.post('/editartarefa', (req, res) => {
-    console.log("Received data:", req.body);
     const { idtarefa, titulo, descricao, dataLimite, idusuario, idempresa } = req.body;
 
     if (!titulo) {
-        res.status(400).json({error: 'Missing fields'});
+        res.status(400).json({error: 'Faltando campos'});
         return;
     }
     editarTarefa(idtarefa, titulo, dataLimite, descricao, idusuario, idempresa, (err, result) => {
