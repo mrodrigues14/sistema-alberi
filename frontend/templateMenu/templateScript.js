@@ -257,7 +257,7 @@ function showAdminOptions() {
     const redirectionFlag = localStorage.getItem('redirectionDone');
 
     const elementsToHideForRoles = {
-        'Usuário Interno': ['rubricas'],
+        'Usuário Interno': ['rubricas', 'configCliente', 'configUsuario'],
         'Usuário Externo': ['rubricas', 'menuAdicionarUsuario', 'cliente', 'bancos', 'Estudos', 'Extrato'],
         'default': ['menuAdicionarUsuario', 'cliente', 'bancos', 'Estudos', 'Extrato', 'rubricas']
     };
@@ -269,13 +269,18 @@ function showAdminOptions() {
     const extratoElement = document.getElementById('Extrato');
     const rubricasElement = document.getElementById('rubricas');
 
+    const clienteDropdownElement = document.getElementById('configCliente');
+    const usuarioDropdownElement = document.getElementById('configUsuario');
+
     const roleElements = {
         'menuAdicionarUsuario': adicionarUsuarioElement,
         'cliente': clienteElement,
         'bancos': bancosElement,
         'Estudos': estudosElement,
         'Extrato': extratoElement,
-        'rubricas': rubricasElement
+        'rubricas': rubricasElement,
+        'configCliente': clienteDropdownElement,
+        'configUsuario': usuarioDropdownElement
     };
 
     if (userRoles === 'Usuário Externo' && currentPage !== '/templateMenu' && !redirectionFlag) {

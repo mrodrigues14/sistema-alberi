@@ -15,15 +15,19 @@ router.post('/addCliente', async (req, res) => {
     const { tipoCliente, nomeFisica, telefoneFisica, cpfFisica, enderecoFisica, cepFisica, emailFisica,
         nomeEmpresa, telefone, cnpj, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios } = req.body;
 
-    if (tipoCliente === 'fisica') {
-        await adicionar(nomeFisica, telefoneFisica, null, cpfFisica, enderecoFisica, cepFisica, null, null, null, null, []);
-        res.redirect(`/cadastro?successMsg=Pessoa Física ${nomeFisica} cadastrada com sucesso!`);
-    } else if (tipoCliente === 'juridica') {
-        const parsedSocios = socios ? JSON.parse(socios) : [];
-        await adicionar(nomeEmpresa, telefone, cnpj, null, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, parsedSocios);
-        res.redirect(`/cadastro?successMsg=Empresa ${nomeEmpresa} cadastrada com sucesso!`);
-    } else {
-        res.redirect('/cadastro?errorMsg=Tipo de cliente inválido.');
+    try {
+        if (tipoCliente === 'fisica') {
+            await adicionar(nomeFisica, telefoneFisica, null, cpfFisica, enderecoFisica, cepFisica, null, null, null, null, []);
+            res.json({ success: true, message: `Pessoa Física ${nomeFisica} cadastrada com sucesso!` });
+        } else if (tipoCliente === 'juridica') {
+            await adicionar(nomeEmpresa, telefone, cnpj, null, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios || []);
+            res.json({ success: true, message: `Empresa ${nomeEmpresa} cadastrada com sucesso!` });
+        } else {
+            res.status(400).json({ success: false, message: 'Tipo de cliente inválido.' });
+        }
+    } catch (error) {
+        console.error('Erro ao adicionar o cliente:', error);
+        res.status(500).json({ success: false, message: 'Erro ao adicionar o cliente.' });
     }
 });
 

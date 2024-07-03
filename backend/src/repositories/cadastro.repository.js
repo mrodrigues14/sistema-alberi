@@ -10,13 +10,13 @@ async function adicionar(nome, telefone, cnpj, cpf, endereco, cep, nome_responsa
 
         const id_cliente = results.insertId;
         if (socios && socios.length > 0) {
-            socios.forEach(socio => {
-                const querySocio = 'INSERT INTO SOCIO (id_cliente, nome, cpf, endereco, cep, telefone) VALUES (?, ?, ?, ?, ?, ?)';
-                mysqlConn.query(querySocio, [id_cliente, socio.nome, socio.cpf, socio.endereco, socio.cep, socio.telefone], (error, results, fields) => {
-                    if (error) {
-                        console.error('Erro ao adicionar sócio:', error);
-                    }
-                });
+            const querySocio = 'INSERT INTO SOCIO (id_cliente, nome, cpf, endereco, cep, telefone) VALUES ?';
+            const sociosData = socios.map(socio => [id_cliente, socio.nome, socio.cpf, socio.endereco, socio.cep, socio.telefone]);
+
+            mysqlConn.query(querySocio, [sociosData], (error, results, fields) => {
+                if (error) {
+                    console.error('Erro ao adicionar sócio:', error);
+                }
             });
         }
     });

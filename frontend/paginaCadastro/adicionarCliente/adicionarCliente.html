@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -21,15 +20,15 @@
     </div>
     <div id="Adicionar-cliente" style="display:none;">
         <h2>Adicionar Cliente</h2>
-        <form id="formAdd">
+        <form id="formAdd" onsubmit="return submitForm(event)">
             <!-- Pessoa Física -->
             <div id="form-fisica" style="display:none;">
                 <div class="form-group">
-                    <label for="nomeFisica">Nome:</label>
-                    <input type="text" id="nomeFisica" name="nomeFisica">
+                    <label for="nomeFisica">Nome Completo:</label>
+                    <input type="text" id="nomeFisica" name="nomeFisica" required>
                 </div>
                 <div class="form-group">
-                    <label for="cpfFisica">CPF:</label>
+                    <label for="cpfFisica">CPF ou RG:</label>
                     <input type="text" id="cpfFisica" name="cpfFisica" required>
                 </div>
                 <div class="form-group">
@@ -116,7 +115,7 @@
 
             <input type="hidden" name="userRole" id="userRole">
             <div class="buttons">
-                <input type="button" value="Adicionar" id="addButton" onclick="submitForm()">
+                <input type="submit" value="Adicionar Empresa" id="addButton">
             </div>
         </form>
     </div>

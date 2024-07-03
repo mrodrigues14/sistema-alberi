@@ -62,6 +62,7 @@ function toggleClienteForm() {
         formFisica.style.display = 'block';
         formJuridica.style.display = 'none';
         adicionarCliente.style.display = 'block';
+        document.getElementById('nomeFisica').required = true;
         document.getElementById('cpfFisica').required = true;
         document.getElementById('nomeEmpresa').required = false;
         document.getElementById('cnpj').required = false;
@@ -111,18 +112,25 @@ function submitForm() {
     const formAdd = document.getElementById('formAdd');
     const formData = new FormData(formAdd);
 
+    const tipoCliente = document.getElementById('tipoCliente').value;
+
     const data = {
-        nome: formData.get('nomeFisica') || formData.get('nomeEmpresa') || ' ',
-        cpf: formData.get('cpfFisica') || formData.get('cpfResponsavel') || ' ',
+        tipoCliente: tipoCliente, // Inclui o tipo de cliente
+        nomeFisica: formData.get('nomeFisica') || '',
+        telefoneFisica: formData.get('telefoneFisica') || '',
+        cpfFisica: formData.get('cpfFisica') || '',
+        enderecoFisica: formData.get('enderecoFisica') || '',
+        cepFisica: formData.get('cepFisica') || '',
+        emailFisica: formData.get('emailFisica') || '',
+        nomeEmpresa: formData.get('nomeEmpresa') || '',
+        telefone: formData.get('telefone') || '',
         cnpj: formData.get('cnpj') || '',
-        endereco: formData.get('enderecoFisica') || formData.get('endereco') || ' ',
-        cep: formData.get('cepFisica') || formData.get('cep') || ' ',
-        telefone: formData.get('telefoneFisica') || formData.get('telefone') || ' ',
-        nome_responsavel: formData.get('nomeResponsavel') || ' ',
-        cpf_responsavel: formData.get('cpfResponsavel') || ' ',
-        inscricao_estadual: formData.get('inscricaoEstadual') || ' ',
-        cnae_principal: formData.get('cnaePrincipal') || ' ',
-        email: formData.get('emailFisica') || ' ',
+        endereco: formData.get('endereco') || '',
+        cep: formData.get('cep') || '',
+        nomeResponsavel: formData.get('nomeResponsavel') || '',
+        cpfResponsavel: formData.get('cpfResponsavel') || '',
+        inscricaoEstadual: formData.get('inscricaoEstadual') || '',
+        cnaePrincipal: formData.get('cnaePrincipal') || '',
         socios: []
     };
 
@@ -145,6 +153,8 @@ function submitForm() {
         data.socios.push(socio);
     });
 
+    console.log('Enviando dados:', data);
+
     fetch('/cadastro/addCliente', {
         method: 'POST',
         headers: {
@@ -154,6 +164,7 @@ function submitForm() {
     })
         .then(response => response.json())
         .then(result => {
+            console.log('Resposta do servidor:', result);
             alert(result.message);
             if (result.success) {
                 window.location.href = `/cadastro?successMsg=${result.message}`;
@@ -164,5 +175,5 @@ function submitForm() {
             alert('Erro ao enviar o formulário. Por favor, tente novamente.');
         });
 
-    return false;
+    return false; // Prevent default form submission
 }
