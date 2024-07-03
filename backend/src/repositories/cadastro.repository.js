@@ -1,24 +1,37 @@
 const mysqlConn = require('../base/database');
 
 async function adicionar(nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal, socios) {
-    const query = 'INSERT INTO CLIENTE (nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    mysqlConn.query(query, [nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal], (error, results, fields) => {
+    const checkQuery = 'SELECT COUNT(*) AS count FROM CLIENTE WHERE nome = ?';
+    mysqlConn.query(checkQuery, [nome], (error, results) => {
         if (error) {
-            console.error('Erro ao adicionar o cadastro:', error);
+            console.error('Erro ao verificar a existência da empresa:', error);
             return;
         }
 
-        const id_cliente = results.insertId;
-        if (socios && socios.length > 0) {
-            const querySocio = 'INSERT INTO SOCIO (id_cliente, nome, cpf, endereco, cep, telefone) VALUES ?';
-            const sociosData = socios.map(socio => [id_cliente, socio.nome, socio.cpf, socio.endereco, socio.cep, socio.telefone]);
-
-            mysqlConn.query(querySocio, [sociosData], (error, results, fields) => {
-                if (error) {
-                    console.error('Erro ao adicionar sócio:', error);
-                }
-            });
+        if (results[0].count > 0) {
+            console.log('A empresa já existe.');
+            return;
         }
+
+        const query = 'INSERT INTO CLIENTE (nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        mysqlConn.query(query, [nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal], (error, results, fields) => {
+            if (error) {
+                console.error('Erro ao adicionar o cadastro:', error);
+                return;
+            }
+
+            const id_cliente = results.insertId;
+            if (socios && socios.length > 0) {
+                const querySocio = 'INSERT INTO SOCIO (id_cliente, nome, cpf, endereco, cep, telefone) VALUES ?';
+                const sociosData = socios.map(socio => [id_cliente, socio.nome, socio.cpf, socio.endereco, socio.cep, socio.telefone]);
+
+                mysqlConn.query(querySocio, [sociosData], (error, results, fields) => {
+                    if (error) {
+                        console.error('Erro ao adicionar sócio:', error);
+                    }
+                });
+            }
+        });
     });
 }
 
