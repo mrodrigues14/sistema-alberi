@@ -2,72 +2,125 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Editar e Remover Clientes</title>
-    <link rel="stylesheet" href="/paginaCadastro/editarCliente/editarClienteStyle.css">
+    <title>Cadastro de Informações</title>
+    <link rel="stylesheet" href="/paginaCadastro/adicionarCliente/paginaCadastro.css">
 </head>
 <body>
 <div id="menu-container"></div>
 <div class="container">
-    <h2>Editar e Remover Clientes</h2>
-    <div id="select-cliente">
+    <h2>Cadastro de Informações</h2>
+    <div id="tipo-cliente">
         <div class="form-group">
-            <label for="selectEmpresa">Nome da Empresa a ser editada:</label>
-            <select id="selectEmpresa" name="selectEmpresa" onclick="loadEmpresaOptions()" onchange="loadEmpresaDetails()"></select>
+            <label for="tipoCliente">Tipo de Cliente:</label>
+            <select id="tipoCliente" name="tipoCliente" onchange="toggleClienteForm()" required>
+                <option value="">Selecione</option>
+                <option value="fisica">Pessoa Física</option>
+                <option value="juridica">Pessoa Jurídica</option>
+            </select>
         </div>
     </div>
-    <div id="editar-remover" style="display:none;">
-        <form id="formEdit" action="/cadastro/editar" method="post" onsubmit="editClient(event)">
-            <div class="form-group">
-                <label for="nomeEmpresaEdit">Novo Nome da Empresa:</label>
-                <input type="text" id="nomeEmpresaEdit" name="nomeEmpresaEdit">
-            </div>
-            <div class="form-group">
-                <label for="telefoneEdit">Telefone:</label>
-                <input type="text" id="telefoneEdit" name="telefoneEdit">
-            </div>
-            <div class="form-group">
-                <label for="enderecoEdit">Endereço:</label>
-                <input type="text" id="enderecoEdit" name="enderecoEdit">
-            </div>
-            <div class="form-group">
-                <label for="cepEdit">CEP:</label>
-                <input type="text" id="cepEdit" name="cepEdit">
-            </div>
-            <div class="form-group">
-                <label for="cpfCnpjEdit">CPF ou CNPJ:</label>
-                <input type="text" id="cpfCnpjEdit" name="cpfCnpjEdit" readonly>
-            </div>
-            <div id="cnpj-fields" style="display:none;">
+    <div id="Adicionar-cliente" style="display:none;">
+        <h2>Adicionar Cliente</h2>
+        <form id="formAdd">
+            <!-- Pessoa Física -->
+            <div id="form-fisica" style="display:none;">
                 <div class="form-group">
-                    <label for="nomeResponsavelEdit">Nome do Responsável:</label>
-                    <input type="text" id="nomeResponsavelEdit" name="nomeResponsavelEdit">
+                    <label for="nomeFisica">Nome:</label>
+                    <input type="text" id="nomeFisica" name="nomeFisica">
                 </div>
                 <div class="form-group">
-                    <label for="cpfResponsavelEdit">CPF do Responsável:</label>
-                    <input type="text" id="cpfResponsavelEdit" name="cpfResponsavelEdit">
+                    <label for="cpfFisica">CPF:</label>
+                    <input type="text" id="cpfFisica" name="cpfFisica" required>
                 </div>
                 <div class="form-group">
-                    <label for="inscricaoEstadualEdit">Inscrição Estadual:</label>
-                    <input type="text" id="inscricaoEstadualEdit" name="inscricaoEstadualEdit">
+                    <label for="enderecoFisica">Endereço:</label>
+                    <input type="text" id="enderecoFisica" name="enderecoFisica">
                 </div>
                 <div class="form-group">
-                    <label for="cnaePrincipalEdit">CNAE Principal:</label>
-                    <input type="text" id="cnaePrincipalEdit" name="cnaePrincipalEdit">
+                    <label for="cepFisica">CEP:</label>
+                    <input type="text" id="cepFisica" name="cepFisica">
                 </div>
-                <div id="socios-section">
+                <div class="form-group">
+                    <label for="telefoneFisica">Telefone:</label>
+                    <input type="text" id="telefoneFisica" name="telefoneFisica">
+                </div>
+                <div class="form-group">
+                    <label for="emailFisica">Email:</label>
+                    <input type="email" id="emailFisica" name="emailFisica">
+                </div>
+            </div>
+
+            <!-- Pessoa Jurídica -->
+            <div id="form-juridica" style="display:none;">
+                <div class="form-group">
+                    <label for="nomeEmpresa">Nome Empresarial/Razão Social:</label>
+                    <input type="text" id="nomeEmpresa" name="nomeEmpresa" required>
+                </div>
+                <div class="form-group">
+                    <label for="cnpj">CNPJ:</label>
+                    <input type="text" id="cnpj" name="cnpj" required>
+                </div>
+                <div class="form-group">
+                    <label for="endereco">Endereço:</label>
+                    <input type="text" id="endereco" name="endereco">
+                </div>
+                <div class="form-group">
+                    <label for="cep">CEP:</label>
+                    <input type="text" id="cep" name="cep">
+                </div>
+                <div class="form-group">
+                    <label for="nomeResponsavel">Nome do Responsável Legal:</label>
+                    <input type="text" id="nomeResponsavel" name="nomeResponsavel">
+                </div>
+                <div class="form-group">
+                    <label for="cpfResponsavel">CPF do Responsável Legal:</label>
+                    <input type="text" id="cpfResponsavel" name="cpfResponsavel">
+                </div>
+                <div class="form-group">
+                    <label for="inscricaoEstadual">Inscrição Estadual:</label>
+                    <input type="text" id="inscricaoEstadual" name="inscricaoEstadual">
+                </div>
+                <div class="form-group">
+                    <label for="cnaePrincipal">CNAE Principal:</label>
+                    <input type="text" id="cnaePrincipal" name="cnaePrincipal">
+                </div>
+                <div class="form-group">
+                    <label for="telefone">Telefone:</label>
+                    <input type="text" id="telefone" name="telefone" placeholder="Telefone (XX) XXXXX-XXXX">
+                </div>
+                <div id="socio-section">
                     <h3>Sócios</h3>
-                    <div id="socios-container"></div>
-                    <button type="button" onclick="addSocio()">Adicionar Sócio</button>
+                    <div class="form-group">
+                        <label for="socioNome">Nome do Sócio:</label>
+                        <input type="text" id="socioNome" name="socioNome[]">
+                    </div>
+                    <div class="form-group">
+                        <label for="socioCpf">CPF do Sócio:</label>
+                        <input type="text" id="socioCpf" name="socioCpf[]">
+                    </div>
+                    <div class="form-group">
+                        <label for="socioEndereco">Endereço do Sócio:</label>
+                        <input type="text" id="socioEndereco" name="socioEndereco[]">
+                    </div>
+                    <div class="form-group">
+                        <label for="socioCep">CEP do Sócio:</label>
+                        <input type="text" id="socioCep" name="socioCep[]">
+                    </div>
+                    <div class="form-group">
+                        <label for="socioTelefone">Telefone do Sócio:</label>
+                        <input type="text" id="socioTelefone" name="socioTelefone[]">
+                    </div>
                 </div>
+                <button type="button" onclick="addSocio()">Adicionar Sócio</button>
             </div>
+
+            <input type="hidden" name="userRole" id="userRole">
             <div class="buttons">
-                <input type="submit" value="Confirmar Edição" id="editarButton">
-                <button type="button" onclick="cancelEdit()" id="cancelButton">Cancelar</button>
-                <button type="button" onclick="confirmDelete()" id="deleteButton" class="delete-button">Deletar Cliente</button>
+                <input type="button" value="Adicionar" id="addButton" onclick="submitForm()">
             </div>
         </form>
     </div>
 </div>
-<script src="/paginaCadastro/editarCliente/editarClienteScript.js"></script>
+<script src="/paginaCadastro/adicionarCliente/paginaCadastro.js"></script>
 </body>
 </html>

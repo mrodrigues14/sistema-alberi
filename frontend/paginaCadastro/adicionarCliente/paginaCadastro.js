@@ -62,10 +62,16 @@ function toggleClienteForm() {
         formFisica.style.display = 'block';
         formJuridica.style.display = 'none';
         adicionarCliente.style.display = 'block';
+        document.getElementById('cpfFisica').required = true;
+        document.getElementById('nomeEmpresa').required = false;
+        document.getElementById('cnpj').required = false;
     } else if (tipoCliente === 'juridica') {
         formFisica.style.display = 'none';
         formJuridica.style.display = 'block';
         adicionarCliente.style.display = 'block';
+        document.getElementById('nomeEmpresa').required = true;
+        document.getElementById('cnpj').required = true;
+        document.getElementById('cpfFisica').required = false;
     } else {
         formFisica.style.display = 'none';
         formJuridica.style.display = 'none';
@@ -101,11 +107,62 @@ function addSocio() {
     socioSection.appendChild(newDiv);
 }
 
-function confirmAdd() {
-    const userRole = localStorage.getItem('userRoles');
-    if (userRole !== 'Administrador' && userRole !== 'Configurador') {
-        alert('Você não tem permissão para adicionar um cliente.');
-        return false;
-    }
-    return true;
+function submitForm() {
+    const formAdd = document.getElementById('formAdd');
+    const formData = new FormData(formAdd);
+
+    const data = {
+        nome: formData.get('nomeFisica') || formData.get('nomeEmpresa') || ' ',
+        cpf: formData.get('cpfFisica') || formData.get('cpfResponsavel') || ' ',
+        cnpj: formData.get('cnpj') || '',
+        endereco: formData.get('enderecoFisica') || formData.get('endereco') || ' ',
+        cep: formData.get('cepFisica') || formData.get('cep') || ' ',
+        telefone: formData.get('telefoneFisica') || formData.get('telefone') || ' ',
+        nome_responsavel: formData.get('nomeResponsavel') || ' ',
+        cpf_responsavel: formData.get('cpfResponsavel') || ' ',
+        inscricao_estadual: formData.get('inscricaoEstadual') || ' ',
+        cnae_principal: formData.get('cnaePrincipal') || ' ',
+        email: formData.get('emailFisica') || ' ',
+        socios: []
+    };
+
+    // Coletar dados dos sócios se houver
+    const socioGroups = document.querySelectorAll('#socio-section > div');
+    socioGroups.forEach(group => {
+        const socioNome = group.querySelector('input[name="socioNome[]"]');
+        const socioCpf = group.querySelector('input[name="socioCpf[]"]');
+        const socioEndereco = group.querySelector('input[name="socioEndereco[]"]');
+        const socioCep = group.querySelector('input[name="socioCep[]"]');
+        const socioTelefone = group.querySelector('input[name="socioTelefone[]"]');
+
+        const socio = {
+            nome: socioNome ? socioNome.value : '',
+            cpf: socioCpf ? socioCpf.value : '',
+            endereco: socioEndereco ? socioEndereco.value : '',
+            cep: socioCep ? socioCep.value : '',
+            telefone: socioTelefone ? socioTelefone.value : ''
+        };
+        data.socios.push(socio);
+    });
+
+    fetch('/cadastro/addCliente', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message);
+            if (result.success) {
+                window.location.href = `/cadastro?successMsg=${result.message}`;
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao enviar o formulário:', error);
+            alert('Erro ao enviar o formulário. Por favor, tente novamente.');
+        });
+
+    return false;
 }

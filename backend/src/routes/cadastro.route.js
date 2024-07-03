@@ -11,11 +11,22 @@ router.get('/editarCliente', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaCadastro/editarCliente/editarCliente.html'));
 });
 
-router.post('/', async (req, res) => {
-    const { nomeEmpresa, telefone, cnpj, cpf } = req.body;
-    await adicionar(nomeEmpresa, telefone, cnpj, cpf);
-    res.redirect(`/cadastro?successMsg=Empresa ${nomeEmpresa} cadastrada com sucesso!`);
+router.post('/addCliente', async (req, res) => {
+    const { tipoCliente, nomeFisica, telefoneFisica, cpfFisica, enderecoFisica, cepFisica, emailFisica,
+        nomeEmpresa, telefone, cnpj, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios } = req.body;
+
+    if (tipoCliente === 'fisica') {
+        await adicionar(nomeFisica, telefoneFisica, null, cpfFisica, enderecoFisica, cepFisica, null, null, null, null, []);
+        res.redirect(`/cadastro?successMsg=Pessoa Física ${nomeFisica} cadastrada com sucesso!`);
+    } else if (tipoCliente === 'juridica') {
+        const parsedSocios = socios ? JSON.parse(socios) : [];
+        await adicionar(nomeEmpresa, telefone, cnpj, null, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, parsedSocios);
+        res.redirect(`/cadastro?successMsg=Empresa ${nomeEmpresa} cadastrada com sucesso!`);
+    } else {
+        res.redirect('/cadastro?errorMsg=Tipo de cliente inválido.');
+    }
 });
+
 
 router.get('/empresas', (req, res) => {
     listar((err, result) => {
