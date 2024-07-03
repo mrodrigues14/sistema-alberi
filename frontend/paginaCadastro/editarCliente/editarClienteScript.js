@@ -1,3 +1,5 @@
+let idClienteSelecionado;
+
 document.addEventListener('DOMContentLoaded', async function() {
     try {
         await loadTemplateAndStyles();
@@ -52,15 +54,26 @@ function applyHTML(htmlData) {
 }
 
 function loadEmpresaOptions() {
+    const selectedEmpresa = document.getElementById('selectEmpresa').value;
+
     fetch('/cadastro/empresas')
         .then(response => response.json())
         .then(data => {
             const selectEmpresa = document.getElementById('selectEmpresa');
-            selectEmpresa.innerHTML = ''; // Clear previous options
+            selectEmpresa.innerHTML = '';
+
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.text = 'Selecione uma empresa';
+            selectEmpresa.appendChild(defaultOption);
+
             data.forEach(empresa => {
                 const option = document.createElement('option');
                 option.value = empresa.NOME;
                 option.text = empresa.NOME;
+                if (empresa.NOME === selectedEmpresa) {
+                    option.selected = true;
+                }
                 selectEmpresa.appendChild(option);
             });
         })
@@ -75,12 +88,23 @@ function loadEmpresaDetails() {
         .then(response => response.json())
         .then(data => {
             document.getElementById('nomeEmpresaEdit').value = data.NOME;
-            document.getElementById('cpfCnpjEdit').value = data.CPF || data.CNPJ || '';
+            document.getElementById('apelidoEmpresaEdit').value = data.APELIDO || '';
+            document.getElementById('cpfCnpjEdit').value = formatCpfCnpj(data.CPF || data.CNPJ || '');
             document.getElementById('editar-remover').style.display = 'block';
+            idClienteSelecionado = data.IDCLIENTE;
         })
         .catch(error => {
             console.error('Erro ao carregar detalhes da empresa:', error);
         });
+}
+
+function formatCpfCnpj(value) {
+    if (value.length === 11) {
+        return value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4'); // Formatar CPF
+    } else if (value.length === 14) {
+        return value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5'); // Formatar CNPJ
+    }
+    return value;
 }
 
 function confirmDelete() {
@@ -88,13 +112,18 @@ function confirmDelete() {
         return false;
     }
 
+    const userRole = localStorage.getItem('userRoles');
+
     const empresaNome = document.getElementById('selectEmpresa').value;
     fetch(`/cadastro/remover`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ selectNomeEmpresa: empresaNome })
+        body: JSON.stringify({
+            selectNomeEmpresa: empresaNome,
+            userRole: userRole
+        })
     })
         .then(response => response.json())
         .then(data => {
@@ -118,12 +147,11 @@ function cancelEdit() {
     document.getElementById('select-cliente').style.display = 'block';
 }
 
-function editClient(event) {
-    event.preventDefault();
-
+function editClient() {
     const empresaNome = document.getElementById('selectEmpresa').value;
     const nomeEmpresaEdit = document.getElementById('nomeEmpresaEdit').value;
-    const cpfCnpjEdit = document.getElementById('cpfCnpjEdit').value;
+    const apelidoEmpresaEdit = document.getElementById('apelidoEmpresaEdit').value;
+    const cpfCnpjEdit = document.getElementById('cpfCnpjEdit').value.replace(/[.\-\/]/g, '');
 
     fetch(`/cadastro/editar`, {
         method: 'POST',
@@ -133,7 +161,9 @@ function editClient(event) {
         body: JSON.stringify({
             selectNomeEmpresa: empresaNome,
             nomeEmpresaEdit: nomeEmpresaEdit,
-            cpfCnpjEdit: cpfCnpjEdit
+            apelidoEmpresaEdit: apelidoEmpresaEdit,
+            cpfCnpjEdit: cpfCnpjEdit,
+            idCliente: idClienteSelecionado // Enviando o ID do cliente
         })
     })
         .then(response => response.json())

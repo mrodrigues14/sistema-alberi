@@ -1,6 +1,6 @@
 const mysqlConn = require('../base/database');
 
-async function adicionar(nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal, socios) {
+async function adicionar(nome, apelido, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal, socios) {
     const checkQuery = 'SELECT COUNT(*) AS count FROM CLIENTE WHERE nome = ?';
     mysqlConn.query(checkQuery, [nome], (error, results) => {
         if (error) {
@@ -13,8 +13,8 @@ async function adicionar(nome, telefone, cnpj, cpf, endereco, cep, nome_responsa
             return;
         }
 
-        const query = 'INSERT INTO CLIENTE (nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-        mysqlConn.query(query, [nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal], (error, results, fields) => {
+        const query = 'INSERT INTO CLIENTE (nome, apelido, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        mysqlConn.query(query, [nome, apelido, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal], (error, results, fields) => {
             if (error) {
                 console.error('Erro ao adicionar o cadastro:', error);
                 return;
@@ -35,42 +35,35 @@ async function adicionar(nome, telefone, cnpj, cpf, endereco, cep, nome_responsa
     });
 }
 
-function editar(idCliente, nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal, socios) {
+function editar(idCliente, nome, apelido, cpfCnpj, callback) {
     const query = `
         UPDATE CLIENTE
-        SET nome = ?, telefone = ?, cnpj = ?, cpf = ?, endereco = ?, cep = ?, nome_responsavel = ?, cpf_responsavel = ?, inscricao_estadual = ?, cnae_principal = ?
-        WHERE idCLIENTE = ?`;
+        SET NOME = ?, APELIDO = ?, CPF = ?, CNPJ = ?
+        WHERE IDCLIENTE = ?`;
 
-    mysqlConn.query(query, [nome, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal, idCliente], (error, results, fields) => {
+    const isCNPJ = cpfCnpj.length === 14; // Supondo que o CNPJ tenha 14 dígitos
+    const values = [nome, apelido];
+
+    if (isCNPJ) {
+        values.push(null, cpfCnpj);
+    } else {
+        values.push(cpfCnpj, null);
+    }
+
+    values.push(idCliente);
+
+    mysqlConn.query(query, values, (error, results, fields) => {
         if (error) {
             console.error('Erro ao editar o cadastro:', error);
-            return;
+            return callback(error);
         }
-
-        const deleteSociosQuery = 'DELETE FROM SOCIO WHERE id_cliente = ?';
-        mysqlConn.query(deleteSociosQuery, [idCliente], (error, results, fields) => {
-            if (error) {
-                console.error('Erro ao deletar sócios antigos:', error);
-                return;
-            }
-
-            if (socios && socios.length > 0) {
-                socios.forEach(socio => {
-                    const querySocio = 'INSERT INTO SOCIO (id_cliente, nome, cpf, endereco, cep, telefone) VALUES (?, ?, ?, ?, ?, ?)';
-                    mysqlConn.query(querySocio, [idCliente, socio.nome, socio.cpf, socio.endereco, socio.cep, socio.telefone], (error, results, fields) => {
-                        if (error) {
-                            console.error('Erro ao adicionar sócio:', error);
-                        }
-                    });
-                });
-            }
-        });
+        return callback(null, results);
     });
 }
 
 
 function listar(callback) {
-    mysqlConn.query('SELECT * FROM CLIENTE', (error, results, fields) => {
+    mysqlConn.query('SELECT * FROM CLIENTE ORDER BY NOME ASC', (error, results, fields) => {
         if (error) {
             console.error('Erro ao listar os cadastros:', error);
             return callback(error, null);

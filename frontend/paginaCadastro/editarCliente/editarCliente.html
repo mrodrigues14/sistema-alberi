@@ -16,21 +16,23 @@
         </div>
     </div>
     <div id="editar-remover" style="display:none;">
-        <form id="formEdit" action="/cadastro/editar" method="post">
-            <div class="form-group">
-                <label for="nomeEmpresaEdit">Novo Nome da Empresa:</label>
-                <input type="text" id="nomeEmpresaEdit" name="nomeEmpresaEdit">
-            </div>
-            <div class="form-group">
-                <label for="cpfCnpjEdit">CPF ou CNPJ:</label>
-                <input type="text" id="cpfCnpjEdit" name="cpfCnpjEdit">
-            </div>
-            <div class="buttons">
-                <input type="submit" value="Confirmar Edição" id="editarButton">
-                <button type="button" onclick="cancelEdit()" id="cancelButton">Cancelar</button>
-                <button type="button" onclick="confirmDelete()" id="deleteButton" class="delete-button">Deletar Cliente</button>
-            </div>
-        </form>
+        <div class="form-group">
+            <label for="nomeEmpresaEdit">Novo Nome da Empresa:</label>
+            <input type="text" id="nomeEmpresaEdit" name="nomeEmpresaEdit">
+        </div>
+        <div class="form-group">
+            <label for="apelidoEmpresaEdit">Editar Apelido:</label>
+            <input type="text" id="apelidoEmpresaEdit" name="apelidoEmpresaEdit">
+        </div>
+        <div class="form-group">
+            <label for="cpfCnpjEdit">CPF ou CNPJ:</label>
+            <input type="text" id="cpfCnpjEdit" name="cpfCnpjEdit">
+        </div>
+        <div class="buttons">
+            <button type="button" onclick="editClient()" id="editarButton" class="confirmar">Confirmar Edição</button>
+            <button type="button" onclick="cancelEdit()" id="cancelButton">Cancelar</button>
+            <button type="button" onclick="confirmDelete()" id="deleteButton" class="delete-button">Deletar Cliente</button>
+        </div>
     </div>
 </div>
 <script src="/paginaCadastro/editarCliente/editarClienteScript.js"></script>

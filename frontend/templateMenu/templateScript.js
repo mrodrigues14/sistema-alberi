@@ -258,7 +258,7 @@ function showAdminOptions() {
 
     const elementsToHideForRoles = {
         'Usuário Interno': ['rubricas', 'configCliente', 'configUsuario'],
-        'Usuário Externo': ['rubricas', 'menuAdicionarUsuario', 'cliente', 'bancos', 'Estudos', 'Extrato'],
+        'Usuário Externo': ['rubricas', 'menuAdicionarUsuario', 'cliente', 'bancos', 'Estudos', 'Extrato', 'configCliente', 'configUsuario', 'menuTarefas'],
         'default': ['menuAdicionarUsuario', 'cliente', 'bancos', 'Estudos', 'Extrato', 'rubricas']
     };
 
@@ -268,7 +268,7 @@ function showAdminOptions() {
     const estudosElement = document.getElementById('Estudos');
     const extratoElement = document.getElementById('Extrato');
     const rubricasElement = document.getElementById('rubricas');
-
+    const tarefasElement = document.getElementById('tarefas');
     const clienteDropdownElement = document.getElementById('configCliente');
     const usuarioDropdownElement = document.getElementById('configUsuario');
 
@@ -280,12 +280,13 @@ function showAdminOptions() {
         'Extrato': extratoElement,
         'rubricas': rubricasElement,
         'configCliente': clienteDropdownElement,
-        'configUsuario': usuarioDropdownElement
+        'configUsuario': usuarioDropdownElement,
+        'menuTarefas': tarefasElement
     };
 
     if (userRoles === 'Usuário Externo' && currentPage !== '/templateMenu' && !redirectionFlag) {
         localStorage.setItem('redirectionDone', 'true');
-        window.location.href = '/templateMenu';
+        window.location.href = '/estudos/resumoMensal';
         return;
     }
 

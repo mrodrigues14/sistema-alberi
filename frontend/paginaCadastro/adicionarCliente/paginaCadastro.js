@@ -115,14 +115,16 @@ function submitForm() {
     const tipoCliente = document.getElementById('tipoCliente').value;
 
     const data = {
-        tipoCliente: tipoCliente, // Inclui o tipo de cliente
+        tipoCliente: tipoCliente,
         nomeFisica: formData.get('nomeFisica') || '',
+        apelidoFisica: formData.get('apelidoFisica') || '',
         telefoneFisica: formData.get('telefoneFisica') || '',
         cpfFisica: formData.get('cpfFisica') || '',
         enderecoFisica: formData.get('enderecoFisica') || '',
         cepFisica: formData.get('cepFisica') || '',
         emailFisica: formData.get('emailFisica') || '',
         nomeEmpresa: formData.get('nomeEmpresa') || '',
+        apelidoEmpresa: formData.get('apelidoEmpresa') || '',
         telefone: formData.get('telefone') || '',
         cnpj: formData.get('cnpj') || '',
         endereco: formData.get('endereco') || '',
@@ -133,6 +135,7 @@ function submitForm() {
         cnaePrincipal: formData.get('cnaePrincipal') || '',
         socios: []
     };
+
 
     // Coletar dados dos sócios se houver
     const socioGroups = document.querySelectorAll('#socio-section > div');
