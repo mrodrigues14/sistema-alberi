@@ -63,12 +63,12 @@ button {
     cursor: pointer;
 }
 
-button[type="button"] {
+button[type="submit"] {
     background-color: #4CAF50;
     color: #fff;
 }
 
-button[type="button"]:hover {
+button[type="submit"]:hover {
     background-color: #257828;
 }
 
