@@ -58,13 +58,17 @@ function loadAndDisplayUsername() {
                     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
                         .then(response => response.json())
                         .then(data => {
-                            const empresaDefault = data.empresas.find(empresa => empresa.IDCLIENTE === 68);
-                            if (empresaDefault) {
-                                updateNomeEmpresa(empresaDefault.NOME, empresaDefault.IDCLIENTE);
-                                localStorage.setItem('nomeEmpresaSelecionada', empresaDefault.NOME);
-                                localStorage.setItem('idEmpresaSelecionada', empresaDefault.IDCLIENTE);
+                            if (data.empresas && data.empresas.length > 0) {
+                                const empresaDefault = data.empresas.find(empresa => empresa.IDCLIENTE === 68);
+                                if (empresaDefault) {
+                                    updateNomeEmpresa(empresaDefault.NOME, empresaDefault.IDCLIENTE);
+                                    localStorage.setItem('nomeEmpresaSelecionada', empresaDefault.NOME);
+                                    localStorage.setItem('idEmpresaSelecionada', empresaDefault.IDCLIENTE);
+                                } else {
+                                    console.warn('Empresa padrão não encontrada');
+                                }
                             } else {
-                                console.warn('Empresa padrão não encontrada');
+                                console.warn('Nenhuma empresa encontrada');
                             }
                         })
                         .catch(error => {
@@ -119,7 +123,7 @@ function loadAndDisplayEmpresas() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
-            var empresas = data.empresas;
+            var empresas = data.empresas || [];
             updateList('', empresas);
         })
         .catch(error => {
@@ -132,7 +136,7 @@ function loadNomeEmpresa() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
-            var empresas = data.empresas;
+            var empresas = data.empresas || [];
             var input = document.getElementById('searchInput');
             var list = document.getElementById('nameList');
 
@@ -150,11 +154,12 @@ function loadNomeEmpresa() {
                 }
             });
 
-            const empresaDefault = empresas.find(empresa => empresa.IDCLIENTE === '68');
-            if (empresaDefault) {
-                updateNomeEmpresa("Todos Clientes", empresaDefault.IDCLIENTE);
+            if (empresas.length > 0) {
+                const empresaDefault = empresas.find(empresa => empresa.IDCLIENTE === '68');
+                if (empresaDefault) {
+                    updateNomeEmpresa("Todos Clientes", empresaDefault.IDCLIENTE);
+                }
             }
-
         })
         .catch(error => {
             console.error('Erro na requisição:', error);
@@ -168,6 +173,12 @@ function updateList(filter, empresas) {
     var filteredData = empresas.filter(function(data) {
         return data.NOME.toLowerCase().includes(safeFilter);
     });
+
+    filteredData = filteredData.filter((empresa, index, self) =>
+            index === self.findIndex((e) => (
+                e.NOME === empresa.NOME && e.IDCLIENTE === empresa.IDCLIENTE
+            ))
+    );
 
     list.innerHTML = '';
     filteredData.forEach(function(data) {
@@ -254,8 +265,9 @@ function closeNoEmpresasMessage() {
 function showAdminOptions() {
     let userRoles = localStorage.getItem('userRoles');
     const currentPage = window.location.pathname;
+    console.log(currentPage)
     const redirectionFlag = localStorage.getItem('redirectionDone');
-
+    console.log(redirectionFlag)
     const elementsToHideForRoles = {
         'Usuário Interno': ['rubricas', 'configCliente', 'configUsuario'],
         'Usuário Externo': ['rubricas', 'menuAdicionarUsuario', 'cliente', 'bancos', 'Estudos', 'Extrato', 'configCliente', 'configUsuario', 'menuTarefas'],
@@ -284,7 +296,7 @@ function showAdminOptions() {
         'menuTarefas': tarefasElement
     };
 
-    if (userRoles === 'Usuário Externo' && currentPage !== '/templateMenu' && !redirectionFlag) {
+    if (userRoles === 'Usuário Externo' && currentPage === '/paginaInicial/' && redirectionFlag !== true) {
         localStorage.setItem('redirectionDone', 'true');
         window.location.href = '/estudos/resumoMensal';
         return;

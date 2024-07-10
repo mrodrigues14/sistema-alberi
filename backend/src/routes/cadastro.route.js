@@ -17,11 +17,21 @@ router.post('/addCliente', async (req, res) => {
 
     try {
         if (tipoCliente === 'fisica') {
-            await adicionar(nomeFisica, apelidoFisica, telefoneFisica, null, cpfFisica, enderecoFisica, cepFisica, null, null, null, null, []);
-            res.json({ success: true, message: `Pessoa Física ${nomeFisica} cadastrada com sucesso!` });
+            adicionar(nomeFisica, apelidoFisica, telefoneFisica, null, cpfFisica, enderecoFisica, cepFisica, null, null, null, null, [], (error, result) => {
+                if (error) {
+                    console.error('Erro ao adicionar a pessoa física:', error.message);
+                    return res.status(400).json({ success: false, message: error.message, reload: true });
+                }
+                res.json({ success: true, message: `Pessoa Física ${nomeFisica} cadastrada com sucesso!` });
+            });
         } else if (tipoCliente === 'juridica') {
-            await adicionar(nomeEmpresa, apelidoEmpresa, telefone, cnpj, null, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios || []);
-            res.json({ success: true, message: `Empresa ${nomeEmpresa} cadastrada com sucesso!` });
+            adicionar(nomeEmpresa, apelidoEmpresa, telefone, cnpj, null, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios || [], (error, result) => {
+                if (error) {
+                    console.error('Erro ao adicionar a empresa:', error.message);
+                    return res.status(400).json({ success: false, message: error.message, reload: true });
+                }
+                res.json({ success: true, message: `Empresa ${nomeEmpresa} cadastrada com sucesso!` });
+            });
         } else {
             res.status(400).json({ success: false, message: 'Tipo de cliente inválido.' });
         }
@@ -55,16 +65,31 @@ router.post('/remover', (req, res) => {
 });
 
 router.post('/editar', (req, res) => {
-    const { idCliente, nomeEmpresaEdit, apelidoEmpresaEdit, cpfCnpjEdit } = req.body;
+    const {
+        idCliente, tipoCliente, nomeFisica, apelidoFisica, telefoneFisica, cpfFisica, enderecoFisica, cepFisica, emailFisica,
+        nomeEmpresa, apelidoEmpresa, telefone, cnpj, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios
+    } = req.body;
 
-    editar(idCliente, nomeEmpresaEdit, apelidoEmpresaEdit, cpfCnpjEdit, (err, result) => {
-        if (err) {
-            console.error('Erro ao editar dados:', err);
-            return res.status(500).send("Erro ao editar dados");
+    const nome = tipoCliente === 'juridica' ? nomeEmpresa : nomeFisica;
+    const apelido = tipoCliente === 'juridica' ? apelidoEmpresa : apelidoFisica;
+    const telefoneCliente = tipoCliente === 'juridica' ? telefone : telefoneFisica;
+    const cpfCnpj = tipoCliente === 'juridica' ? cnpj : cpfFisica;
+    const enderecoCliente = tipoCliente === 'juridica' ? endereco : enderecoFisica;
+    const cepCliente = tipoCliente === 'juridica' ? cep : cepFisica;
+    const nomeResponsavelCliente = tipoCliente === 'juridica' ? nomeResponsavel : null;
+    const cpfResponsavelCliente = tipoCliente === 'juridica' ? cpfResponsavel : null;
+    const inscricaoEstadualCliente = tipoCliente === 'juridica' ? inscricaoEstadual : null;
+    const cnaePrincipalCliente = tipoCliente === 'juridica' ? cnaePrincipal : null;
+
+    editar(idCliente, tipoCliente, nome, apelido, telefoneCliente, cnpj, cpfFisica, enderecoCliente, cepCliente, nomeResponsavelCliente, cpfResponsavelCliente, inscricaoEstadualCliente, cnaePrincipalCliente, socios, (error, result) => {
+        if (error) {
+            console.error('Erro ao editar o cadastro:', error);
+            return res.status(500).json({ success: false, message: 'Erro ao editar cliente.' });
         }
         res.json({ success: true, message: 'Cliente editado com sucesso!' });
     });
 });
+
 
 router.get('/empresa/:nome', (req, res) => {
     const nomeEmpresa = req.params.nome;

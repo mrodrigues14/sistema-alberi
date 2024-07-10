@@ -16,18 +16,87 @@
         </div>
     </div>
     <div id="editar-remover" style="display:none;">
-        <div class="form-group">
-            <label for="nomeEmpresaEdit">Novo Nome da Empresa:</label>
-            <input type="text" id="nomeEmpresaEdit" name="nomeEmpresaEdit">
+        <!-- Pessoa Física -->
+        <div id="form-fisica-edit" style="display:none;">
+            <div class="form-group">
+                <label for="nomeFisicaEdit">Nome Completo:</label>
+                <input type="text" id="nomeFisicaEdit" name="nomeFisicaEdit">
+            </div>
+            <div class="form-group">
+                <label for="cpfFisicaEdit">CPF ou RG:</label>
+                <input type="text" id="cpfFisicaEdit" name="cpfFisicaEdit">
+            </div>
+            <div class="form-group">
+                <label for="apelidoFisicaEdit">Apelido no Sistema:</label>
+                <input type="text" id="apelidoFisicaEdit" name="apelidoFisicaEdit">
+            </div>
+            <div class="form-group">
+                <label for="enderecoFisicaEdit">Endereço:</label>
+                <input type="text" id="enderecoFisicaEdit" name="enderecoFisicaEdit">
+            </div>
+            <div class="form-group">
+                <label for="cepFisicaEdit">CEP:</label>
+                <input type="text" id="cepFisicaEdit" name="cepFisicaEdit">
+            </div>
+            <div class="form-group">
+                <label for="telefoneFisicaEdit">Telefone:</label>
+                <input type="text" id="telefoneFisicaEdit" name="telefoneFisicaEdit">
+            </div>
+            <div class="form-group">
+                <label for="emailFisicaEdit">Email:</label>
+                <input type="email" id="emailFisicaEdit" name="emailFisicaEdit">
+            </div>
         </div>
-        <div class="form-group">
-            <label for="apelidoEmpresaEdit">Editar Apelido:</label>
-            <input type="text" id="apelidoEmpresaEdit" name="apelidoEmpresaEdit">
+
+        <!-- Pessoa Jurídica -->
+        <div id="form-juridica-edit" style="display:none;">
+            <div class="form-group">
+                <label for="nomeEmpresaEdit">Nome Empresarial/Razão Social:</label>
+                <input type="text" id="nomeEmpresaEdit" name="nomeEmpresaEdit">
+            </div>
+            <div class="form-group">
+                <label for="apelidoEmpresaEdit">Apelido no Sistema:</label>
+                <input type="text" id="apelidoEmpresaEdit" name="apelidoEmpresaEdit">
+            </div>
+            <div class="form-group">
+                <label for="cnpjEdit">CNPJ:</label>
+                <input type="text" id="cnpjEdit" name="cnpjEdit">
+            </div>
+            <div class="form-group">
+                <label for="enderecoEdit">Endereço:</label>
+                <input type="text" id="enderecoEdit" name="enderecoEdit">
+            </div>
+            <div class="form-group">
+                <label for="cepEdit">CEP:</label>
+                <input type="text" id="cepEdit" name="cepEdit">
+            </div>
+            <div class="form-group">
+                <label for="nomeResponsavelEdit">Nome do Responsável Legal:</label>
+                <input type="text" id="nomeResponsavelEdit" name="nomeResponsavelEdit">
+            </div>
+            <div class="form-group">
+                <label for="cpfResponsavelEdit">CPF do Responsável Legal:</label>
+                <input type="text" id="cpfResponsavelEdit" name="cpfResponsavelEdit">
+            </div>
+            <div class="form-group">
+                <label for="inscricaoEstadualEdit">Inscrição Estadual:</label>
+                <input type="text" id="inscricaoEstadualEdit" name="inscricaoEstadualEdit">
+            </div>
+            <div class="form-group">
+                <label for="cnaePrincipalEdit">CNAE Principal:</label>
+                <input type="text" id="cnaePrincipalEdit" name="cnaePrincipalEdit">
+            </div>
+            <div class="form-group">
+                <label for="telefoneEdit">Telefone:</label>
+                <input type="text" id="telefoneEdit" name="telefoneEdit">
+            </div>
+            <div id="socio-section-edit">
+                <h3>Sócios</h3>
+                <!-- Dinamicamente adicionar sócios aqui -->
+            </div>
+            <button type="button" onclick="addSocioEdit()">Adicionar Sócio</button>
         </div>
-        <div class="form-group">
-            <label for="cpfCnpjEdit">CPF ou CNPJ:</label>
-            <input type="text" id="cpfCnpjEdit" name="cpfCnpjEdit">
-        </div>
+
         <div class="buttons">
             <button type="button" onclick="editClient()" id="editarButton" class="confirmar">Confirmar Edição</button>
             <button type="button" onclick="cancelEdit()" id="cancelButton">Cancelar</button>

@@ -1,23 +1,23 @@
 const mysqlConn = require('../base/database');
 
-async function adicionar(nome, apelido, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal, socios) {
+async function adicionar(nome, apelido, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal, socios, callback) {
     const checkQuery = 'SELECT COUNT(*) AS count FROM CLIENTE WHERE nome = ?';
     mysqlConn.query(checkQuery, [nome], (error, results) => {
         if (error) {
             console.error('Erro ao verificar a existência da empresa:', error);
-            return;
+            return callback(error);
         }
 
         if (results[0].count > 0) {
             console.log('A empresa já existe.');
-            return;
+            return callback(new Error('A empresa já existe.'));
         }
 
         const query = 'INSERT INTO CLIENTE (nome, apelido, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         mysqlConn.query(query, [nome, apelido, telefone, cnpj, cpf, endereco, cep, nome_responsavel, cpf_responsavel, inscricao_estadual, cnae_principal], (error, results, fields) => {
             if (error) {
                 console.error('Erro ao adicionar o cadastro:', error);
-                return;
+                return callback(error);
             }
 
             const id_cliente = results.insertId;
@@ -28,36 +28,58 @@ async function adicionar(nome, apelido, telefone, cnpj, cpf, endereco, cep, nome
                 mysqlConn.query(querySocio, [sociosData], (error, results, fields) => {
                     if (error) {
                         console.error('Erro ao adicionar sócio:', error);
+                        return callback(error);
                     }
+                    return callback(null, results);
                 });
+            } else {
+                return callback(null, results);
             }
         });
     });
 }
 
-function editar(idCliente, nome, apelido, cpfCnpj, callback) {
-    const query = `
-        UPDATE CLIENTE
-        SET NOME = ?, APELIDO = ?, CPF = ?, CNPJ = ?
-        WHERE IDCLIENTE = ?`;
+function editar(idCliente, tipoCliente, nome, apelido, telefone, cnpj, cpf, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios, callback) {
+    const query = tipoCliente === 'juridica' ?
+        `UPDATE CLIENTE SET NOME = ?, APELIDO = ?, TELEFONE = ?, CNPJ = ?, ENDERECO = ?, CEP = ?, NOME_RESPONSAVEL = ?, CPF_RESPONSAVEL = ?, INSCRICAO_ESTADUAL = ?, CNAE_PRINCIPAL = ? WHERE IDCLIENTE = ?` :
+        `UPDATE CLIENTE SET NOME = ?, APELIDO = ?, TELEFONE = ?, CPF = ?, ENDERECO = ?, CEP = ?, EMAIL = ? WHERE IDCLIENTE = ?`;
 
-    const isCNPJ = cpfCnpj.length === 14; // Supondo que o CNPJ tenha 14 dígitos
-    const values = [nome, apelido];
-
-    if (isCNPJ) {
-        values.push(null, cpfCnpj);
-    } else {
-        values.push(cpfCnpj, null);
-    }
-
-    values.push(idCliente);
+    const values = tipoCliente === 'juridica' ?
+        [nome, apelido, telefone, cnpj, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, idCliente] :
+        [nome, apelido, telefone, cpf, endereco, cep, email, idCliente];
 
     mysqlConn.query(query, values, (error, results, fields) => {
         if (error) {
             console.error('Erro ao editar o cadastro:', error);
             return callback(error);
         }
-        return callback(null, results);
+
+        if (tipoCliente === 'juridica') {
+            const deleteSociosQuery = 'DELETE FROM SOCIO WHERE id_cliente = ?';
+            mysqlConn.query(deleteSociosQuery, [idCliente], (error, results, fields) => {
+                if (error) {
+                    console.error('Erro ao deletar sócios:', error);
+                    return callback(error);
+                }
+
+                if (socios && socios.length > 0) {
+                    const querySocio = 'INSERT INTO SOCIO (id_cliente, nome, cpf, endereco, cep, telefone) VALUES ?';
+                    const sociosData = socios.map(socio => [idCliente, socio.nome, socio.cpf, socio.endereco, socio.cep, socio.telefone]);
+
+                    mysqlConn.query(querySocio, [sociosData], (error, results, fields) => {
+                        if (error) {
+                            console.error('Erro ao adicionar sócio:', error);
+                            return callback(error);
+                        }
+                        return callback(null, results);
+                    });
+                } else {
+                    return callback(null, results);
+                }
+            });
+        } else {
+            return callback(null, results);
+        }
     });
 }
 
@@ -119,13 +141,29 @@ function remover(nome, userRole, callback) {
 
 
 function obterEmpresa(nome, callback) {
-    mysqlConn.query('SELECT * FROM CLIENTE WHERE NOME = ?', [nome], (error, results, fields) => {
+    const query = 'SELECT * FROM CLIENTE WHERE NOME = ?';
+    mysqlConn.query(query, [nome], (error, results, fields) => {
         if (error) {
             console.error('Erro ao buscar os detalhes da empresa:', error);
             return callback(error, null);
         }
-        callback(null, results[0]);
+        const cliente = results[0];
+
+        if (cliente.CNPJ) {
+            const querySocios = 'SELECT * FROM SOCIO WHERE id_cliente = ?';
+            mysqlConn.query(querySocios, [cliente.IDCLIENTE], (error, socios) => {
+                if (error) {
+                    console.error('Erro ao buscar sócios:', error);
+                    return callback(error, null);
+                }
+                cliente.socios = socios;
+                callback(null, cliente);
+            });
+        } else {
+            callback(null, cliente);
+        }
     });
 }
+
 
 module.exports = { adicionar, listar, remover, editar, obterEmpresa };

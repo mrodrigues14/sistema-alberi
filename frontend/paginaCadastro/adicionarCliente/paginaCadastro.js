@@ -62,23 +62,29 @@ function toggleClienteForm() {
         formFisica.style.display = 'block';
         formJuridica.style.display = 'none';
         adicionarCliente.style.display = 'block';
-        document.getElementById('nomeFisica').required = true;
-        document.getElementById('cpfFisica').required = true;
-        document.getElementById('nomeEmpresa').required = false;
-        document.getElementById('cnpj').required = false;
+        document.getElementById('nomeFisica').setAttribute('required', 'required');
+        document.getElementById('cpfFisica').setAttribute('required', 'required');
+        document.getElementById('nomeEmpresa').removeAttribute('required');
+        document.getElementById('cnpj').removeAttribute('required');
     } else if (tipoCliente === 'juridica') {
         formFisica.style.display = 'none';
         formJuridica.style.display = 'block';
         adicionarCliente.style.display = 'block';
-        document.getElementById('nomeEmpresa').required = true;
-        document.getElementById('cnpj').required = true;
-        document.getElementById('cpfFisica').required = false;
+        document.getElementById('nomeEmpresa').setAttribute('required', 'required');
+        document.getElementById('cnpj').setAttribute('required', 'required');
+        document.getElementById('nomeFisica').removeAttribute('required');
+        document.getElementById('cpfFisica').removeAttribute('required');
     } else {
         formFisica.style.display = 'none';
         formJuridica.style.display = 'none';
         adicionarCliente.style.display = 'none';
+        document.getElementById('nomeFisica').removeAttribute('required');
+        document.getElementById('cpfFisica').removeAttribute('required');
+        document.getElementById('nomeEmpresa').removeAttribute('required');
+        document.getElementById('cnpj').removeAttribute('required');
     }
 }
+
 
 function addSocio() {
     const socioSection = document.getElementById('socio-section');
@@ -136,8 +142,6 @@ function submitForm() {
         socios: []
     };
 
-
-    // Coletar dados dos sócios se houver
     const socioGroups = document.querySelectorAll('#socio-section > div');
     socioGroups.forEach(group => {
         const socioNome = group.querySelector('input[name="socioNome[]"]');
@@ -171,6 +175,8 @@ function submitForm() {
             alert(result.message);
             if (result.success) {
                 window.location.href = `/cadastro?successMsg=${result.message}`;
+            } else if (result.reload) {
+                window.location.reload();
             }
         })
         .catch(error => {
