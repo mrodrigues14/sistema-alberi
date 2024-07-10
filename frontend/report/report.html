@@ -65,11 +65,11 @@
 <div class="report-list-container">
     <h2>Meus Chamados</h2>
     <div class="filter-buttons">
-        <button class="filter-btn yellow" onclick="loadUserReports(userId, 1, 10, 'Nao iniciado')">Não Iniciado</button>
-        <button class="filter-btn blue" onclick="loadUserReports(userId, 1, 10, 'Em desenvolvimento')">Em Desenvolvimento</button>
-        <button class="filter-btn purple" onclick="loadUserReports(userId, 1, 10, 'Em validacao')">Em Validação</button>
-        <button class="filter-btn green" onclick="loadUserReports(userId, 1, 10, 'Concluido')">Concluído</button>
-        <button class="filter-btn red" onclick="loadUserReports(userId, 1, 10, 'Recusado')">Recusados pelo Usuário</button>
+        <button class="filter-btn yellow" onclick="loadUserReports('Nao Iniciado')">Não Iniciado</button>
+        <button class="filter-btn blue" onclick="loadUserReports('Em Desenvolvimento')">Em Desenvolvimento</button>
+        <button class="filter-btn purple" onclick="loadUserReports('Em Validação')">Em Validação</button>
+        <button class="filter-btn green" onclick="loadUserReports('Concluido')">Concluído</button>
+        <button class="filter-btn red" onclick="loadUserReports('Recusado')">Recusados pelo Usuário</button>
     </div>
     <ul id="reportList"></ul>
     <div class="pagination">

@@ -1,8 +1,4 @@
 document.addEventListener('DOMContentLoaded', async function() {
-    loadUserOptions();
-    loadCompanyOptions();
-    loadTasks();
-
     try {
         await loadTemplateAndStyles();
     } catch (error) {
@@ -37,6 +33,7 @@ async function loadTemplateAndStyles() {
     script.onload = function() {
         loadAndDisplayUsername();
         handleEmpresa();
+        loadNomeEmpresa();
     };
     document.body.appendChild(script);
 }
@@ -161,10 +158,6 @@ function initializePage() {
                 .then(response => response.json())
                 .then(data => {
                     const select = document.getElementById('seletorFornecedor');
-                    const semFornecedor = document.createElement('option');
-                    semFornecedor.value = '';
-                    semFornecedor.textContent = 'Sem fornecedor';
-                    select.appendChild(semFornecedor);
                     data.forEach(fornecedor => {
                         const option = document.createElement('option');
                         option.value = fornecedor.IDFORNECEDOR;
@@ -194,7 +187,7 @@ function construirArvoreDeCategorias(categorias) {
 }
 
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
-    console.log(categorias);
+    select.innerHTML = '<option value="" disabled selected>Selecione uma rúbrica</option>';
     categorias.forEach(categoria => {
         const option = document.createElement('option');
         option.value = categoria.NOME;
@@ -301,6 +294,7 @@ function lerExcel() {
     reader.readAsBinaryString(input.files[0]);
 }
 
+
 document.addEventListener('DOMContentLoaded', function() {
     const seletorBanco = document.getElementById('seletorBanco');
     const idBancoPost = document.getElementById('id_bancoPost');
@@ -315,16 +309,15 @@ document.addEventListener('DOMContentLoaded', function() {
         idBancoPost.value = seletorBanco.value;
     });
     idBancoPost.value = seletorBanco.value;
-});
 
-$(document).ready(function() {
     $('#seletorFornecedor').select2({
+        placeholder: "Selecione um fornecedor",
         allowClear: true,
         sorter: data => data.sort((a, b) => a.text.localeCompare(b.text))
     });
 
     $('#seletorCategoria').select2({
-        placeholder: "Selecione a rúbrica",
+        placeholder: "Selecione uma rúbrica",
         allowClear: true
     });
 });

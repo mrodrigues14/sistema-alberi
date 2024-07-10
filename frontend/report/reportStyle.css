@@ -109,7 +109,7 @@ button {
     gap: 5px;
 }
 .add-coment{
-    background-color: gray;
+    background-color: #ffae0f;
 }
 .button-group {
     display: flex;
@@ -206,6 +206,10 @@ button {
     max-width: 600px;
     width: 100%;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .popup-content p {

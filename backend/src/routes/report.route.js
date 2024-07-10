@@ -228,6 +228,18 @@ router.delete('/deletar/:id', (req, res) => {
         }
     });
 });
+const { getAllReports } = require('../repositories/report.repository');
+
+router.get('/listarTodos', (req, res) => {
+    getAllReports((err, reports) => {
+        if (err) {
+            console.error('Erro ao buscar reports:', err);
+            res.status(500).send('Erro ao buscar reports');
+        } else {
+            res.json(reports);
+        }
+    });
+});
 
 
 
