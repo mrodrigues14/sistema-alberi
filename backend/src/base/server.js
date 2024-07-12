@@ -20,7 +20,7 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname, '../../../frontend')));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json({limit: '1gb'}));
+app.use(express.json({limit: '50mb'}));
 app.get('/api/isLoggedIn', (req, res) => {
     if (req.session.username) {
         res.json({ isLoggedIn: true });
@@ -32,12 +32,11 @@ app.get('/api/isLoggedIn', (req, res) => {
 routing(app);
 
 // Para HTTPS (comente a linha abaixo se quiser usar HTTPS)
-app.listen(port, () => {
-   console.log(`Server running on http://localhost:${port}`);
-});
+//app.listen(port, () => {
+ //   console.log(`Server running on http://localhost:${port}`);
+//});
 
 // Para HTTPS, descomente e ajuste conforme necessário
-/*
 const options = {
     key: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/privkey.pem'),
     cert: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/fullchain.pem'),
@@ -45,5 +44,3 @@ const options = {
 https.createServer(options, app).listen(port, () => {
     console.log(`Server running securely on https://albericonsult.com.br`);
 });
-*/
-

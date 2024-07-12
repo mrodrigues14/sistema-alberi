@@ -18,31 +18,15 @@ function getReportsByUserId(ID_USUARIO, page, limit, situacao, callback) {
     `;
     let params = [];
 
-    /*if (situacao) {
+    if (situacao) {
         query += `WHERE R.SITUACAO = ? `;
         params.push(situacao);
-    }*/
+    }
 
     query += `ORDER BY R.DATA DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
 
     mysqlConn.query(query, params, (err, results) => {
-        if (err) {
-            callback(err, null);
-        } else {
-            callback(null, results);
-        }
-    });
-}
-
-function getAllReports(callback) {
-    const query = `
-        SELECT R.*, U.NOME_DO_USUARIO 
-        FROM REPORT R
-        JOIN USUARIOS U ON R.ID_USUARIO = U.IDUSUARIOS
-        ORDER BY R.DATA DESC
-    `;
-    mysqlConn.query(query, (err, results) => {
         if (err) {
             callback(err, null);
         } else {
@@ -118,6 +102,5 @@ module.exports = {
     recusarReport,
     editarReport,
     getReportById,
-    deletarReport,
-    getAllReports
+    deletarReport
 };
