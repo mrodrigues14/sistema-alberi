@@ -33,18 +33,28 @@ function buscarBanco(idcliente, callback){
 }
 
 function buscarUltimasInsercoes(idcliente, callback) {
-    console.log(idcliente);
     const query = `
-        SELECT IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, C.NOME AS NOME_CLIENTE,
-        F.NOME AS NOME_FORNECEDOR
-        FROM EXTRATO
-        INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
-        INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
-        LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR
-        WHERE EXTRATO.ID_CLIENTE = ?
-        ORDER BY EXTRATO.IDEXTRATO DESC LIMIT 6`;
+        SELECT EX.IDEXTRATO, 
+               IFNULL(EX.DATA, '0000-00-00') AS DATA, 
+               CAT.NOME AS CATEGORIA, 
+               IFNULL(SUBCAT.NOME, '') AS SUBCATEGORIA,
+               EX.DESCRICAO, 
+               EX.NOME_NO_EXTRATO, 
+               EX.TIPO_DE_TRANSACAO, 
+               EX.VALOR, 
+               CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, 
+               C.NOME AS NOME_CLIENTE,
+               F.NOME AS NOME_FORNECEDOR
+        FROM EXTRATO EX
+        INNER JOIN BANCO B ON EX.ID_BANCO = B.IDBANCO
+        INNER JOIN CLIENTE C ON EX.ID_CLIENTE = C.IDCLIENTE
+        LEFT JOIN FORNECEDOR F ON EX.ID_FORNECEDOR = F.IDFORNECEDOR
+        LEFT JOIN CATEGORIA CAT ON EX.CATEGORIA = CAT.IDCATEGORIA
+        LEFT JOIN CATEGORIA SUBCAT ON CAT.ID_CATEGORIA_PAI = SUBCAT.IDCATEGORIA
+        WHERE EX.ID_CLIENTE = ?
+        ORDER BY EX.IDEXTRATO DESC LIMIT 6`;
 
-    mysqlConn.query(query, idcliente,function(err, result, fields) {
+    mysqlConn.query(query, idcliente, function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {

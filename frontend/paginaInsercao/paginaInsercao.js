@@ -52,14 +52,6 @@ function applyHTML(htmlData) {
     document.getElementById('menu-container').innerHTML = htmlData;
 }
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-}
-
 function getStoredEmpresaName() {
     return localStorage.getItem('nomeEmpresaSelecionada');
 }
@@ -81,8 +73,9 @@ function initializePage() {
 
                     data.forEach(insercao => {
                         const row = tbody.insertRow();
-                        row.insertCell().textContent = formatDate(insercao.DATA);
-                        row.insertCell().textContent = insercao.CATEGORIA;
+                        row.insertCell().textContent = insercao.DATA;
+                        const categoria = insercao.SUBCATEGORIA ? `${insercao.CATEGORIA} - ${insercao.SUBCATEGORIA}` : insercao.CATEGORIA;
+                        row.insertCell().textContent = categoria;
                         row.insertCell().textContent = insercao.NOME_FORNECEDOR;
                         row.insertCell().textContent = insercao.DESCRICAO;
                         row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
@@ -324,3 +317,24 @@ document.addEventListener('DOMContentLoaded', function() {
         allowClear: true
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const valorEnInput = document.getElementById('valorEn');
+    const valorSaInput = document.getElementById('valorSa');
+
+    valorEnInput.addEventListener('input', function() {
+        this.value = formatarValorFinanceiroInput(this.value);
+    });
+
+    valorSaInput.addEventListener('input', function() {
+        this.value = formatarValorFinanceiroInput(this.value);
+    });
+});
+
+function formatarValorFinanceiroInput(valor) {
+    valor = valor.replace(/\D/g, '');
+    valor = (valor / 100).toFixed(2) + '';
+    valor = valor.replace(".", ",");
+    valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    return valor;
+}

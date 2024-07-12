@@ -13,11 +13,11 @@ router.post('/consultarEmpresas', (req, res) => {
     const userName = req.session.username;
 
     const queryAdministrador = `
-        SELECT NOME, IDCLIENTE FROM CLIENTE
+        SELECT NOME, APELIDO, IDCLIENTE FROM CLIENTE
         ORDER BY (NOME = 'Todos Clientes') DESC, NOME ASC
     `;
     const queryUsuario = `
-        SELECT c.NOME, c.IDCLIENTE 
+        SELECT c.NOME, c.APELIDO, c.IDCLIENTE 
         FROM CLIENTE c 
         JOIN RELACAOUSUARIOCLIENTE ruc ON c.IDCLIENTE = ruc.ID_EMPRESA_REFERENCIA
         WHERE ruc.ID_USUARIO = ?

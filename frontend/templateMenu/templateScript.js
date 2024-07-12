@@ -147,7 +147,7 @@ function loadNomeEmpresa() {
             list.addEventListener('click', function(e) {
                 const li = e.target.closest('li');
                 if (li) {
-                    document.querySelector('.selected-company').textContent = li.textContent;
+                    document.querySelector('.selected-company').textContent = li.dataset.apelido;
                     var dropdown = document.getElementById("dropdownContent");
                     dropdown.style.display = 'none';
                     empresaSelecionada(li.dataset.nome, li.dataset.id);
@@ -171,20 +171,23 @@ function updateList(filter, empresas) {
     var list = document.getElementById('nameList');
     var safeFilter = filter.toLowerCase();
     var filteredData = empresas.filter(function(data) {
-        return data.NOME.toLowerCase().includes(safeFilter);
+        var displayText = data.APELIDO || data.NOME;
+        return displayText.toLowerCase().includes(safeFilter);
     });
 
     filteredData = filteredData.filter((empresa, index, self) =>
             index === self.findIndex((e) => (
-                e.NOME === empresa.NOME && e.IDCLIENTE === empresa.IDCLIENTE
+                (e.APELIDO || e.NOME) === (empresa.APELIDO || empresa.NOME) && e.IDCLIENTE === empresa.IDCLIENTE
             ))
     );
 
     list.innerHTML = '';
     filteredData.forEach(function(data) {
+        var displayText = data.APELIDO || data.NOME;
         var li = document.createElement('li');
-        li.textContent = data.NOME;
+        li.textContent = displayText;  // Exibir o apelido ou o nome
         li.setAttribute('data-nome', data.NOME);
+        li.setAttribute('data-apelido', data.APELIDO);
         li.setAttribute('data-id', data.IDCLIENTE);
         list.appendChild(li);
     });
