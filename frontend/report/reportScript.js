@@ -90,16 +90,12 @@ filesInput.addEventListener('change', function() {
                 previewElement.appendChild(pdfPreview);
             } else if (file.type === 'application/msword' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
                 const wordIcon = document.createElement('img');
+                wordIcon.src = '/path/to/generic-file-icon.png'; // Substitua pelo caminho correto do ícone genérico
                 wordIcon.classList.add('preview-image');
                 previewElement.appendChild(wordIcon);
-            } else if (file.type.startsWith('video/')) {
-                const video = document.createElement('video');
-                video.src = e.target.result;
-                video.controls = true;
-                video.classList.add('preview-video');
-                previewElement.appendChild(video);
             } else {
                 const fileIcon = document.createElement('img');
+                fileIcon.src = '/path/to/generic-file-icon.png'; // Substitua pelo caminho correto do ícone genérico
                 fileIcon.classList.add('preview-image');
                 previewElement.appendChild(fileIcon);
             }
@@ -122,7 +118,7 @@ function updateFilesInput(files) {
 if (reportForm) {
     reportForm.addEventListener('submit', function(event) {
         event.preventDefault();
-        submitBtn.disabled = true;
+        submitBtn.disabled = true; // Desativa o botão de enviar para evitar múltiplos envios
         const formData = new FormData(this);
 
         const userId = localStorage.getItem('idusuario');
@@ -140,10 +136,10 @@ if (reportForm) {
             } else {
                 response.text().then(text => console.error('Erro ao enviar report:', text));
             }
-            submitBtn.disabled = false;
+            submitBtn.disabled = false; // Reativa o botão após a resposta do servidor
         }).catch(error => {
             console.error('Erro ao enviar report:', error);
-            submitBtn.disabled = false;
+            submitBtn.disabled = false; // Reativa o botão em caso de erro
         });
     });
 }
