@@ -1,12 +1,10 @@
 document.addEventListener('DOMContentLoaded', async function() {
     try {
         await loadTemplateAndStyles();
-        await loadAllReports();
     } catch (error) {
         console.error('Erro ao carregar o template:', error);
     }
 });
-
 
 async function loadTemplateAndStyles() {
     const cachedCSS = localStorage.getItem('templateCSS');
@@ -152,51 +150,46 @@ if (reportForm) {
 
 let currentPage = 1;
 let currentFilter = null;
-let allReports = [];
 
-async function loadAllReports() {
-    try {
-        const response = await fetch('/report/listarTodos');
-        const reports = await response.json();
-        allReports = reports;
-    } catch (error) {
-        console.error('Erro ao carregar reports:', error);
-    }
-}
+function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
+    currentPage = page;
+    currentFilter = situacao;
 
-function displayReports(reports) {
-    const reportList = document.getElementById('reportList');
-    reportList.innerHTML = '';
+    fetch(`/report/listar?ID_USUARIO=${userId}&page=${page}&limit=${limit}&situacao=${situacao}`)
+        .then(response => response.json())
+        .then(reports => {
+            const reportList = document.getElementById('reportList');
+            reportList.innerHTML = '';
 
-    if (reports.length > 0) {
-        reports.forEach(report => {
-            const listItem = document.createElement('li');
-            const formattedDescription = report.DESCRICAO.replace(/\n/g, '<br>');
-            listItem.innerHTML = `
-                <strong>Autor: </strong> ${report.NOME_DO_USUARIO}<br>
-                <strong>Nº: ${report.ID} Título:</strong> ${report.TITULO}<br>
-                <strong>Tipo:</strong> ${report.PRIORIDADE}<br>
-                <strong>Funcionalidade Afetada:</strong> ${report.FUNCIONALIDADE_AFETADA}<br>
-                <strong>Descrição:</strong> ${formattedDescription}<br>
-                <strong>Data:</strong> ${new Date(report.DATA).toLocaleString()}<br>
-                <strong>Situação:</strong> ${report.SITUACAO}<br>
-                ${report.DESCRICAO_RECUSA ? `<strong>Motivo da Recusa:</strong> ${report.DESCRICAO_RECUSA}<br>` : ''}
-                <div class="button-group">
-                    ${report.SITUACAO !== 'Concluido' ? `<button class="edit-btn button-group-editar" onclick="openEditPopup(${report.ID})">Editar Chamado</button>` : ''}
-                    ${report.SITUACAO === 'Em validacao' ? `<button class="complete-btn" onclick="markAsCompleted(${report.ID})">Concluir Chamado</button>` : ''}
-                    ${report.SITUACAO === 'Em validacao' ? `<button class="reject-btn" onclick="openRejectPopup(${report.ID})">Recusar Chamado</button>` : ''}
-                </div>
-            `;
-            reportList.appendChild(listItem);
+            if (reports.length > 0) {
+                reports.forEach(report => {
+                    const listItem = document.createElement('li');
+                    const formattedDescription = report.DESCRICAO.replace(/\n/g, '<br>');
+                    listItem.innerHTML = `
+                        <strong>Autor: </strong> ${report.NOME_DO_USUARIO}<br>
+                        <strong>Nº: ${report.ID} Título:</strong> ${report.TITULO}<br>
+                        <strong>Tipo:</strong> ${report.PRIORIDADE}<br>
+                        <strong>Funcionalidade Afetada:</strong> ${report.FUNCIONALIDADE_AFETADA}<br>
+                        <strong>Descrição:</strong> ${formattedDescription}<br>
+                        <strong>Data:</strong> ${new Date(report.DATA).toLocaleString()}<br>
+                        <strong>Situação:</strong> ${report.SITUACAO}<br>
+                        ${report.DESCRICAO_RECUSA ? `<strong>Motivo da Recusa:</strong> ${report.DESCRICAO_RECUSA}<br>` : ''}
+                        <div class="button-group">
+                            ${situacao !== 'Concluido' ? `<button class="edit-btn button-group-editar" onclick="openEditPopup(${report.ID})">Editar Chamado</button>` : ''}
+                            ${situacao === 'Em validacao' ? `<button class="complete-btn" onclick="markAsCompleted(${report.ID})">Concluir Chamado</button>` : ''}
+                            ${situacao === 'Em validacao' ? `<button class="reject-btn" onclick="openRejectPopup(${report.ID})">Recusar Chamado</button>` : ''}
+                        </div>
+                    `;
+                    reportList.appendChild(listItem);
+                });
+            } else {
+                reportList.innerHTML = '<li>Nenhum relatório encontrado</li>';
+            }
+            document.getElementById('pageNumber').textContent = page;
+        })
+        .catch(error => {
+            console.error('Erro ao carregar reports:', error);
         });
-    } else {
-        reportList.innerHTML = '<li>Nenhum relatório encontrado</li>';
-    }
-}
-
-function loadUserReports(situacao) {
-    const filteredReports = allReports.filter(report => report.SITUACAO === situacao);
-    displayReports(filteredReports);
 }
 
 function markAsCompleted(reportId) {
