@@ -178,7 +178,9 @@ function construirArvoreDeCategorias(categorias) {
 
     Object.values(mapa).forEach(categoria => {
         if (categoria.ID_CATEGORIA_PAI) {
-            mapa[categoria.ID_CATEGORIA_PAI].subcategorias.push(categoria);
+            if (mapa[categoria.ID_CATEGORIA_PAI]) {
+                mapa[categoria.ID_CATEGORIA_PAI].subcategorias.push(categoria);
+            }
         } else {
             arvore.push(categoria);
         }
@@ -186,11 +188,11 @@ function construirArvoreDeCategorias(categorias) {
     return arvore;
 }
 
+
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
-    select.innerHTML = '<option value="" disabled selected>Selecione uma rúbrica</option>';
     categorias.forEach(categoria => {
         const option = document.createElement('option');
-        option.value = categoria.NOME;
+        option.value = categoria.IDCATEGORIA;
         option.textContent = prefixo + categoria.NOME;
         select.appendChild(option);
 
@@ -199,6 +201,7 @@ function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
         }
     });
 }
+
 
 function abrirPopUp() {
     document.getElementById("popup").style.display = "block";

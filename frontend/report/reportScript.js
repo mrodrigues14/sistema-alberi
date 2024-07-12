@@ -251,8 +251,14 @@ if (userId) {
 function openRejectPopup(reportId) {
     const rejectPopup = document.getElementById('rejectPopup');
     rejectPopup.dataset.reportId = reportId;
+
+    document.getElementById('rejectReason').value = '';
+
+    document.getElementById('rejectFiles').value = '';
+
     rejectPopup.classList.add('show', 'fade-in');
 }
+
 
 function closeRejectPopup() {
     const rejectPopup = document.getElementById('rejectPopup');
