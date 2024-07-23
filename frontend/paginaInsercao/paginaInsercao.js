@@ -59,6 +59,12 @@ function getStoredEmpresaName() {
 let IDCLIENTE = 0;
 let IDBANCO = 0;
 
+function formatarData(data) {
+    if (data === '0000-00-00') return '00/00/0000';
+    const [ano, mes, dia] = data.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
 function initializePage() {
     fetch(`/insercao/dados-empresa?nomeEmpresa=${getStoredEmpresaName()}`)
         .then(response => response.json())
@@ -73,8 +79,8 @@ function initializePage() {
 
                     data.forEach(insercao => {
                         const row = tbody.insertRow();
-                        row.insertCell().textContent = insercao.DATA;
-                        const categoria = insercao.SUBCATEGORIA ? `${insercao.CATEGORIA} - ${insercao.SUBCATEGORIA}` : insercao.CATEGORIA;
+                        row.insertCell().textContent = formatarData(insercao.DATA);
+                        const categoria = insercao.SUBCATEGORIA ? `${insercao.SUBCATEGORIA} -${insercao.CATEGORIA}` : insercao.CATEGORIA;
                         row.insertCell().textContent = categoria;
                         row.insertCell().textContent = insercao.NOME_FORNECEDOR;
                         row.insertCell().textContent = insercao.DESCRICAO;
@@ -161,6 +167,7 @@ function initializePage() {
         })
 }
 
+
 function construirArvoreDeCategorias(categorias) {
     let mapa = {};
     let arvore = [];
@@ -179,6 +186,9 @@ function construirArvoreDeCategorias(categorias) {
         }
     });
     return arvore;
+}
+function resetForm() {
+    document.getElementById('meuFormulario').reset();
 }
 
 
