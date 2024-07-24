@@ -501,8 +501,8 @@ function atualizarTabela(dados) {
             row.insertCell().textContent = formatDate(item.DATA);
             const categoria = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
             row.insertCell().textContent = categoria;
-            row.insertCell().textContent = item.DESCRICAO;
             row.insertCell().textContent = item.NOME_NO_EXTRATO;
+            row.insertCell().textContent = item.DESCRICAO;
             row.insertCell().textContent = item.NOME_FORNECEDOR;
 
             const entradaCell = row.insertCell();
