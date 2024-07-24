@@ -63,7 +63,6 @@ function buscarUltimasInsercoes(idcliente, callback) {
     });
 }
 
-
 function buscarIDEmpresa(nomeEmpresa, callback) {
     mysqlConn.query(
         `SELECT IDCLIENTE FROM CLIENTE WHERE NOME = ?`,
@@ -116,4 +115,50 @@ function deletarExtrato(idExtrato, callback) {
     });
 }
 
-module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato };
+// Listar anexos de um extrato
+function listarAnexos(idExtrato, callback) {
+    mysqlConn.query(
+        `SELECT NOME_ARQUIVO FROM EXTRATO_ANEXOS WHERE ID_EXTRATO = ?`,
+        [idExtrato],
+        function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
+
+// Upload de anexo
+function uploadAnexo(idExtrato, nomeArquivo, callback) {
+    mysqlConn.query(
+        `INSERT INTO EXTRATO_ANEXOS (ID_EXTRATO, NOME_ARQUIVO) VALUES (?, ?)`,
+        [idExtrato, nomeArquivo],
+        function(err, result, fields) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
+
+function inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, valorEntrada, valorSaida, callback) {
+    const query = `INSERT INTO EXTRATO (ID_SUBEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, ID_FORNECEDOR, TIPO_DE_TRANSACAO, VALOR) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const tipoTransacao = valorEntrada > 0 ? 'ENTRADA' : 'SAIDA';
+    const valor = valorEntrada > 0 ? valorEntrada : valorSaida;
+
+    mysqlConn.query(query, [idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, tipoTransacao, valor], (err, result) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+
+module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao};

@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     initializePage();
+    initializePageConsulta();
 });
 
 async function loadTemplateAndStyles() {
@@ -70,72 +71,20 @@ function initializePage() {
         .then(response => response.json())
         .then(data => {
             IDCLIENTE = data[0].IDCLIENTE;
-            fetch(`/insercao/ultimas-insercoes?idcliente=${IDCLIENTE}`)
+            document.getElementById('id_empresa').value = IDCLIENTE;
+            const nomeEmpresa = getStoredEmpresaName();
+            fetch(`/insercao/dados-categoria?idcliente=${encodeURIComponent(IDCLIENTE)}`)
                 .then(response => response.json())
                 .then(data => {
-                    const table = document.getElementById('ultimasInsercoes');
-                    const tbody = table.querySelector('tbody');
-                    tbody.innerHTML = '';
-
-                    data.forEach(insercao => {
-                        const row = tbody.insertRow();
-                        row.insertCell().textContent = formatarData(insercao.DATA);
-                        const categoria = insercao.SUBCATEGORIA ? `${insercao.SUBCATEGORIA} -${insercao.CATEGORIA}` : insercao.CATEGORIA;
-                        row.insertCell().textContent = categoria;
-                        row.insertCell().textContent = insercao.NOME_FORNECEDOR;
-                        row.insertCell().textContent = insercao.DESCRICAO;
-                        row.insertCell().textContent = insercao.NOME_NO_EXTRATO;
-                        row.insertCell().textContent = insercao.NOME_BANCO;
-                        row.insertCell().textContent = insercao.TIPO_DE_TRANSACAO;
-                        row.insertCell().textContent = formatarValorFinanceiro(insercao.VALOR);
-
-                        const deleteCell = row.insertCell();
-                        deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
-                                                <input type="hidden" name="idExtrato" value="${insercao.IDEXTRATO}">
-                                                <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-                                            </form>`;
-                    });
+                    const select = document.getElementById('seletorCategoria');
+                    const categorias = construirArvoreDeCategorias(data);
+                    adicionarCategoriasAoSelect(select, categorias);
                 })
                 .catch(error => {
                     console.error('Erro ao carregar os dados:', error);
                 });
-        })
 
-    const nomeEmpresa = getStoredEmpresaName();
-    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.length > 0) {
-                const campoOculto = document.querySelector('input[name="id_empresa"]');
-                if (campoOculto) {
-                    campoOculto.value = data[0].IDCLIENTE;
-                    IDCLIENTE = data[0].IDCLIENTE;
-                    fetch(`/insercao/dados-categoria?idcliente=${encodeURIComponent(IDCLIENTE)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            const select = document.getElementById('seletorCategoria');
-                            const categorias = construirArvoreDeCategorias(data);
-                            adicionarCategoriasAoSelect(select, categorias);
-                        })
-                        .catch(error => {
-                            console.error('Erro ao carregar os dados:', error);
-                        });
-                } else {
-                    console.error('Campo oculto id_empresa não encontrado');
-                }
-            } else {
-                console.error('Dados da empresa não retornados ou vazios');
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao carregar dados da empresa:', error);
-        });
-
-    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
-        .then(response => response.json())
-        .then(data => {
-            let idcliente = data[0].IDCLIENTE;
-            fetch(`/insercao/dados?idcliente=${idcliente}`)
+            fetch(`/insercao/dados?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(data => {
                     const select = document.getElementById('seletorBanco');
@@ -147,13 +96,8 @@ function initializePage() {
                         select.appendChild(option);
                     });
                 })
-        })
 
-    fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
-        .then(response => response.json())
-        .then(data => {
-            let idcliente = data[0].IDCLIENTE;
-            fetch(`/fornecedor/listar?idcliente=${idcliente}`)
+            fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(data => {
                     const select = document.getElementById('seletorFornecedor');
@@ -165,8 +109,10 @@ function initializePage() {
                     });
                 })
         })
+        .catch(error => {
+            console.error('Erro ao carregar dados da empresa:', error);
+        });
 }
-
 
 function construirArvoreDeCategorias(categorias) {
     let mapa = {};
@@ -187,10 +133,10 @@ function construirArvoreDeCategorias(categorias) {
     });
     return arvore;
 }
+
 function resetForm() {
     document.getElementById('meuFormulario').reset();
 }
-
 
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
     categorias.forEach(categoria => {
@@ -204,7 +150,6 @@ function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
         }
     });
 }
-
 
 function abrirPopUp() {
     document.getElementById("popup").style.display = "block";
@@ -243,7 +188,7 @@ function formatarValorFinanceiro(valor) {
 function lerExcel() {
     var input = document.getElementById('excelFile');
     var reader = new FileReader();
-    var idEmpresa = IDCLIENTE; // Assume que você já tem o ID da empresa definido anteriormente
+    var idEmpresa = IDCLIENTE;
 
     reader.onload = function () {
         var fileData = reader.result;
@@ -300,7 +245,6 @@ function lerExcel() {
     reader.readAsBinaryString(input.files[0]);
 }
 
-
 document.addEventListener('DOMContentLoaded', function() {
     const seletorBanco = document.getElementById('seletorBanco');
     const idBancoPost = document.getElementById('id_bancoPost');
@@ -348,3 +292,581 @@ function formatarValorFinanceiroInput(valor) {
     valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
     return valor;
 }
+
+function initializePageConsulta() {
+    const nomeEmpresa = getStoredEmpresaName();
+
+    fetch(`insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                console.log('Dados da empresa recebidos:', data);
+                idEmpresa = data[0].IDCLIENTE;
+                console.log('idEmpresa definido como:', idEmpresa);
+
+                fetch(`/insercao/dados?idcliente=${idEmpresa}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById('seletorBanco');
+                        if (data.length > 0) {
+                            data.forEach(banco => {
+                                const option = document.createElement('option');
+                                option.value = banco.IDBANCO;
+                                option.textContent = banco.NOME_TIPO;
+                                select.appendChild(option);
+                            });
+                            select.selectedIndex = 1;
+                            IDBANCO = select.options[1].value;
+                        }
+                    })
+                    .then(() => {
+                        // Definir o mês atual no seletor de mês/ano
+                        const seletorMesAno = document.getElementById('seletorMesAno');
+                        const hoje = new Date();
+                        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+                        const ano = hoje.getFullYear();
+                        seletorMesAno.value = `${mes}-${ano}`;
+                        buscarDados();
+                    });
+
+                fetch(`/fornecedor/listar?idcliente=${idEmpresa}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById('seletorFornecedor');
+                        const semFornecedor = document.createElement('option');
+                        semFornecedor.value = '';
+                        semFornecedor.textContent = 'Sem fornecedor';
+                        select.appendChild(semFornecedor);
+                        data.forEach(fornecedor => {
+                            const option = document.createElement('option');
+                            option.value = fornecedor.IDFORNECEDOR;
+                            option.textContent = fornecedor.NOME_TIPO;
+                            select.appendChild(option);
+                        });
+                    });
+            } else {
+                console.error('Dados da empresa não retornados ou vazios');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao carregar dados da empresa:', error);
+        });
+}
+
+$(document).ready(function() {
+    $('#seletorMesAno').datepicker({
+        changeMonth: true,
+        changeYear: true,
+        showButtonPanel: true,
+        dateFormat: 'mm-yy',
+        closeText: 'Pronto',
+        showTodayButton: false,
+        monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+        monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+            'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+        beforeShow: function(input, inst) {
+            $(inst.dpDiv).addClass('hide-calendar');
+        },
+        onClose: function(dateText, inst) {
+            var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+            $(this).datepicker('setDate', new Date(year, month, 1));
+            $(this).val($.datepicker.formatDate('mm-yy', new Date(year, month, 1)));
+            buscarDados();
+        }
+    });
+});
+
+function formatDateToFirstOfMonth(mesAnoString) {
+    if (!mesAnoString) return '';
+
+    const [mes, ano] = mesAnoString.split('-');
+    return `${ano}-${mes}-01`;
+}
+
+function buscarDados() {
+    const idBanco = IDBANCO || document.getElementById('seletorBanco').value;
+    const mesAno = $('#seletorMesAno').val();
+    const dataFormatada = formatDateToFirstOfMonth(mesAno);
+
+    console.log('Buscando dados para o banco:', idBanco, 'e data:', dataFormatada, 'e empresa:', idEmpresa);
+
+    const url = `/consulta/dados?banco=${idBanco}&data=${dataFormatada}&empresa=${idEmpresa}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Dados recebidos:', data);
+            atualizarTabela(data);
+        })
+        .catch(error => {
+            console.error('Erro ao buscar os dados:', error);
+        });
+}
+
+function formatarValorNumerico(valor) {
+    return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function atualizarTabela(dados) {
+    console.log('Atualizando tabela com:', dados);
+    const tbody = document.getElementById('extrato-body');
+    tbody.innerHTML = '';
+    let saldo = 0;
+
+    dados.forEach((item, index) => {
+        if (!item.ID_SUBEXTRATO) { // Só exibe linhas principais
+            const row = tbody.insertRow();
+            row.dataset.idextrato = item.IDEXTRATO; // Para jQuery UI Sortable
+
+            const dragCell = row.insertCell();
+            const dragIcon = document.createElement('img');
+
+            dragIcon.src = '/paginaInsercao/imagens/dragItem.png';
+            dragIcon.classList.add('drag-handle');
+            dragCell.appendChild(dragIcon);
+
+            row.insertCell().textContent = formatDate(item.DATA);
+            row.insertCell().textContent = item.CATEGORIA;
+            row.insertCell().textContent = item.DESCRICAO;
+            row.insertCell().textContent = item.NOME_NO_EXTRATO;
+            row.insertCell().textContent = item.NOME_FORNECEDOR;
+
+            const entradaCell = row.insertCell();
+            const saidaCell = row.insertCell();
+            if (item.TIPO_DE_TRANSACAO === 'ENTRADA') {
+                entradaCell.textContent = formatarValorNumerico(item.VALOR);
+                saidaCell.textContent = "";
+                saldo += parseFloat(item.VALOR);
+            } else {
+                entradaCell.textContent = "";
+                saidaCell.textContent = formatarValorNumerico(item.VALOR);
+                saldo -= parseFloat(item.VALOR);
+            }
+
+            row.insertCell().textContent = formatarValorNumerico(saldo);
+
+            const anexosCell = row.insertCell();
+            const deleteCell = row.insertCell();
+
+            anexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${item.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
+
+            deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
+                                        <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
+                                        <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                                    </form>
+                                    <button onclick="editarExtrato(${item.IDEXTRATO})">EDITAR</button>
+                                    <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
+                                    <button onclick="adicionarSubdivisao(${item.IDEXTRATO})">SUBDIVIDIR</button>`;
+
+            // Adiciona as subdivisões
+            dados.forEach(subItem => {
+                if (subItem.ID_SUBEXTRATO === item.IDEXTRATO) {
+                    const subRow = tbody.insertRow();
+                    subRow.classList.add('sub-linha');
+                    subRow.dataset.idextrato = subItem.IDEXTRATO;
+
+                    subRow.insertCell().textContent = '';
+                    subRow.insertCell().textContent = formatDate(subItem.DATA);
+                    subRow.insertCell().textContent = subItem.CATEGORIA;
+                    subRow.insertCell().textContent = subItem.DESCRICAO;
+                    subRow.insertCell().textContent = subItem.NOME_NO_EXTRATO;
+                    subRow.insertCell().textContent = subItem.NOME_FORNECEDOR;
+
+                    const subEntradaCell = subRow.insertCell();
+                    const subSaidaCell = subRow.insertCell();
+                    if (subItem.TIPO_DE_TRANSACAO === 'ENTRADA') {
+                        subEntradaCell.textContent = formatarValorNumerico(subItem.VALOR);
+                        subSaidaCell.textContent = "";
+                    } else {
+                        subEntradaCell.textContent = "";
+                        subSaidaCell.textContent = formatarValorNumerico(subItem.VALOR);
+                    }
+
+                    subRow.insertCell().textContent = ''; // Subdivisões não exibem saldo
+
+                    const subAnexosCell = subRow.insertCell();
+                    const subDeleteCell = subRow.insertCell();
+
+                    subAnexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${subItem.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
+
+                    subDeleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
+                                                <input type="hidden" name="idExtrato" value="${subItem.IDEXTRATO}">
+                                                <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                                            </form>
+                                            <button onclick="editarExtrato(${subItem.IDEXTRATO})">EDITAR</button>
+                                            <button onclick="selecionarLinha(this)" data-idextrato="${subItem.IDEXTRATO}">SELECIONAR</button>`;
+                }
+            });
+        }
+    });
+    fetchSaldoInicialEFinal(saldo);
+}
+
+function adicionarSubdivisao(idExtrato) {
+    const row = document.querySelector(`[data-idextrato='${idExtrato}']`);
+    const newRow = document.createElement('tr');
+    newRow.classList.add('sub-linha');
+    newRow.innerHTML = `
+        <td></td>
+        <td><input type="date" name="dataSub" required></td>
+        <td><input type="text" name="categoriaSub" required></td>
+        <td><input type="text" name="descricaoSub" required></td>
+        <td><input type="text" name="nomeExtratoSub" required></td>
+        <td><input type="text" name="fornecedorSub" required></td>
+        <td><input type="number" name="valorEntradaSub"></td>
+        <td><input type="number" name="valorSaidaSub"></td>
+        <td></td>
+        <td><input type="file" name="anexoSub"></td>
+        <td><button onclick="salvarSubdivisao(${idExtrato}, this)">Salvar</button></td>
+    `;
+    row.insertAdjacentElement('afterend', newRow);
+}
+
+function salvarSubdivisao(idExtratoPrincipal, button) {
+    const row = button.closest('tr');
+    const data = row.querySelector('input[name="dataSub"]').value;
+    const categoria = row.querySelector('input[name="categoriaSub"]').value;
+    const descricao = row.querySelector('input[name="descricaoSub"]').value;
+    const nomeExtrato = row.querySelector('input[name="nomeExtratoSub"]').value;
+    const fornecedor = row.querySelector('input[name="fornecedorSub"]').value;
+    const valorEntrada = row.querySelector('input[name="valorEntradaSub"]').value || 0;
+    const valorSaida = row.querySelector('input[name="valorSaidaSub"]').value || 0;
+    const anexo = row.querySelector('input[name="anexoSub"]').files[0];
+
+    const formData = new FormData();
+    formData.append('idExtratoPrincipal', idExtratoPrincipal);
+    formData.append('data', data);
+    formData.append('categoria', categoria);
+    formData.append('descricao', descricao);
+    formData.append('nomeExtrato', nomeExtrato);
+    formData.append('fornecedor', fornecedor);
+    formData.append('valorEntrada', valorEntrada);
+    formData.append('valorSaida', valorSaida);
+    if (anexo) {
+        formData.append('anexo', anexo);
+    }
+
+    fetch('/insercao/salvar-subdivisao', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Subdivisão salva com sucesso');
+                buscarDados();
+            } else {
+                alert('Erro ao salvar subdivisão');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao salvar subdivisão:', error);
+            alert('Erro ao salvar subdivisão');
+        });
+}
+
+function fetchSaldoInicialEFinal(saldoAtual) {
+    const mesAno = $('#seletorMesAno').val();
+    const dataFormatada = formatDateToFirstOfMonth(mesAno);
+
+    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${dataFormatada}`)
+        .then(response => response.json())
+        .then(data => {
+            const table = document.getElementById('saldoInicialTable');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            let saldoinicial = 0;
+            data.forEach(item => {
+                const row = tbody.insertRow();
+                saldoinicial += parseFloat(item.saldo);
+                row.insertCell().textContent = formatarValorNumerico(item.saldo);
+            });
+
+            // Limpar conteúdo da tabela de saldo final
+            const table2 = document.getElementById('saldoFinalTable');
+            const tbodysaldofinal = table2.querySelector('tbody');
+            tbodysaldofinal.innerHTML = ''; // Limpar antes de adicionar novas linhas
+            const saldoFinal = saldoAtual + saldoinicial;
+            const rowFinal = tbodysaldofinal.insertRow();
+            rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
+        });
+}
+
+let linhasSelecionadas = [];
+function selecionarLinha(buttonElement) {
+    const idExtrato = buttonElement.getAttribute('data-idextrato');
+    if (linhasSelecionadas.includes(idExtrato)) {
+        const index = linhasSelecionadas.indexOf(idExtrato);
+        linhasSelecionadas.splice(index, 1);
+        buttonElement.classList.remove('selecionado');
+    } else {
+        linhasSelecionadas.push(idExtrato);
+        buttonElement.classList.add('selecionado');
+    }
+}
+
+function deletarSelecionados() {
+    if (linhasSelecionadas.length === 0) {
+        alert('Selecione ao menos uma linha para deletar');
+        return;
+    }
+
+    if (!confirm(`Tem certeza que deseja deletar ${linhasSelecionadas.length} extrato(s) selecionado(s)?`)) {
+        return;
+    }
+
+    const form = document.createElement('form');
+    form.action = '/insercao/deletar-extrato';
+    form.method = 'post';
+
+    linhasSelecionadas.forEach(idExtrato => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'idExtrato';
+        input.value = idExtrato;
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function gerarPDF() {
+    var { jsPDF } = window.jspdf;
+    var doc = new jsPDF('l', 'mm', 'a4');
+
+    var fillColor = [139, 172, 175];
+    var textColor = [0, 0, 0];
+
+    var dadosTabela = [];
+    $('#consulta thead tr').each(function() {
+        var linha = [];
+        $('th', this).each(function(index) {
+            if (index !== 8) {
+                linha.push($(this).text());
+            }
+        });
+        dadosTabela.push(linha);
+    });
+
+    $('#consulta tbody tr').each(function() {
+        var linha = [];
+        $('td', this).each(function(index) {
+            if (index !== 8) {
+                linha.push($(this).text());
+            }
+        });
+        dadosTabela.push(linha);
+    });
+
+    doc.autoTable({
+        head: [dadosTabela[0]],
+        body: dadosTabela.slice(1),
+        startY: 10,
+        margin: { horizontal: 10 },
+        didParseCell: function(data) {
+            if (data.cell.section === 'head') {
+                data.cell.styles.fillColor = fillColor;
+                data.cell.styles.textColor = textColor;
+            }
+        }
+    });
+
+    ['saldoInicial', 'saldoFinal'].forEach(id => {
+        var saldoTabela = [];
+        $(`#${id}Table thead tr`).each(function() {
+            var linhaCabecalho = [];
+            $('th', this).each(function() {
+                linhaCabecalho.push($(this).text());
+            });
+            saldoTabela.push(linhaCabecalho);
+        });
+
+        $(`#${id}Table tbody tr`).each(function() {
+            var linhaDados = [];
+            $('td', this).each(function() {
+                linhaDados.push($(this).text());
+            });
+            saldoTabela.push(linhaDados);
+        });
+
+        var startY = doc.autoTable.previous ? doc.autoTable.previous.finalY + 10 : 10;
+
+        doc.autoTable({
+            head: [saldoTabela[0]],
+            body: saldoTabela.slice(1),
+            startY: startY,
+            margin: { horizontal: 10 },
+            theme: 'grid',
+            didParseCell: function(data) {
+                if (data.cell.section === 'head') {
+                    data.cell.styles.fillColor = fillColor;
+                    data.cell.styles.textColor = textColor;
+                }
+            }
+        });
+    });
+
+    var nomeBanco = document.getElementById('seletorBanco').options[document.getElementById('seletorBanco').selectedIndex].text;
+    var nomeEmpresa = getStoredEmpresaName();
+    var mesAnoSelecionado = $('#seletorMesAno').val();
+    var partesData = mesAnoSelecionado.split('-');
+    var dataFormatada = partesData[1] + '-' + partesData[0];
+    var nomeArquivo = `Tabela_${nomeEmpresa}_${nomeBanco}_${dataFormatada}.pdf`;
+
+    // Salva o PDF
+    doc.save(nomeArquivo);
+}
+
+function gerarExcel() {
+    var wb = XLSX.utils.table_to_book(document.getElementById('consulta'), { sheet: "Sheet1" });
+    wb.Sheets['Sheet1']['A2'].z = 'yyyy-mm-dd';
+    XLSX.writeFile(wb, 'tabela.xlsx');
+}
+
+function editarExtrato(idExtrato) {
+    const urlDeEdicao = `/consulta/editar?id=${idExtrato}`;
+
+    const iframe = document.createElement('iframe');
+    iframe.src = urlDeEdicao;
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+
+    const iframeContainer = document.getElementById('iframe-container');
+    iframeContainer.innerHTML = '';
+    iframeContainer.appendChild(iframe);
+
+    iframeContainer.style.display = 'block';
+}
+
+function abrirPopupAnexos(idExtrato) {
+    document.getElementById('idExtratoAnexo').value = idExtrato;
+    const popup = document.getElementById('anexo-popup');
+    const anexoContent = document.getElementById('anexo-content');
+    anexoContent.innerHTML = '';
+
+    fetch(`/insercao/anexos?idExtrato=${idExtrato}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                anexoContent.innerHTML = '<p>Sem anexos</p>';
+            } else {
+                data.forEach(anexo => {
+                    const link = document.createElement('a');
+                    link.href = `/consulta/download-anexo/${anexo.NOME_ARQUIVO}`;
+                    link.target = '_blank';
+
+                    const img = document.createElement('img');
+                    if (anexo.NOME_ARQUIVO.toLowerCase().endsWith('.pdf')) {
+                        img.src = '/paginaInsercao/imagens/pdfImage.png';
+                    } else if (anexo.NOME_ARQUIVO.toLowerCase().endsWith('.xlsx') || anexo.NOME_ARQUIVO.toLowerCase().endsWith('.xls')) {
+                        img.src = '/paginaInsercao/imagens/excelIcon.jpeg';
+                    } else if (anexo.NOME_ARQUIVO.toLowerCase().endsWith('.doc') || anexo.NOME_ARQUIVO.toLowerCase().endsWith('.docx')) {
+                        img.src = '/paginaInsercao/imagens/wordIcon.jpeg';
+                    } else if (anexo.NOME_ARQUIVO.toLowerCase().endsWith('.png') || anexo.NOME_ARQUIVO.toLowerCase().endsWith('.jpg') || anexo.NOME_ARQUIVO.toLowerCase().endsWith('.jpeg')) {
+                        img.src = `/paginaInsercao/imagens/imagesIcon.png`;
+                    } else {
+                        img.src = '/paginaInsercao/imagens/unknownFile.png';
+                    }
+
+                    link.appendChild(img);
+
+                    const text = document.createElement('span');
+                    text.textContent = anexo.NOME_ARQUIVO;
+                    text.classList.add('anexo-text');
+
+                    link.appendChild(text);
+                    anexoContent.appendChild(link);
+                });
+            }
+            popup.style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Erro ao carregar anexos:', error);
+            anexoContent.innerHTML = '<p>Erro ao carregar anexos</p>';
+            popup.style.display = 'flex';
+        });
+}
+
+function fecharPopup() {
+    document.getElementById('anexo-popup').style.display = 'none';
+}
+
+function uploadAnexo() {
+    const formData = new FormData();
+    const anexoFile = document.getElementById('anexoFile').files[0];
+    const idExtrato = document.getElementById('idExtratoAnexo').value;
+
+    formData.append('anexo', anexoFile);
+    formData.append('idExtrato', idExtrato);
+
+    fetch('/insercao/upload-anexo', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                fecharPopup();
+                alert('Anexo enviado com sucesso');
+            } else {
+                alert('Erro ao enviar anexo');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao enviar anexo:', error);
+            alert('Erro ao enviar anexo');
+        });
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+$(function() {
+    $("#consulta tbody").sortable({
+        handle: '.drag-handle',
+        stop: function(event, ui) {
+            let order = [];
+            $("#consulta tbody tr").each(function(index) {
+                const idExtrato = $(this).data("idextrato");
+                order.push({ idExtrato: idExtrato, ordem: index + 1 });
+            });
+            salvarOrdem(order);
+        }
+    }).disableSelection();
+});
+
+
+function salvarOrdem(ordem) {
+    if (!Array.isArray(ordem)) {
+        console.error('Formato de ordem inválido');
+        return;
+    }
+
+    fetch('/consulta/salvar-ordem', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ordem: ordem })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Ordem salva com sucesso');
+            } else {
+                console.error('Erro ao salvar ordem');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao salvar ordem:', error);
+        });
+}
+

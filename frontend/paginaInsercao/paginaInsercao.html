@@ -2,24 +2,58 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Inserção</title>
+    <title>Inserção e Consulta</title>
     <style>
-        #extratoButton{
-            background-color: #8BACAF;
-        }
-        #inserirButton{
+        #extratoButton, #inserirButton, #consultaButton {
             background-color: #8BACAF;
         }
 
+        /* Adicione estilos para o pop-up */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 50%;
+            max-width: 600px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
     </style>
     <link rel="stylesheet" href="/paginaInsercao/insercaoStyles.css">
+    <link rel="stylesheet" href="/paginaConsulta/paginaConsulta.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </head>
 <body>
 <div id="menu-container"></div>
+
 <div class="seletores">
     <div>
         <select id="seletorBanco" name="id_banco">
@@ -31,6 +65,10 @@
             <input type="file" id="excelFile" accept=".xlsx, .xls" />
             <input type="button" value="Upload e Processar" onclick="lerExcel()">
         </form>
+    </div>
+    <div>
+        <label for="seletorMesAno">Mes/Ano</label>
+        <input type="text" id="seletorMesAno" name="mes_ano">
     </div>
 </div>
 
@@ -45,7 +83,7 @@
                 <th>Observação</th>
                 <th>Nome no Extrato</th>
                 <th>Entrada</th>
-                <th>Saida</th>
+                <th>Saída</th>
             </tr>
             </thead>
             <tbody>
@@ -63,40 +101,86 @@
                 </td>
                 <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="textos"></td>
                 <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="textos"></td>
-                <td>
-                    <input type="text" name="valorEn" id="valorEn" class="valor">
-                </td>
+                <td><input type="text" name="valorEn" id="valorEn" class="valor"></td>
                 <td><input type="text" name="valorSa" id="valorSa" class="valor"></td>
             </tr>
             </tbody>
         </table>
     </div>
-    <input type="hidden" name="id_empresa">
+    <input type="hidden" name="id_empresa" id="id_empresa">
     <input type="hidden" name="id_bancoPost" id="id_bancoPost">
     <input type="submit" value="Enviar">
 </form>
 
-<table id="ultimasInsercoes">
+<div id="downloadButtons">
+    <button onclick="gerarPDF()">Gerar PDF</button>
+    <button onclick="gerarExcel()">Gerar Excel</button>
+</div>
+
+<div id="saldoinicial">
+    <table id="saldoInicialTable">
+        <thead>
+        <tr>
+            <th>Saldo Inicial</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <table id="saldoFinalTable">
+        <thead>
+        <tr>
+            <th>Saldo Final</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div id="botão-deletar">
+    <button onclick="deletarSelecionados()">Deletar Selecionados</button>
+</div>
+
+<table id="consulta">
     <thead>
     <tr>
+        <th></th> <!-- Coluna para o ícone de arraste -->
         <th>Data</th>
         <th>Rubrica</th>
-        <th>Fornecedor</th>
         <th>Observação</th>
         <th>Nome no Extrato</th>
-        <th>Banco</th>
-        <th>Tipo</th>
-        <th>Valor</th>
-        <th>Deletar extrato</th>
+        <th>Fornecedor</th>
+        <th>Entrada</th>
+        <th>Saída</th>
+        <th>Saldo</th>
+        <th>Anexos</th>
+        <th>Ferramentas</th>
     </tr>
     </thead>
-    <tbody>
-
-    </tbody>
+    <tbody id="extrato-body"></tbody>
+    <tbody></tbody>
 </table>
+
+
+<div id="iframe-container"></div>
+
+<!-- Pop-up para visualização e upload de anexos -->
+<div id="anexo-popup" class="popup-overlay">
+    <div class="popup-content">
+        <span class="close-btn" onclick="fecharPopup()">&times;</span>
+        <h3>Anexos</h3>
+        <div id="anexo-content"></div>
+        <input type="file" id="anexoFile">
+        <input type="hidden" id="idExtratoAnexo">
+        <button onclick="uploadAnexo()">Enviar Anexo</button>
+    </div>
+</div>
+
+
 
 <script src="/paginaInsercao/paginaInsercao.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 
 </body>
 </html>

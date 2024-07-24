@@ -1,17 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const {inserir, buscarUltimasInsercoes} = require('../repositories/insercao.repository');
-const {buscarBanco} = require('../repositories/insercao.repository');
-const {Router} = require("express");
-const {buscarIDEmpresa} = require("../repositories/insercao.repository");
-const {buscarCategorias} = require("../repositories/insercao.repository");
-const {deletarExtrato} = require("../repositories/insercao.repository");
-const {deletar} = require("../repositories/categoria.repository");
+const multer = require('multer');
+const bodyParser = require('body-parser');
+const { inserir, buscarUltimasInsercoes, buscarBanco, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo,
+    inserirSubdivisao
+} = require('../repositories/insercao.repository');
+
+// Configurar multer para upload de arquivos
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+const upload = multer({ storage: storage });
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaInsercao/paginaInsercao.html'));
-
 });
 
 router.get('/dados', (req, res) => {
@@ -83,9 +91,8 @@ router.post('/', async (req, res) => {
         res.status(500).send("Erro ao inserir dados");
     }
 });
-
 router.post('/inserir-lote', async (req, res) => {
-    const entradas = req.body; 
+    const entradas = req.body;
 
     try {
         for (const entrada of entradas) {
@@ -111,5 +118,45 @@ router.post('/deletar-extrato', (req, res) => {
         res.redirect(currentUrl);
     });
 });
+
+// Rota para listar anexos
+router.get('/anexos', (req, res) => {
+    const { idExtrato } = req.query;
+    listarAnexos(idExtrato, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao buscar anexos");
+        }
+        res.json(result);
+    });
+});
+
+// Rota para upload de anexos
+router.post('/upload-anexo', upload.single('anexo'), (req, res) => {
+    const { idExtrato } = req.body;
+    const { filename } = req.file;
+    uploadAnexo(idExtrato, filename, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao fazer upload de anexo");
+        }
+        res.json({ success: true });
+    });
+});
+
+router.post('/salvar-subdivisao', (req, res) => {
+    const { idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, valorEntrada, valorSaida } = req.body;
+    const anexo = req.file ? req.file.filename : null;
+
+    inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, valorEntrada, valorSaida, (err, result) => {
+        if (err) {
+            console.error('Erro ao salvar subdivisão:', err);
+            res.status(500).json({ success: false });
+        } else {
+            res.json({ success: true });
+        }
+    });
+});
+
 
 module.exports = router;
