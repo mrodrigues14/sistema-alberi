@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const { buscar, extratoAEditar, editarExtrato, buscarSaldoInicial, salvarOrdem } = require('../repositories/consulta.repository');
+const { buscar, extratoAEditar, editarExtrato, buscarSaldoInicial, salvarOrdem, definirSaldoInicial} = require('../repositories/consulta.repository');
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaConsulta/paginaConsulta.html'));
@@ -46,8 +46,8 @@ router.get('/dados', (req, res) => {
 });
 
 router.get('/saldoinicial', (req, res) => {
-    const { banco, data } = req.query;
-    buscarSaldoInicial(banco, data, (err, result) => {
+    const { cliente, banco, data } = req.query;
+    buscarSaldoInicial(cliente, banco, data, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao buscar saldo inicial");
@@ -68,7 +68,7 @@ router.get('/download-anexo/:nomeArquivo', (req, res) => {
 });
 
 router.post('/salvar-ordem', (req, res) => {
-    const { ordem } = req.body; // A ordem deve ser enviada como um array de objetos {idExtrato, ordem}
+    const { ordem } = req.body;
 
     if (!Array.isArray(ordem)) {
         return res.status(400).json({ success: false, message: 'Formato de ordem inválido' });
@@ -81,6 +81,18 @@ router.post('/salvar-ordem', (req, res) => {
         } else {
             res.json({ success: true });
         }
+    });
+});
+
+router.post('/definirSaldoInicial', (req, res) => {
+    const { cliente, banco, data, saldo } = req.body;
+    const mesAno = data.slice(0, 7); // Extrai o ano e o mês da data (formato YYYY-MM)
+    definirSaldoInicial(cliente, banco, `${mesAno}-01`, mesAno, saldo, (err, result) => {
+        if (err) {
+            console.error('Erro ao definir saldo inicial:', err);
+            return res.status(500).send({ success: false, message: "Erro ao definir saldo inicial" });
+        }
+        res.send({ success: true, message: "Saldo inicial definido com sucesso" });
     });
 });
 

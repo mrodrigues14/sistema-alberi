@@ -72,11 +72,21 @@ function initializePage() {
         .then(data => {
             IDCLIENTE = data[0].IDCLIENTE;
             document.getElementById('id_empresa').value = IDCLIENTE;
-            const nomeEmpresa = getStoredEmpresaName();
+
+            // Limpar seletor de categorias antes de adicionar novas opções
+            const select = document.getElementById('seletorCategoria');
+            while (select.firstChild) {
+                select.removeChild(select.firstChild);
+            }
+
             fetch(`/insercao/dados-categoria?idcliente=${encodeURIComponent(IDCLIENTE)}`)
                 .then(response => response.json())
                 .then(data => {
-                    const select = document.getElementById('seletorCategoria');
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Selecione uma Rubrica';
+                    select.appendChild(defaultOption);
+
                     const categorias = construirArvoreDeCategorias(data);
                     adicionarCategoriasAoSelect(select, categorias);
                 })
@@ -87,25 +97,25 @@ function initializePage() {
             fetch(`/insercao/dados?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(data => {
-                    const select = document.getElementById('seletorBanco');
+                    const selectBanco = document.getElementById('seletorBanco');
                     data.forEach(banco => {
                         const option = document.createElement('option');
                         option.value = banco.IDBANCO;
                         IDBANCO = option.value;
                         option.textContent = banco.NOME_TIPO;
-                        select.appendChild(option);
+                        selectBanco.appendChild(option);
                     });
                 })
 
             fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(data => {
-                    const select = document.getElementById('seletorFornecedor');
+                    const selectFornecedor = document.getElementById('seletorFornecedor');
                     data.forEach(fornecedor => {
                         const option = document.createElement('option');
                         option.value = fornecedor.IDFORNECEDOR;
                         option.textContent = fornecedor.NOME_TIPO;
-                        select.appendChild(option);
+                        selectFornecedor.appendChild(option);
                     });
                 })
         })
@@ -134,22 +144,32 @@ function construirArvoreDeCategorias(categorias) {
     return arvore;
 }
 
+
 function resetForm() {
     document.getElementById('meuFormulario').reset();
 }
 
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
     categorias.forEach(categoria => {
-        const option = document.createElement('option');
-        option.value = categoria.IDCATEGORIA;
-        option.textContent = prefixo + categoria.NOME;
-        select.appendChild(option);
+        const existingOption = Array.from(select.options).find(option => option.value === categoria.IDCATEGORIA.toString());
+        if (!existingOption) {
+            const option = document.createElement('option');
+            option.value = categoria.IDCATEGORIA;
+            option.textContent = prefixo + categoria.NOME;
 
-        if (categoria.subcategorias.length > 0) {
-            adicionarCategoriasAoSelect(select, categoria.subcategorias, prefixo + '---');
+            if (categoria.subcategorias.length > 0) {
+                option.disabled = true; // Desabilitar categorias que possuem subcategorias
+            }
+
+            select.appendChild(option);
+
+            if (categoria.subcategorias.length > 0) {
+                adicionarCategoriasAoSelect(select, categoria.subcategorias, prefixo + '---');
+            }
         }
     });
 }
+
 
 function abrirPopUp() {
     document.getElementById("popup").style.display = "block";
@@ -184,6 +204,25 @@ function fecharPopupCarregamento() {
 function formatarValorFinanceiro(valor) {
     return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+
+function formatarValorParaInsercao(valor) {
+    return parseFloat(valor.replace(/\./g, '').replace(',', '.')).toFixed(2);
+}
+
+function formatarValorFinanceiroInput(valor) {
+    valor = valor.replace(/\D/g, '');
+    valor = (valor / 100).toFixed(2) + '';
+    valor = valor.replace(".", ",");
+    valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    return valor;
+}
+
+function formatarValorParaExibicao(valor) {
+    return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+
+
 
 function lerExcel() {
     var input = document.getElementById('excelFile');
@@ -273,6 +312,25 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    const formulario = document.getElementById('meuFormulario');
+    const valorEnInput = document.getElementById('valorEn');
+    const valorSaInput = document.getElementById('valorSa');
+
+    formulario.addEventListener('submit', function(event) {
+        valorEnInput.value = formatarValorParaInsercao(valorEnInput.value);
+        valorSaInput.value = formatarValorParaInsercao(valorSaInput.value);
+    });
+
+    valorEnInput.addEventListener('input', function() {
+        this.value = formatarValorFinanceiroInput(this.value);
+    });
+
+    valorSaInput.addEventListener('input', function() {
+        this.value = formatarValorFinanceiroInput(this.value);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
     const valorEnInput = document.getElementById('valorEn');
     const valorSaInput = document.getElementById('valorSa');
 
@@ -308,6 +366,10 @@ function initializePageConsulta() {
                     .then(response => response.json())
                     .then(data => {
                         const select = document.getElementById('seletorBanco');
+                        // Remover todas as opções existentes antes de adicionar novas
+                        while (select.firstChild) {
+                            select.removeChild(select.firstChild);
+                        }
                         if (data.length > 0) {
                             data.forEach(banco => {
                                 const option = document.createElement('option');
@@ -315,8 +377,10 @@ function initializePageConsulta() {
                                 option.textContent = banco.NOME_TIPO;
                                 select.appendChild(option);
                             });
-                            select.selectedIndex = 1;
-                            IDBANCO = select.options[1].value;
+                            if (select.options.length > 1) {
+                                select.selectedIndex = 1;
+                                IDBANCO = select.options[1].value;
+                            }
                         }
                     })
                     .then(() => {
@@ -333,6 +397,10 @@ function initializePageConsulta() {
                     .then(response => response.json())
                     .then(data => {
                         const select = document.getElementById('seletorFornecedor');
+                        // Remover todas as opções existentes antes de adicionar novas
+                        while (select.firstChild) {
+                            select.removeChild(select.firstChild);
+                        }
                         const semFornecedor = document.createElement('option');
                         semFornecedor.value = '';
                         semFornecedor.textContent = 'Sem fornecedor';
@@ -409,58 +477,66 @@ function formatarValorNumerico(valor) {
     return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+let saldoinicial
+let saldo
+
 function atualizarTabela(dados) {
     console.log('Atualizando tabela com:', dados);
     const tbody = document.getElementById('extrato-body');
     tbody.innerHTML = '';
-    let saldo = 0;
+    const saldoInicial = parseFloat(document.getElementById('saldoInicialInput').value.replace(/\./g, '').replace(',', '.')) || 0;
+    let saldo = saldoInicial;
 
     dados.forEach((item, index) => {
-        if (!item.ID_SUBEXTRATO) { // Só exibe linhas principais
+        if (!item.ID_SUBEXTRATO) {
             const row = tbody.insertRow();
-            row.dataset.idextrato = item.IDEXTRATO; // Para jQuery UI Sortable
+            row.dataset.idextrato = item.IDEXTRATO;
 
             const dragCell = row.insertCell();
             const dragIcon = document.createElement('img');
-
             dragIcon.src = '/paginaInsercao/imagens/dragItem.png';
             dragIcon.classList.add('drag-handle');
             dragCell.appendChild(dragIcon);
 
             row.insertCell().textContent = formatDate(item.DATA);
-            row.insertCell().textContent = item.CATEGORIA;
+            const categoria = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
+            row.insertCell().textContent = categoria;
             row.insertCell().textContent = item.DESCRICAO;
             row.insertCell().textContent = item.NOME_NO_EXTRATO;
             row.insertCell().textContent = item.NOME_FORNECEDOR;
 
             const entradaCell = row.insertCell();
             const saidaCell = row.insertCell();
-            if (item.TIPO_DE_TRANSACAO === 'ENTRADA') {
-                entradaCell.textContent = formatarValorNumerico(item.VALOR);
-                saidaCell.textContent = "";
-                saldo += parseFloat(item.VALOR);
+
+            const valorEntrada = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? parseFloat(item.VALOR) : 0;
+            const valorSaida = item.TIPO_DE_TRANSACAO === 'SAIDA' ? parseFloat(item.VALOR) : 0;
+
+            const isExcluded = ["NÃO CONTABILIZAR", "ENTRE CONTAS"].includes(item.CATEGORIA);
+
+            if (index === 0) {
+                saldo = saldoInicial + (isExcluded ? 0 : valorEntrada - valorSaida);
             } else {
-                entradaCell.textContent = "";
-                saidaCell.textContent = formatarValorNumerico(item.VALOR);
-                saldo -= parseFloat(item.VALOR);
+                saldo += (isExcluded ? 0 : valorEntrada - valorSaida);
             }
 
-            row.insertCell().textContent = formatarValorNumerico(saldo);
+            entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
+            saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
+
+            row.insertCell().textContent = formatarValorParaExibicao(saldo);
 
             const anexosCell = row.insertCell();
             const deleteCell = row.insertCell();
 
             anexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${item.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
+            deleteCell.innerHTML = `
+                <form action="insercao/deletar-extrato" method="post">
+                    <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
+                    <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                </form>
+                <button onclick="editarExtrato(${item.IDEXTRATO})">EDITAR</button>
+                <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
+            <!-- <button onclick="adicionarSubdivisao(${item.IDEXTRATO})">SUBDIVIDIR</button> -->`;
 
-            deleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
-                                        <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
-                                        <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-                                    </form>
-                                    <button onclick="editarExtrato(${item.IDEXTRATO})">EDITAR</button>
-                                    <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
-                                    <button onclick="adicionarSubdivisao(${item.IDEXTRATO})">SUBDIVIDIR</button>`;
-
-            // Adiciona as subdivisões
             dados.forEach(subItem => {
                 if (subItem.ID_SUBEXTRATO === item.IDEXTRATO) {
                     const subRow = tbody.insertRow();
@@ -476,13 +552,8 @@ function atualizarTabela(dados) {
 
                     const subEntradaCell = subRow.insertCell();
                     const subSaidaCell = subRow.insertCell();
-                    if (subItem.TIPO_DE_TRANSACAO === 'ENTRADA') {
-                        subEntradaCell.textContent = formatarValorNumerico(subItem.VALOR);
-                        subSaidaCell.textContent = "";
-                    } else {
-                        subEntradaCell.textContent = "";
-                        subSaidaCell.textContent = formatarValorNumerico(subItem.VALOR);
-                    }
+                    subEntradaCell.textContent = subItem.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(subItem.VALOR) : "";
+                    subSaidaCell.textContent = subItem.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(subItem.VALOR) : "";
 
                     subRow.insertCell().textContent = ''; // Subdivisões não exibem saldo
 
@@ -490,17 +561,18 @@ function atualizarTabela(dados) {
                     const subDeleteCell = subRow.insertCell();
 
                     subAnexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${subItem.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
-
-                    subDeleteCell.innerHTML = `<form action="insercao/deletar-extrato" method="post">
-                                                <input type="hidden" name="idExtrato" value="${subItem.IDEXTRATO}">
-                                                <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-                                            </form>
-                                            <button onclick="editarExtrato(${subItem.IDEXTRATO})">EDITAR</button>
-                                            <button onclick="selecionarLinha(this)" data-idextrato="${subItem.IDEXTRATO}">SELECIONAR</button>`;
+                    subDeleteCell.innerHTML = `
+                        <form action="insercao/deletar-extrato" method="post">
+                            <input type="hidden" name="idExtrato" value="${subItem.IDEXTRATO}">
+                            <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+                        </form>
+                        <button onclick="editarExtrato(${subItem.IDEXTRATO})">EDITAR</button>
+                        <button onclick="selecionarLinha(this)" data-idextrato="${subItem.IDEXTRATO}">SELECIONAR</button>`;
                 }
             });
         }
     });
+
     fetchSaldoInicialEFinal(saldo);
 }
 
@@ -567,30 +639,43 @@ function salvarSubdivisao(idExtratoPrincipal, button) {
         });
 }
 
-function fetchSaldoInicialEFinal(saldoAtual) {
+function fetchSaldoInicialEFinal() {
     const mesAno = $('#seletorMesAno').val();
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
 
-    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${dataFormatada}`)
+    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${dataFormatada}&cliente=${IDCLIENTE}`)
         .then(response => response.json())
         .then(data => {
-            const table = document.getElementById('saldoInicialTable');
-            const tbody = table.querySelector('tbody');
-            tbody.innerHTML = '';
-            let saldoinicial = 0;
-            data.forEach(item => {
-                const row = tbody.insertRow();
-                saldoinicial += parseFloat(item.saldo);
-                row.insertCell().textContent = formatarValorNumerico(item.saldo);
-            });
-
-            // Limpar conteúdo da tabela de saldo final
+            const saldoInicialInput = document.getElementById('saldoInicialInput');
             const table2 = document.getElementById('saldoFinalTable');
             const tbodysaldofinal = table2.querySelector('tbody');
-            tbodysaldofinal.innerHTML = ''; // Limpar antes de adicionar novas linhas
-            const saldoFinal = saldoAtual + saldoinicial;
+            tbodysaldofinal.innerHTML = '';
+            console.log(data.SALDO)
+
+            let saldoinicial = 0;
+
+            if (data && data.SALDO) {
+                saldoinicial = parseFloat(data.SALDO || 0);
+            }
+            console.log("Saldo Inicial:", saldoinicial);
+            saldoInicialInput.value = formatarValorNumerico(saldoinicial);
+
+            const extratoBody = document.getElementById('extrato-body');
+            const rows = extratoBody.getElementsByTagName('tr');
+            let saldoFinal = saldoinicial;
+
+            if (rows.length > 0) {
+                const lastRow = rows[rows.length - 1];
+                const lastSaldoCell = lastRow.cells[8];
+                saldoFinal = parseFloat(lastSaldoCell.textContent.replace(/\./g, '').replace(',', '.')) || saldoinicial;
+            }
+
             const rowFinal = tbodysaldofinal.insertRow();
             rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
+        })
+        .catch(error => {
+            console.error('Erro ao buscar saldo inicial:', error);
+            document.getElementById('saldoInicialInput').value = "0,00";
         });
 }
 
@@ -839,10 +924,43 @@ $(function() {
                 order.push({ idExtrato: idExtrato, ordem: index + 1 });
             });
             salvarOrdem(order);
+
+            // Recalcular saldo
+            const rows = document.querySelectorAll('#extrato-body tr');
+            const saldoInicial = parseFloat(document.getElementById('saldoInicialInput').value.replace(/\./g, '').replace(',', '.')) || 0;
+            let saldo = saldoInicial;
+
+            rows.forEach((row, index) => {
+                const entradaCell = row.cells[6];
+                const saidaCell = row.cells[7];
+                const saldoCell = row.cells[8];
+
+                const entrada = parseFloat(entradaCell.textContent.replace(/\./g, '').replace(',', '.')) || 0;
+                const saida = parseFloat(saidaCell.textContent.replace(/\./g, '').replace(',', '.')) || 0;
+
+                const categoria = row.cells[2].textContent;
+                const isExcluded = ["NÃO CONTABILIZAR", "ENTRE CONTAS"].includes(categoria);
+
+                if (index === 0) {
+                    saldo = saldoInicial + (isExcluded ? 0 : entrada - saida);
+                } else {
+                    saldo += (isExcluded ? 0 : entrada - saida);
+                }
+
+                saldoCell.textContent = formatarValorNumerico(saldo);
+            });
+
+            // Atualizar saldo final
+            fetchSaldoInicialEFinal();
         }
     }).disableSelection();
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    initializePage();
+    initializePageConsulta();
+    fetchSaldoInicialEFinal();
+});
 
 function salvarOrdem(ordem) {
     if (!Array.isArray(ordem)) {
@@ -870,3 +988,46 @@ function salvarOrdem(ordem) {
         });
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const saldoInicialInput = document.getElementById('saldoInicialInput');
+    const editarSaldoInicial = document.getElementById('editarSaldoInicial');
+    const salvarSaldoInicialBtn = document.getElementById('salvarSaldoInicialBtn');
+
+    editarSaldoInicial.addEventListener('click', function() {
+        saldoInicialInput.removeAttribute('readonly');
+        saldoInicialInput.focus();
+        editarSaldoInicial.style.display = 'none';
+        salvarSaldoInicialBtn.style.display = 'inline';
+    });
+
+    salvarSaldoInicialBtn.addEventListener('click', function() {
+        const novoSaldo = parseFloat(saldoInicialInput.value.replace('.', '').replace(',', '.')).toFixed(2);
+        const cliente = IDCLIENTE;
+        const banco = IDBANCO;
+        const data = formatDateToFirstOfMonth($('#seletorMesAno').val());
+
+        fetch('/consulta/definirSaldoInicial', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cliente, banco, data, saldo: novoSaldo })
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert('Saldo inicial atualizado com sucesso!');
+                saldoInicialInput.setAttribute('readonly', 'true');
+                editarSaldoInicial.style.display = 'inline';
+                salvarSaldoInicialBtn.style.display = 'none';
+                buscarDados();
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar saldo inicial:', error);
+                alert('Erro ao atualizar saldo inicial');
+            });
+    });
+
+    saldoInicialInput.addEventListener('input', function() {
+        this.value = formatarValorFinanceiroInput(this.value);
+    });
+});

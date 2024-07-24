@@ -365,6 +365,9 @@ iframe {
     font-size: 12px;
 }
 
+.select2-selection__arrow{
+    right: -29px !important;
+}
 .popup-overlay {
     display: none;
     position: fixed;
