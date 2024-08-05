@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     localStorage.setItem('username', data.user.username);
                     localStorage.setItem('userRole', data.user.role);
                     localStorage.setItem('idusuario', data.user.idusuario);
-                    window.location.href = '/tarefas';
+                    window.location.href = '/paginaInicial';
                 } else {
                     showModalError(data.message);
                 }

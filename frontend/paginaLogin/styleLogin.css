@@ -8,7 +8,8 @@ body {
     justify-content: center;
     align-items: center;
     text-align: center;
-    background-color: #8BACAF;
+    background-color: #115C5E;
+;
 }
 
 .login {
@@ -18,7 +19,7 @@ body {
     align-items: center;
     width: 50%;
     height: 100%;
-    background-color: #8BACAF;
+    background-color: #115C5E;;
     padding: 2rem;
     margin-top: -15rem;
     box-sizing: border-box;
@@ -97,9 +98,11 @@ body {
     background-color: #115C5E;
 }
 
-.loginBackground img {
+.login img {
     max-width: 100%;
     height: auto;
+    margin-bottom: 8%;
+    margin-top: 5%;
 }
 
 /* Media Query para dispositivos móveis */
