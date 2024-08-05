@@ -198,7 +198,6 @@ document.addEventListener('DOMContentLoaded', function () {
             document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
         });
 
-        // Clear cache
         if ('caches' in window) {
             caches.keys().then(function (names) {
                 for (let name of names) caches.delete(name);
