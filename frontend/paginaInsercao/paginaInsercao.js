@@ -925,7 +925,6 @@ $(function() {
             });
             salvarOrdem(order);
 
-            // Recalcular saldo
             const rows = document.querySelectorAll('#extrato-body tr');
             const saldoInicial = parseFloat(document.getElementById('saldoInicialInput').value.replace(/\./g, '').replace(',', '.')) || 0;
             let saldo = saldoInicial;
@@ -950,7 +949,6 @@ $(function() {
                 saldoCell.textContent = formatarValorNumerico(saldo);
             });
 
-            // Atualizar saldo final
             fetchSaldoInicialEFinal();
         }
     }).disableSelection();

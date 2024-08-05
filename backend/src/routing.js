@@ -1,6 +1,6 @@
 const autenticacaoRouter = require('./routes/autenticacao.route');
 const insercaoRouter = require('./routes/insercao.route');
-const paginaInicialRouter = require('./routes/paginaInicial.route');
+const tarefas = require('./routes/tarefas.route');
 const estudosRouter = require('./routes/estudos.route');
 const loginRouter = require('./routes/login.route');
 const consultaRouter = require('./routes/consulta.route');
@@ -14,13 +14,14 @@ const seletorEmpresa = require('./routes/seletorEmpresa.route')
 const templateMenu = require('./routes/templateMenu.route')
 const report = require('./routes/report.route')
 const usuario = require('./routes/usuario.route')
+const paginaInicial = require('./routes/paginaInicial.route')
 
 
 
 function routing(app){
     app.use('/api', autenticacaoRouter);
     app.use('/insercao', insercaoRouter);
-    app.use('/paginaInicial', paginaInicialRouter);
+    app.use('/tarefas', tarefas);
     app.use('/estudos', estudosRouter);
     app.use('/consulta', consultaRouter);
     app.use('/rubricas', rubricasRouter);
@@ -34,6 +35,8 @@ function routing(app){
     app.use('/templateMenu', templateMenu)
     app.use('/report', report)
     app.use('/usuario', usuario)
+    app.use('/paginaInicial', paginaInicial)
+
 
 
 }

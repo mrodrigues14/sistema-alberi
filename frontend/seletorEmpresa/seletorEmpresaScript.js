@@ -96,7 +96,7 @@ function addClickEventToListItems() {
     var listItems = document.querySelectorAll('.name-list li');
     listItems.forEach(function(item) {
         item.addEventListener('click', function() {
-            window.location.href = '/paginaInicial';
+            window.location.href = '/tarefas';
         });
     });
 }

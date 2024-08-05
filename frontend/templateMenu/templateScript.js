@@ -124,6 +124,10 @@ function loadAndDisplayEmpresas() {
         .then(response => response.json())
         .then(data => {
             var empresas = data.empresas || [];
+            if (localStorage.getItem('userRoles') === 'Administrador') {
+                empresas.unshift({ IDCLIENTE: 'perfilVinculado', NOME: 'Empresas Vinculadas ao Perfil' });
+            }
+
             updateList('', empresas);
         })
         .catch(error => {
@@ -131,6 +135,7 @@ function loadAndDisplayEmpresas() {
             showNoEmpresasMessage(error.message);
         });
 }
+
 
 function loadNomeEmpresa() {
     fetch('/seletorEmpresa/consultarEmpresas', { method: 'POST' })
@@ -299,7 +304,7 @@ function showAdminOptions() {
         'menuTarefas': tarefasElement
     };
 
-    if (userRoles === 'Usuário Externo' && currentPage === '/paginaInicial/' && redirectionFlag !== true) {
+    if (userRoles === 'Usuário Externo' && currentPage === '/tarefas/' && redirectionFlag !== true) {
         localStorage.setItem('redirectionDone', 'true');
         window.location.href = '/estudos/resumoMensal';
         return;

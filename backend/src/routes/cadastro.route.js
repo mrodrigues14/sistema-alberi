@@ -80,8 +80,9 @@ router.post('/editar', (req, res) => {
     const cpfResponsavelCliente = tipoCliente === 'juridica' ? cpfResponsavel : null;
     const inscricaoEstadualCliente = tipoCliente === 'juridica' ? inscricaoEstadual : null;
     const cnaePrincipalCliente = tipoCliente === 'juridica' ? cnaePrincipal : null;
+    const email = tipoCliente === 'fisica' ? emailFisica : null;
 
-    editar(idCliente, tipoCliente, nome, apelido, telefoneCliente, cnpj, cpfFisica, enderecoCliente, cepCliente, nomeResponsavelCliente, cpfResponsavelCliente, inscricaoEstadualCliente, cnaePrincipalCliente, socios, (error, result) => {
+    editar(idCliente, tipoCliente, nome, apelido, telefoneCliente, cnpj, cpfFisica, enderecoCliente, cepCliente, nomeResponsavelCliente, cpfResponsavelCliente, inscricaoEstadualCliente, cnaePrincipalCliente, socios, email, (error, result) => {
         if (error) {
             console.error('Erro ao editar o cadastro:', error);
             return res.status(500).json({ success: false, message: 'Erro ao editar cliente.' });
@@ -89,7 +90,6 @@ router.post('/editar', (req, res) => {
         res.json({ success: true, message: 'Cliente editado com sucesso!' });
     });
 });
-
 
 router.get('/empresa/:nome', (req, res) => {
     const nomeEmpresa = req.params.nome;

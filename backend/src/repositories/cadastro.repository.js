@@ -39,7 +39,7 @@ async function adicionar(nome, apelido, telefone, cnpj, cpf, endereco, cep, nome
     });
 }
 
-function editar(idCliente, tipoCliente, nome, apelido, telefone, cnpj, cpf, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios, callback) {
+function editar(idCliente, tipoCliente, nome, apelido, telefone, cnpj, cpf, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios, email, callback) {
     const query = tipoCliente === 'juridica' ?
         `UPDATE CLIENTE SET NOME = ?, APELIDO = ?, TELEFONE = ?, CNPJ = ?, ENDERECO = ?, CEP = ?, NOME_RESPONSAVEL = ?, CPF_RESPONSAVEL = ?, INSCRICAO_ESTADUAL = ?, CNAE_PRINCIPAL = ? WHERE IDCLIENTE = ?` :
         `UPDATE CLIENTE SET NOME = ?, APELIDO = ?, TELEFONE = ?, CPF = ?, ENDERECO = ?, CEP = ?, EMAIL = ? WHERE IDCLIENTE = ?`;
@@ -82,7 +82,6 @@ function editar(idCliente, tipoCliente, nome, apelido, telefone, cnpj, cpf, ende
         }
     });
 }
-
 
 function listar(callback) {
     mysqlConn.query('SELECT * FROM CLIENTE ORDER BY NOME ASC', (error, results, fields) => {

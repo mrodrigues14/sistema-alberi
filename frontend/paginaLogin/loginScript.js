@@ -11,13 +11,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const resetPasswordModal = document.getElementById('resetPasswordModal');
     const resetPasswordForm = document.getElementById('resetPasswordForm');
     const closeModalElements = document.querySelectorAll('.close');
+    const showPasswordCheckbox = document.getElementById('showPassword');
+    const passwordField = document.querySelector('input[name="password"]');
 
     emailjs.init("IH1XjobLDTSiJcPFV");
 
     loginForm.addEventListener('submit', function (e) {
         e.preventDefault();
         let username = document.querySelector('input[name="username"]').value;
-        const password = document.querySelector('input[name="password"]').value;
+        const password = passwordField.value;
 
         // Remover pontos, traços e barras do CPF/CNPJ
         username = username.replace(/[.\-\/]/g, '');
@@ -44,6 +46,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Error:', error);
                 showModalError('Ocorreu um erro ao tentar fazer login. Por favor, tente novamente mais tarde.');
             });
+    });
+
+    showPasswordCheckbox.addEventListener('change', function () {
+        const type = this.checked ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
     });
 
     forgotPasswordLink.addEventListener('click', function () {
