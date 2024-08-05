@@ -479,29 +479,21 @@ function editItem(index, column) {
 
     const descriptionContainer = document.getElementById('descriptionContainer');
     const additionalDescriptions = document.getElementById('additionalDescriptions');
-    const addDescriptionButton = document.getElementById('addDescriptionButton'); // Adicionado para mostrar o botão
+    const addDescriptionButton = document.getElementById('addDescriptionButton');
+
     additionalDescriptions.innerHTML = ''; // Limpa as descrições existentes
 
-    // Verifique se a tarefa tem descrições e se pelo menos uma é uma checklist
-    const hasChecklist = item.descriptions && item.descriptions.some(desc => desc.text !== "");
-
-    if (hasChecklist) {
-        // Modo checklist
+    if (item.descriptions && item.descriptions.length > 0) {
         descriptionContainer.style.display = 'none';
         additionalDescriptions.style.display = 'block';
         addDescriptionButton.style.display = 'flex'; // Mostra o botão de adicionar descrição
         item.descriptions.forEach(desc => {
-            addDescriptionField(desc.text, desc.completed);
+            addDescriptionField(desc.text, desc.completed, true);
         });
-        addDescriptionField('', false); // Adiciona um campo adicional vazio
-        isCheckboxMode = true;
     } else {
-        // Modo texto
         descriptionContainer.style.display = 'block';
         additionalDescriptions.style.display = 'none';
         addDescriptionButton.style.display = 'none'; // Esconde o botão de adicionar descrição
-        document.getElementById('description').value = item.descriptions.length > 0 ? item.descriptions[0].text : '';
-        isCheckboxMode = false;
     }
 
     document.getElementById('taskPopup').style.display = 'block';
@@ -525,9 +517,13 @@ function updateItem(index, column) {
     const descriptions = [];
     const descContainers = document.querySelectorAll('#additionalDescriptions .desc-container');
     descContainers.forEach((container, i) => {
-        const text = container.querySelector('textarea').value;
-        const completed = container.querySelector('input[type="checkbox"]').checked;
-        descriptions.push({ text, completed });
+        const textarea = container.querySelector('textarea');
+        const checkbox = container.querySelector('input[type="checkbox"]');
+        if (textarea) {
+            const text = textarea.value;
+            const completed = checkbox ? checkbox.checked : false;
+            descriptions.push({ text, completed });
+        }
     });
 
     const item = {
