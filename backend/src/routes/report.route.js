@@ -1,12 +1,14 @@
 const express = require('express');
+const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const mime = require('mime-types');
 const JSZip = require('jszip');
-
-const { deletarReport, getReportById, editarReport, recusarReport, inserirReport, getReportFilesByRange, getReportsByUserId , updateReportStatus} = require('../repositories/report.repository');
-
-const router = express.Router();
+const { deletarReport, getReportById,
+    editarReport, recusarReport,
+    inserirReport, getReportFilesByRange,
+    getReportsByUserId ,
+    updateReportStatus} = require('../repositories/report.repository');
 const upload = multer({ storage: multer.memoryStorage() }); // Usando memória para armazenamento temporário
 
 router.get('/', (req, res) => {
@@ -240,7 +242,5 @@ router.get('/listarTodos', (req, res) => {
         }
     });
 });
-
-
 
 module.exports = router;

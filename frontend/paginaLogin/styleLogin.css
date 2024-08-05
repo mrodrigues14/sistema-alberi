@@ -143,7 +143,10 @@ body {
 .password-label {
     position: relative;
     display: block;
+    margin-bottom: 10px;
 }
+
+
 
 .toggle-password {
     position: absolute;

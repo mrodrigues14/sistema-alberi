@@ -2,204 +2,31 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Pagina Inicial</title>
-    <link rel="stylesheet" href="stylePaginaInicial.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Inicial</title>
+    <link rel="stylesheet" href="paginaInicialStyle.css">
 </head>
 <body>
 <div id="menu-container"></div>
-<div id="drag-container" class="drag-container">
-    <ul class="drag-list">
-        <!-- Coluna Pendentes de Dados -->
-        <li class="drag-column pending-data-column">
-            <span class="header">
-                <h1>Pendente de Dados</h1>
-            </span>
-            <div id="pending-data-content" class="custom-scroll-pending-data">
-                <ul class="drag-item-list" id="pending-data-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
-            </div>
-            <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(0)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
-                <div class="add-btn solid" onclick="hideInputBox(1)">
-                    <span>Salvar Item</span>
-                </div>
-            </div>
-            <div class="add-container">
-                <div class="add-item" contenteditable="true"></div>
-            </div>
-        </li>
-        <!-- Coluna A Fazer -->
-        <li class="drag-column to-do-column">
-            <span class="header">
-                <h1>A Fazer</h1>
-            </span>
-            <div id="to-do-content" class="custom-scroll-to-do">
-                <ul class="drag-item-list" id="to-do-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
-            </div>
-            <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(1)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
-                <div class="add-btn solid" onclick="hideInputBox(1)">
-                    <span>Salvar Item</span>
-                </div>
-            </div>
-            <div class="add-container">
-                <div class="add-item" contenteditable="true"></div>
-            </div>
-        </li>
-        <!-- Coluna Em Execução -->
-        <li class="drag-column in-progress-column">
-            <span class="header">
-                <h1>Em Execução</h1>
-            </span>
-            <div id="in-progress-content" class="custom-scroll-in-progress">
-                <ul class="drag-item-list" id="in-progress-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
-            </div>
-            <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(2)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
-                <div class="add-btn solid" onclick="hideInputBox(1)">
-                    <span>Salvar Item</span>
-                </div>
-            </div>
-            <div class="add-container">
-                <div class="add-item" contenteditable="true"></div>
-            </div>
-        </li>
 
-
-        <!-- Coluna Entregas do Dia -->
-        <li class="drag-column todays-deliveries-column">
-            <span class="header">
-                <h1>Entregas do Dia</h1>
-            </span>
-            <div id="todays-deliveries-content" class="custom-scroll-todays-deliveries">
-                <ul class="drag-item-list" id="todays-deliveries-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
-            </div>
-            <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(3)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
-                <div class="add-btn solid" onclick="hideInputBox(1)">
-                    <span>Salvar Item</span>
-                </div>
-            </div>
-            <div class="add-container">
-                <div class="add-item" contenteditable="true"></div>
-            </div>
-        </li>
-        <!-- Coluna Atividades para Reunião -->
-        <li class="drag-column meeting-activities-column">
-            <span class="header">
-                <h1>Atividades para Reunião</h1>
-            </span>
-            <div id="meeting-activities-content" class="custom-scroll-meeting-activities">
-                <ul class="drag-item-list" id="meeting-activities-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
-            </div>
-            <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(4)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
-                <div class="add-btn solid" onclick="hideInputBox(1)">
-                    <span>Salvar Item</span>
-                </div>
-            </div>
-            <div class="add-container">
-                <div class="add-item" contenteditable="true"></div>
-            </div>
-        </li>
-        <!-- Coluna Escrita Finalizada -->
-        <li class="drag-column finished-column">
-            <span class="header">
-                <h1>Finalizados</h1>
-            </span>
-            <div id="finished-content" class="custom-scroll-finished">
-                <ul class="drag-item-list" id="finished-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
-            </div>
-            <div class="add-btn-group">
-                <div class="add-btn" onclick="showInputBox(5)">
-                    <span class="plus-sign">+</span>
-                    <span>Adicionar Item</span>
-                </div>
-                <div class="add-btn solid" onclick="hideInputBox(1)">
-                    <span>Salvar Item</span>
-                </div>
-            </div>
-            <div class="add-container">
-                <div class="add-item" contenteditable="true"></div>
-            </div>
-        </li>
-    </ul>
-</div>
-<div id="taskPopup" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px;">
-    <h2 id="popupTitle">Adicionar Nova Tarefa</h2>
-    <form id="taskForm">
-        <input type="hidden" id="taskId" name="taskId">
-        <div>
-            <label for="title">Título:</label>
-            <input type="text" id="title" name="title" required>
-        </div>
-        <div>
-            <label for="description">Descrição:</label>
-            <textarea id="description" name="description" maxlength="1000"> </textarea>
-            <p id="charCount">0/1000</p>
-        </div>
-        <div>
-            <label for="author">Executor:</label>
-            <select id="author" required></select>
-        </div>
-        <div>
-            <label for="company">Empresa:</label>
-            <select id="company" name="company" required></select>
-        </div>
-
-        <div>
-            <label for="dueDate">Data Final:</label>
-            <input type="date" id="dueDate" name="dueDate">
-        </div>
-        <button type="submit" class="confirmarButtonTarefa">Salvar Tarefa</button>
-        <button type="button" class="cancelarButtonTarefa" onclick="closePopup()">Cancelar</button>
-    </form>
-</div>
-<div id="taskDetailPopup" style="display:none;">
-    <h2 id="detailTitle"></h2>
-    <div id="detailDescriptionContainer">
-        <label>Descrição:</label>
-        <p id="detailDescription"></p>
+<div class="container">
+    <div class="sidebar">
+        <ul>
+            <li><a href="#">CALENDARIO</a></li>
+            <li><a href="#">NOTICIAS</a></li>
+            <li><a href="#">FOTOS</a></li>
+        </ul>
     </div>
-    <div id="detailAuthorContainer">
-        <label>Autor:</label>
-        <p id="detailAuthor"></p>
+    <div class="main-content">
+        <div class="logo">
+            <img src="images/img.png" alt="Alberi Consult Logo">
+        </div>
+        <div class="news-section">
+            <h2>NOTICIA</h2>
+            <img src="images/img_1.png" alt="Noticia">
+        </div>
     </div>
-    <div id="detailDueDateContainer">
-        <label>Data de Vencimento:</label>
-        <p id="detailDueDate"></p>
-    </div>
-    <div id="detailCompanyNameContainer">
-        <label>Empresa:</label>
-        <p id="detailCompanyName"></p>
-    </div>
-    <button onclick="closeDetailPopup()">Fechar</button>
 </div>
-
-
-<!-- Popup de confirmação de exclusão -->
-<div id="deleteConfirmPopup" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px;">
-    <h2>Confirmação de Exclusão</h2>
-    <p id="deleteTaskTitle">Tem certeza de que deseja excluir a tarefa?</p>
-    <button id="confirmDeleteButton" class="deletarButtonEditar" >Excluir</button>
-    <button onclick="closeDeleteConfirmPopup()" class="cancelarButtonEditar" >Cancelar</button>
-</div>
-
-<!-- Script -->
 <script src="paginaInicialScript.js"></script>
 </body>
 </html>
