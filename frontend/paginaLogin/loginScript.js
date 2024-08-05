@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     loginForm.addEventListener('submit', function (e) {
         e.preventDefault();
+        clearCacheAndCookies(); // Limpar cache e cookies antes do login
+
         let username = document.querySelector('input[name="username"]').value;
         const password = passwordField.value;
 
@@ -187,6 +189,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
             localStorage.setItem('isCacheCleared', 'true');
+        }
+    }
+
+    function clearCacheAndCookies() {
+        // Clear all cookies
+        document.cookie.split(";").forEach(function (c) {
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        // Clear cache
+        if ('caches' in window) {
+            caches.keys().then(function (names) {
+                for (let name of names) caches.delete(name);
+            });
         }
     }
 });
