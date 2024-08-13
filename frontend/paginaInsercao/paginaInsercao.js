@@ -511,12 +511,10 @@ function atualizarTabela(dados) {
             const valorEntrada = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? parseFloat(item.VALOR) : 0;
             const valorSaida = item.TIPO_DE_TRANSACAO === 'SAIDA' ? parseFloat(item.VALOR) : 0;
 
-            const isExcluded = ["NÃO CONTABILIZAR", "ENTRE CONTAS"].includes(item.CATEGORIA);
-
             if (index === 0) {
-                saldo = saldoInicial + (isExcluded ? 0 : valorEntrada - valorSaida);
+                saldo = saldoInicial + (valorEntrada - valorSaida);
             } else {
-                saldo += (isExcluded ? 0 : valorEntrada - valorSaida);
+                saldo += (valorEntrada - valorSaida);
             }
 
             entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
@@ -535,7 +533,7 @@ function atualizarTabela(dados) {
                 </form>
                 <button onclick="editarExtrato(${item.IDEXTRATO})">EDITAR</button>
                 <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
-            <!-- <button onclick="adicionarSubdivisao(${item.IDEXTRATO})">SUBDIVIDIR</button> -->`;
+            `;
 
             dados.forEach(subItem => {
                 if (subItem.ID_SUBEXTRATO === item.IDEXTRATO) {

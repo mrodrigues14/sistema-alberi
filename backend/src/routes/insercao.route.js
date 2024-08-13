@@ -4,7 +4,9 @@ const path = require('path');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const { inserir, buscarUltimasInsercoes, buscarBanco, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo,
-    inserirSubdivisao
+    inserirSubdivisao,
+    buscarLancamentosMesAnterior,
+    buscarSaldoMesAnterior
 } = require('../repositories/insercao.repository');
 
 // Configurar multer para upload de arquivos
@@ -157,6 +159,18 @@ router.post('/salvar-subdivisao', (req, res) => {
         }
     });
 });
+
+router.get('/saldo-anterior', (req, res) => {
+    const { cliente, mesAno } = req.query;
+    buscarSaldoMesAnterior(cliente, mesAno, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao buscar saldo do mês anterior");
+        }
+        res.json(result);
+    });
+});
+
 
 
 module.exports = router;
