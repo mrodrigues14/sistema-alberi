@@ -160,5 +160,30 @@ function inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeE
     });
 }
 
+function buscarSaldoMesAnterior(clienteId, mesAno, callback) {
+    const [ano, mes] = mesAno.split('-');
+    const dataAtual = new Date(ano, mes - 1, 1);
+    dataAtual.setMonth(dataAtual.getMonth() - 1);
 
-module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao};
+    const mesAnterior = String(dataAtual.getMonth() + 1).padStart(2, '0');
+    const anoAnterior = dataAtual.getFullYear();
+    const mesAnoAnterior = `${anoAnterior}-${mesAnterior}`;
+
+    const query = `
+        SELECT SALDO 
+        FROM SALDO_INICIAL 
+        WHERE ID_CLIENTE = ? AND MES_ANO = ?
+        LIMIT 1
+    `;
+
+    mysqlConn.query(query, [clienteId, mesAnoAnterior], function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result.length > 0 ? result[0] : { SALDO: 0 });
+        }
+    });
+}
+
+
+module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior};

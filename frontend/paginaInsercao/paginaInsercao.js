@@ -511,12 +511,10 @@ function atualizarTabela(dados) {
             const valorEntrada = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? parseFloat(item.VALOR) : 0;
             const valorSaida = item.TIPO_DE_TRANSACAO === 'SAIDA' ? parseFloat(item.VALOR) : 0;
 
-            const isExcluded = ["NÃO CONTABILIZAR", "ENTRE CONTAS"].includes(item.CATEGORIA);
-
             if (index === 0) {
-                saldo = saldoInicial + (isExcluded ? 0 : valorEntrada - valorSaida);
+                saldo = saldoInicial + (valorEntrada - valorSaida);
             } else {
-                saldo += (isExcluded ? 0 : valorEntrada - valorSaida);
+                saldo += (valorEntrada - valorSaida);
             }
 
             entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
@@ -533,9 +531,9 @@ function atualizarTabela(dados) {
                     <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
                     <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
                 </form>
-                <button onclick="editarExtrato(${item.IDEXTRATO})">EDITAR</button>
+                <button onclick="editarLinha(this)">EDITAR</button>
                 <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
-            <!-- <button onclick="adicionarSubdivisao(${item.IDEXTRATO})">SUBDIVIDIR</button> -->`;
+            `;
 
             dados.forEach(subItem => {
                 if (subItem.ID_SUBEXTRATO === item.IDEXTRATO) {
@@ -1029,3 +1027,97 @@ document.addEventListener('DOMContentLoaded', function() {
         this.value = formatarValorFinanceiroInput(this.value);
     });
 });
+
+function confirmarEdicao(buttonElement) {
+    const row = buttonElement.closest('tr');
+    const cells = row.querySelectorAll('td');
+    const idExtrato = row.dataset.idextrato;
+
+    const formatarData = (dataString) => {
+        const [dia, mes, ano] = dataString.split('/');
+        return `${ano}-${mes}-${dia}`;
+    };
+
+    const dadosEditados = {
+        id: idExtrato,
+        data: cells[1].querySelector('input').value
+            ? formatarData(cells[1].querySelector('input').value)
+            : null,
+        categoria: cells[2].querySelector('input').value || null,
+        nome_no_extrato: cells[3].querySelector('input').value || null,
+        descricao: cells[4].querySelector('input').value || null,
+        fornecedor: cells[5].querySelector('input').value || null,
+        tipo: cells[6].querySelector('input').value || null, // tipo de transação (Entrada/Saída)
+        valor: cells[7].querySelector('input').value || null
+    };
+
+    // Enviar os dados editados para o servidor
+    fetch('consulta/editar/extrato', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dadosEditados),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Edição confirmada com sucesso!');
+                buscarDados(); // Atualizar a tabela com os dados atualizados
+            } else {
+                alert('Erro ao confirmar a edição.');
+                cancelarEdicao(buttonElement); // Restaura os valores originais se a edição falhar
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao confirmar a edição:', error);
+            alert('Erro ao confirmar a edição.');
+            cancelarEdicao(buttonElement); // Restaura os valores originais em caso de erro
+        });
+}
+
+function cancelarEdicao(buttonElement) {
+    const row = buttonElement.closest('tr');
+    const originalData = JSON.parse(row.dataset.originalData);
+    const cells = row.querySelectorAll('td');
+
+    // Restaura os valores originais nas células
+    originalData.forEach((text, index) => {
+        if (index < cells.length - 2) {
+            cells[index].textContent = text;
+        } else if (index === cells.length - 2) {
+            cells[index].innerHTML = `<button onclick="abrirPopupAnexos(${row.dataset.idextrato})"><i class="fa fa-paperclip"></i></button>`;
+        } else if (index === cells.length - 1) {
+            cells[index].innerHTML = row.dataset.originalButtons;
+        }
+    });
+
+    // Restaura os botões originais (incluindo o botão de lixeira)
+    const ferramentasCell = cells[cells.length - 1];
+    ferramentasCell.innerHTML = row.dataset.originalButtons;
+}
+
+function editarLinha(buttonElement) {
+    const row = buttonElement.closest('tr');
+    const cells = row.querySelectorAll('td');
+
+    // Armazena os valores originais da linha
+    row.dataset.originalData = JSON.stringify(
+        Array.from(cells).map(cell => cell.textContent.trim())
+    );
+
+    cells.forEach((cell, index) => {
+        if (index > 0 && index < 8) { // Torna as células editáveis, exceto a primeira e a última
+            const cellText = cell.textContent.trim();
+            cell.innerHTML = `<input type="text" value="${cellText}" class="editavel">`;
+        }
+    });
+
+    // Substituir o botão "Editar" por "Confirmar" e "Cancelar"
+    const ferramentasCell = cells[cells.length - 1];
+    row.dataset.originalButtons = ferramentasCell.innerHTML; // Armazena os botões originais (inclusive a lixeira)
+    ferramentasCell.innerHTML = `
+        <button onclick="confirmarEdicao(this)" class="confirmar-btn">✔️</button>
+        <button onclick="cancelarEdicao(this)" class="cancelar-btn">❌</button>
+    `;
+}

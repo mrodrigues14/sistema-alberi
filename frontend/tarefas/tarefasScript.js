@@ -1,12 +1,18 @@
 document.addEventListener('DOMContentLoaded', async function() {
-    loadUserOptions();
-    loadCompanyOptions();
-    loadTasks();
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.body.classList.add('blur-background');
 
     try {
+        loadUserOptions();
+        loadCompanyOptions();
+        await loadTasks();
+
         await loadTemplateAndStyles();
     } catch (error) {
         console.error('Erro ao carregar o template:', error);
+    } finally {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.body.classList.remove('blur-background');
     }
 });
 
@@ -101,7 +107,7 @@ function loadTasks() {
         fetchUrl = `/tarefas/tarefasVinculadas?idusuario=${idusuario}`;
     }
 
-    fetch(fetchUrl)
+    return fetch(fetchUrl)
         .then(response => response.json())
         .then(data => {
             listArrays = [[], [], [], [], [], []]; // Certifique-se de que há seis colunas
@@ -142,7 +148,8 @@ function loadTasks() {
                     companyName: task.NOME,
                     status: task.STATUS,
                     descriptions: task.DESCRICOES || [],
-                    apelido: task.APELIDO
+                    apelido: task.APELIDO,
+                    prioridade: task.PRIORIDADE || 0 // Adicionando o campo de prioridade aqui
                 };
 
                 listArrays[column].push(itemObject);
@@ -197,6 +204,11 @@ function loadCompanyOptions() {
                 }
                 select.appendChild(option);
             });
+
+            select.addEventListener('change', function() {
+                const selectedId = select.value;
+                console.log("ID do cliente selecionado:", selectedId);
+            });
         })
         .catch(error => {
             console.error('Erro ao carregar empresas:', error);
@@ -229,8 +241,9 @@ function createItemEl(columnEl, column, item, index) {
         dateText = `Data Limite: ${formatDate(item.dueDate)}`;
     }
 
-    // Certifique-se de que item.descriptions existe e é um array
     const descriptionsCount = item.descriptions ? item.descriptions.length : 0;
+
+    const stars = '★'.repeat(item.prioridade || 0);
 
     listEl.innerHTML = `
         <div class="item-content">
@@ -239,31 +252,32 @@ function createItemEl(columnEl, column, item, index) {
                 <div class="delete-icon" onclick="showDeleteConfirmPopup(${item.idtarefa}, '${item.title}', ${index}, ${column}); event.stopPropagation();">&#128465;</div>
             </div>
             <h4 class="item-title">${item.title || ''}</h4>
+            <div class="item-priority">${stars}</div>
             <span class="item-company">${item.apelido || ''}</span>
         </div>
     `;
     columnEl.appendChild(listEl);
 }
 
+
 function showTaskDetails(index, column) {
     const item = listArrays[column][index];
+    console.log(item)
     const detailTitle = document.getElementById('detailTitle');
     const detailDescriptions = document.getElementById('detailDescriptions');
     const detailAuthor = document.getElementById('detailAuthor');
     const detailDueDate = document.getElementById('detailDueDate');
-    const taskDetailPopup = document.getElementById('taskDetailPopup');
     const detailCompanyName = document.getElementById('detailCompanyName');
+    const detailPrioridade = document.getElementById('detailPrioridade');
+    const taskDetailPopup = document.getElementById('taskDetailPopup');
 
-    if (detailTitle && detailDescriptions && detailAuthor && detailDueDate && taskDetailPopup) {
+    if (detailTitle && detailDescriptions && detailAuthor && detailDueDate && detailPrioridade && taskDetailPopup) {
         detailTitle.textContent = item.title;
         detailAuthor.textContent = item.authorName;
         detailCompanyName.textContent = item.companyName;
 
         detailDescriptions.innerHTML = ''; // Limpa as descrições existentes
-
-        // Certifique-se de que item.descriptions é um array
         const descriptions = item.descriptions || [];
-
         descriptions.forEach((desc, i) => {
             const descContainer = document.createElement('div');
             descContainer.classList.add('desc-container');
@@ -274,7 +288,6 @@ function showTaskDetails(index, column) {
             descCheckbox.id = `desc-${index}-${i}`;
             descCheckbox.checked = desc.completed;
 
-            // Adicione o event listener para atualizar o status no servidor
             descCheckbox.addEventListener('change', () => {
                 updateDescriptionStatus(item.idtarefa, i, descCheckbox.checked);
                 descLabel.classList.toggle('completed', descCheckbox.checked);
@@ -284,7 +297,6 @@ function showTaskDetails(index, column) {
             descLabel.htmlFor = `desc-${index}-${i}`;
             descLabel.textContent = desc.text;
 
-            // Adicione a classe 'completed' se a descrição estiver concluída
             if (desc.completed) {
                 descLabel.classList.add('completed');
             }
@@ -294,6 +306,8 @@ function showTaskDetails(index, column) {
 
             detailDescriptions.appendChild(descContainer);
         });
+
+        detailPrioridade.textContent = '★'.repeat(item.prioridade);
 
         if (item.finalDate) {
             detailDueDate.previousElementSibling.textContent = 'Data de Conclusão:';
@@ -372,8 +386,18 @@ function updateDOM() {
     });
 }
 
+function highlightStars(stars, value) {
+    stars.forEach((star, index) => {
+        if (index < value) {
+            star.classList.add('selected');
+        } else {
+            star.classList.remove('selected');
+        }
+    });
+}
+
 function showInputBox(column) {
-    currentColumn = column; // Defina currentColumn corretamente
+    currentColumn = column;
     clearTaskForm();
     document.getElementById('taskPopup').style.display = 'block';
     document.getElementById('popupTitle').textContent = 'Adicionar Nova Tarefa';
@@ -382,8 +406,11 @@ function showInputBox(column) {
         addNewItem(column);
         closePopup();
     };
-    document.getElementById('drag-container').classList.add('blur'); // Adicione a classe blur aqui
+    document.getElementById('drag-container').classList.add('blur');
+
+    document.getElementById('prioridade-edit').value = "";
 }
+
 
 function handleSubmit(event) {
     event.preventDefault();
@@ -400,25 +427,27 @@ function handleSubmit(event) {
 
 function addNewItem() {
     const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value || "";
     const authorSelect = document.getElementById('author');
     const authorId = authorSelect.value;
     const companySelect = document.getElementById('company');
-    const companyId = companySelect.value;
+    const companyId = companySelect.value;  // Captura o ID do cliente selecionado
     const dueDate = document.getElementById('dueDate').value || "";
     const idcliente = localStorage.getItem('idEmpresaSelecionada');
+    const prioridade = document.getElementById('prioridade-edit').value;
 
-    const descriptions = [];
-    if (!isCheckboxMode) {
-        descriptions.push({ text: description, completed: false });
-    } else {
-        const descContainers = document.querySelectorAll('#additionalDescriptions .desc-container');
-        descContainers.forEach(container => {
-            const text = container.querySelector('textarea').value;
-            const completed = container.querySelector('input[type="checkbox"]')?.checked || false;
-            descriptions.push({ text, completed });
-        });
+    if (!prioridade) {
+        alert('Por favor, selecione uma prioridade.');
+        return;
     }
+
+    // Sempre considerar a descrição como uma lista de itens
+    const descriptions = [];
+    const descContainers = document.querySelectorAll('#additionalDescriptions .desc-container');
+    descContainers.forEach(container => {
+        const text = container.querySelector('textarea').value;
+        const completed = container.querySelector('input[type="checkbox"]')?.checked || false;
+        descriptions.push({ text, completed });
+    });
 
     const statusMap = {
         0: 'Pendentes de Dados',
@@ -432,12 +461,12 @@ function addNewItem() {
 
     const itemObject = {
         titulo: title,
-        idcliente: idcliente,
+        idcliente: companyId,  // Aqui você usa o ID do cliente selecionado
         dataLimite: dueDate,
         idusuario: authorId,
         idempresa: companyId,
         status: status,
-        recurrenceDay: 0,
+        prioridade: prioridade,
         descriptions: descriptions
     };
 
@@ -450,7 +479,6 @@ function addNewItem() {
     })
         .then(response => response.json())
         .then(data => {
-            console.log('Resposta do servidor:', data);
             if (data.success) {
                 clearTaskForm();
                 window.location.reload();
@@ -463,7 +491,6 @@ function addNewItem() {
             alert('Falha na comunicação com o servidor.');
         });
 }
-
 function addToColumn(column, itemObject) {
     listArrays[column].push(itemObject);
     updateDOM();
@@ -477,24 +504,15 @@ function editItem(index, column) {
     document.getElementById('company').value = item.companyId;
     document.getElementById('dueDate').value = item.dueDate === '0000-00-00' ? '' : item.dueDate;
 
-    const descriptionContainer = document.getElementById('descriptionContainer');
-    const additionalDescriptions = document.getElementById('additionalDescriptions');
-    const addDescriptionButton = document.getElementById('addDescriptionButton');
+    const prioridadeSelect = document.getElementById('prioridade-edit');
+    prioridadeSelect.value = item.prioridade || "";
 
+    const additionalDescriptions = document.getElementById('additionalDescriptions');
     additionalDescriptions.innerHTML = ''; // Limpa as descrições existentes
 
-    if (item.descriptions && item.descriptions.length > 0) {
-        descriptionContainer.style.display = 'none';
-        additionalDescriptions.style.display = 'block';
-        addDescriptionButton.style.display = 'flex'; // Mostra o botão de adicionar descrição
-        item.descriptions.forEach(desc => {
-            addDescriptionField(desc.text, desc.completed, true);
-        });
-    } else {
-        descriptionContainer.style.display = 'block';
-        additionalDescriptions.style.display = 'none';
-        addDescriptionButton.style.display = 'none'; // Esconde o botão de adicionar descrição
-    }
+    item.descriptions.forEach(desc => {
+        addDescriptionField(desc.text, desc.completed);
+    });
 
     document.getElementById('taskPopup').style.display = 'block';
     document.getElementById('popupTitle').textContent = 'Editar Tarefa';
@@ -513,6 +531,12 @@ function updateItem(index, column) {
     const authorId = document.getElementById('author').value;
     const companyId = document.getElementById('company').value;
     const dueDate = document.getElementById('dueDate').value;
+    const prioridade = document.getElementById('prioridade-edit').value; // Obtém a prioridade selecionada
+
+    if (!prioridade) {
+        alert('Por favor, selecione uma prioridade.');
+        return;
+    }
 
     const descriptions = [];
     const descContainers = document.querySelectorAll('#additionalDescriptions .desc-container');
@@ -532,6 +556,7 @@ function updateItem(index, column) {
         dataLimite: dueDate,
         idusuario: authorId,
         idempresa: companyId,
+        prioridade: prioridade, // Inclui a prioridade na atualização
         descriptions: descriptions
     };
 
@@ -544,7 +569,6 @@ function updateItem(index, column) {
     })
         .then(response => response.json())
         .then(data => {
-            console.log('Item updated:', data);
             window.location.reload();
         })
         .catch(error => console.error('Error updating item:', error));
@@ -598,19 +622,12 @@ function deleteTask(idtarefa, index, column) {
 function clearTaskForm() {
     const taskId = document.getElementById('taskId');
     const title = document.getElementById('title');
-    const description = document.getElementById('description');
     const additionalDescriptions = document.getElementById('additionalDescriptions');
     const addDescriptionButton = document.getElementById('addDescriptionButton');
 
     if (taskId) taskId.value = '';
     if (title) title.value = '';
-    if (description) description.value = '';
     if (additionalDescriptions) additionalDescriptions.innerHTML = '';
-    if (addDescriptionButton) addDescriptionButton.style.display = 'none';
-
-    isCheckboxMode = false;
-    document.getElementById('descriptionContainer').style.display = 'block';
-    additionalDescriptions.style.display = 'none';
 }
 
 function closePopup() {
@@ -708,6 +725,7 @@ function drop(e) {
         listColumns[columnId].classList.remove("over");
         updateDOM();
         currentColumn = undefined;
+        window.location.reload();
     }
 }
 
@@ -750,4 +768,21 @@ document.addEventListener('DOMContentLoaded', function() {
         charCount.textContent = `${currentLength}/${maxLength}`;
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const starContainerEdit = document.getElementById('star-container-edit');
+    const prioridadeInput = document.getElementById('prioridade-edit');
+
+    starContainerEdit.addEventListener('click', function(e) {
+        const selectedRow = e.target.closest('.star-row');
+        if (selectedRow) {
+            const selectedValue = selectedRow.getAttribute('data-value');
+            prioridadeInput.value = selectedValue;
+
+            const stars = starContainerEdit.querySelectorAll('.star-row .star');
+            highlightStars(stars, selectedValue);
+        }
+    });
+});
+
 

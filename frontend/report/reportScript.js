@@ -148,6 +148,10 @@ let currentPage = 1;
 let currentFilter = null;
 
 function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.querySelector('.container').classList.add('blur-background');
+    document.querySelector('.report-list-container').classList.add('blur-background');
+
     currentPage = page;
     currentFilter = situacao;
 
@@ -182,9 +186,18 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
                 reportList.innerHTML = '<li>Nenhum relatório encontrado</li>';
             }
             document.getElementById('pageNumber').textContent = page;
+
+            // Esconde o símbolo de carregamento e remove o desfoque
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.querySelector('.container').classList.remove('blur-background');
+            document.querySelector('.report-list-container').classList.remove('blur-background');
         })
         .catch(error => {
             console.error('Erro ao carregar reports:', error);
+            // Esconde o símbolo de carregamento e remove o desfoque
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.querySelector('.container').classList.remove('blur-background');
+            document.querySelector('.report-list-container').classList.remove('blur-background');
         });
 }
 
