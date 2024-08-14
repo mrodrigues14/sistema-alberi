@@ -6,7 +6,7 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
 
     if (idcliente === "68") {
         query = `
-        SELECT T.IDTAREFA, T.TITULO, T.STATUS,
+        SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.PRIORIDADE,
                IFNULL(T.DATA_LIMITE, '0000-00-00') AS DATA_LIMITE,
                IFNULL(T.DATA_INICIO, '0000-00-00') AS DATA_INICIO,
                IFNULL(T.DATA_CONCLUSAO, '0000-00-00') AS DATA_CONCLUSAO,
@@ -14,11 +14,11 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
         FROM TAREFAS AS T
         INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
         INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
-        ORDER BY T.TITULO ASC
+        ORDER BY T.PRIORIDADE DESC
     `;
     } else {
         query = `
-        SELECT T.IDTAREFA, T.TITULO, T.STATUS,
+        SELECT T.IDTAREFA, T.TITULO, T.STATUS, T.PRIORIDADE,
                IFNULL(T.DATA_LIMITE, '0000-00-00') AS DATA_LIMITE,
                IFNULL(T.DATA_INICIO, '0000-00-00') AS DATA_INICIO,
                IFNULL(T.DATA_CONCLUSAO, '0000-00-00') AS DATA_CONCLUSAO,
@@ -27,7 +27,7 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
         INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
         INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
         WHERE T.ID_CLIENTE = ?
-        ORDER BY T.TITULO ASC
+        ORDER BY T.PRIORIDADE DESC
     `;
         params.push(idcliente);
     }
@@ -48,7 +48,7 @@ function listarTarefas(idcliente, idusuario, isAdmin, callback) {
 }
 
 function consultarTarefa(idtarefa, idusuario, callback) {
-    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, DATA_LIMITE, ID_CLIENTE, DESCRICOES FROM TAREFAS WHERE idtarefa = ? AND ID_USUARIO =?`, [idtarefa, idusuario], function(err, result, fields) {
+    mysqlConn.query(`SELECT IDTAREFA, TITULO, STATUS, PRIORIDADE, DATA_LIMITE, ID_CLIENTE, DESCRICOES FROM TAREFAS WHERE idtarefa = ? AND ID_USUARIO =?`, [idtarefa, idusuario], function(err, result, fields) {
         if (err) {
             callback(err, null);
         } else {
@@ -60,11 +60,11 @@ function consultarTarefa(idtarefa, idusuario, callback) {
     });
 }
 
-function adicionarTarefa(titulo, status, idcliente, dataLimite, idusuario, descriptions, recurrenceDay, callback) {
+function adicionarTarefa(titulo, status, prioridade, idcliente, dataLimite, idusuario, descriptions, recurrenceDay, callback) {
     const dataInicio = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z');
 
-    mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, DATA_LIMITE, DATA_INICIO, ID_CLIENTE, ID_USUARIO, RECORRENCIA, DESCRICOES) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [titulo, status, dataLimite || '', dataInicio.toISOString().split('T')[0], idcliente, idusuario, recurrenceDay, JSON.stringify(descriptions)],
+    mysqlConn.query(`INSERT INTO TAREFAS (IDTAREFA, TITULO, STATUS, PRIORIDADE, DATA_LIMITE, DATA_INICIO, ID_CLIENTE, ID_USUARIO, RECORRENCIA, DESCRICOES) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [titulo, status, prioridade, dataLimite || '', dataInicio.toISOString().split('T')[0], idcliente, idusuario, recurrenceDay, JSON.stringify(descriptions)],
         (err, result, fields) => {
             if (err) {
                 callback(err, null);
@@ -126,9 +126,9 @@ function atualizarStatus(idtarefa, newStatus, finalDate, callback) {
     });
 }
 
-function editarTarefa(idtarefa, titulo, dataLimite, descriptions, idusuario, idempresa, callback) {
-    const query = 'UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ?, ID_USUARIO = ?, ID_CLIENTE = ?, DESCRICOES = ? WHERE IDTAREFA = ?';
-    const params = [titulo, dataLimite || '', idusuario, idempresa, JSON.stringify(descriptions), idtarefa];
+function editarTarefa(idtarefa, titulo, dataLimite, descriptions, prioridade, idusuario, idempresa, callback) {
+    const query = 'UPDATE TAREFAS SET TITULO = ?, DATA_LIMITE = ?, PRIORIDADE = ?, ID_USUARIO = ?, ID_CLIENTE = ?, DESCRICOES = ? WHERE IDTAREFA = ?';
+    const params = [titulo, dataLimite || '', prioridade, idusuario, idempresa, JSON.stringify(descriptions), idtarefa];
 
     mysqlConn.query(query, params, function(err, result) {
         if (err) {
@@ -212,7 +212,7 @@ function listarTarefasVinculadas(idusuario, callback) {
                 INNER JOIN USUARIOS AS U ON T.ID_USUARIO = U.IDUSUARIOS
                 INNER JOIN CLIENTE AS C ON T.ID_CLIENTE = C.IDCLIENTE
                 WHERE T.ID_CLIENTE IN (?)
-                ORDER BY T.TITULO ASC
+                ORDER BY T.PRIORIDADE DESC
             `;
 
             mysqlConn.query(queryTarefas, [empresasIds], function(err, tarefasResult) {

@@ -11,7 +11,8 @@ const {
     editarTarefa,
     consultarUsuarios,
     consultarEmpresas,
-    atualizarDescricao, listarTarefasVinculadas
+    atualizarDescricao,
+    listarTarefasVinculadas
 } = require('../repositories/tarefas.repository');
 
 router.get('/', (req, res) => {
@@ -23,7 +24,7 @@ router.get('/erro', (req, res) => {
 });
 
 router.get('/tarefas', (req, res) => {
-    const {idcliente, idusuario, isAdmin} = req.query;
+    const { idcliente, idusuario, isAdmin } = req.query;
     listarTarefas(idcliente, idusuario, isAdmin === 'true', (err, result) => {
         if (err) {
             res.status(500).json(err);
@@ -34,11 +35,11 @@ router.get('/tarefas', (req, res) => {
 });
 
 router.post('/adicionartarefa', (req, res) => {
-    const { titulo, idcliente, dataLimite, idusuario, descriptions, recurrenceDay, status } = req.body;
+    const { titulo, status, prioridade, idcliente, dataLimite, idusuario, descriptions, recurrenceDay } = req.body;
     if (!titulo || !idcliente) {
         return res.status(400).json({ error: 'Dados incompletos' });
     }
-    adicionarTarefa(titulo, status, idcliente, dataLimite, idusuario, descriptions, recurrenceDay, (err, result) => {
+    adicionarTarefa(titulo, status, prioridade, idcliente, dataLimite, idusuario, descriptions, recurrenceDay, (err, result) => {
         if (err) {
             return res.status(500).json(err);
         }
@@ -62,12 +63,12 @@ router.get('/editartarefa', (req, res) => {
 });
 
 router.post('/editartarefa', (req, res) => {
-    const { idtarefa, titulo, dataLimite, descriptions, idusuario, idempresa } = req.body;
+    const { idtarefa, titulo, dataLimite, descriptions, prioridade, idusuario, idempresa } = req.body;
     if (!titulo) {
-        res.status(400).json({error: 'Faltando campos'});
+        res.status(400).json({ error: 'Faltando campos' });
         return;
     }
-    editarTarefa(idtarefa, titulo, dataLimite, descriptions, idusuario, idempresa, (err, result) => {
+    editarTarefa(idtarefa, titulo, dataLimite, descriptions, prioridade, idusuario, idempresa, (err, result) => {
         if (err) {
             console.error('Erro ao atualizar a tarefa:', err);
             res.status(500).json({ error: 'Erro ao atualizar a tarefa' });
@@ -78,7 +79,7 @@ router.post('/editartarefa', (req, res) => {
 });
 
 router.get('/editartarefa/gettarefa', (req, res) => {
-    const {idtarefa, idusuario} = req.query;
+    const { idtarefa, idusuario } = req.query;
     consultarTarefa(idtarefa, idusuario, (err, result) => {
         if (err) {
             return res.status(500).json(err);
@@ -88,7 +89,7 @@ router.get('/editartarefa/gettarefa', (req, res) => {
 });
 
 router.post('/deletartarefa', (req, res) => {
-    const {idtarefa} = req.body;
+    const { idtarefa } = req.body;
     deletarTarefa(idtarefa, (err, result) => {
         if (err) {
             return res.status(500).json(err);

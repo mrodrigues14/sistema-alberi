@@ -58,7 +58,7 @@
                 <h1>Em Execução</h1>
             </span>
             <div id="in-progress-content" class="custom-scroll-in-progress">
-                <ul class="drag-item-list" id="in-progress-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></ul>
+                <ul class="drag-item-list" id="in-progress-list" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragLeave="dragLeave(event)"></ul>
             </div>
             <div class="add-btn-group">
                 <div class="add-btn" onclick="showInputBox(2)">
@@ -146,22 +146,26 @@
         <input type="hidden" id="taskId" name="taskId">
         <div>
             <label for="title">Título:</label>
-            <input type="text" id="title" name="title" required>
+            <textarea id="title" name="title" rows="0.5" style="resize: vertical;" required placeholder="Adicione um título"></textarea>
         </div>
-        <div style="display: flex; align-items: center;">
-            <label for="description">Descrição:</label>
-            <button type="button" id="toggleDescriptionTypeButton" onclick="toggleDescriptionType()" style="margin-left: 10px;">
-                <img src="imagens/img.png" alt="Toggle Description Type" style="width: 20px; height: 20px;">
-            </button>
+        <div>
+            <label for="additionalDescriptions">Descrições:</label>
+            <div id="additionalDescriptions">
+                <!-- Descrições adicionais serão adicionadas aqui -->
+            </div>
         </div>
-        <div id="descriptionContainer">
-            <textarea id="description" name="description" maxlength="1000" placeholder="Adicione uma descrição"></textarea>
-            <p id="charCount">0/1000</p>
+        <button type="button" id="addDescriptionButton" onclick="addDescriptionField('', false)">+</button>
+        <div>
+            <label for="prioridade">Prioridade:</label>
+            <select id="prioridade-edit" name="prioridade" required>
+                <option value="" disabled selected>Selecione a prioridade</option>
+                <option value="1">★</option>
+                <option value="2">★★</option>
+                <option value="3">★★★</option>
+                <option value="4">★★★★</option>
+                <option value="5">★★★★★</option>
+            </select>
         </div>
-        <div id="additionalDescriptions" style="display:none;">
-            <!-- Descrições adicionais serão adicionadas aqui -->
-        </div>
-        <button type="button" id="addDescriptionButton" style="display:none;" onclick="addDescriptionField('', false, true)">+</button>
         <div>
             <label for="author">Executor:</label>
             <select id="author" required></select>
@@ -187,6 +191,10 @@
             <!-- Múltiplas descrições serão adicionadas aqui como checkboxes -->
         </div>
     </div>
+    <div>
+        <label>Prioridade:</label>
+        <p id="detailPrioridade"></p>
+    </div>
     <div id="detailAuthorContainer">
         <label>Autor:</label>
         <p id="detailAuthor"></p>
@@ -201,7 +209,6 @@
     </div>
     <button onclick="closeDetailPopup()">Fechar</button>
 </div>
-
 <!-- Popup de confirmação de exclusão -->
 <div id="deleteConfirmPopup" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px;">
     <h2>Confirmação de Exclusão</h2>
@@ -209,6 +216,11 @@
     <button id="confirmDeleteButton" class="deletarButtonEditar">Excluir</button>
     <button onclick="closeDeleteConfirmPopup()" class="cancelarButtonEditar">Cancelar</button>
 </div>
+
+<div id="loadingSpinner" class="loading-spinner" style="display: none;">
+    <div class="spinner"></div>
+</div>
+
 
 <!-- Script -->
 <script src="tarefasScript.js"></script>
