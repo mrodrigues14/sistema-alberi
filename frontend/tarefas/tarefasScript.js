@@ -1,18 +1,17 @@
 document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('loadingSpinner').style.display = 'block';
-    document.body.classList.add('blur-background');
-
+    document.querySelector('.drag-container').classList.add('blur-background');
+    await loadTemplateAndStyles();
     try {
         loadUserOptions();
-        loadCompanyOptions();
+        await loadCompanyOptions();
         await loadTasks();
 
-        await loadTemplateAndStyles();
     } catch (error) {
         console.error('Erro ao carregar o template:', error);
     } finally {
         document.getElementById('loadingSpinner').style.display = 'none';
-        document.body.classList.remove('blur-background');
+        document.querySelector('.drag-container').classList.remove('blur-background');
     }
 });
 
@@ -149,7 +148,7 @@ function loadTasks() {
                     status: task.STATUS,
                     descriptions: task.DESCRICOES || [],
                     apelido: task.APELIDO,
-                    prioridade: task.PRIORIDADE || 0 // Adicionando o campo de prioridade aqui
+                    prioridade: task.PRIORIDADE || 0
                 };
 
                 listArrays[column].push(itemObject);
