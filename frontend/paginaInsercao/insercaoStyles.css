@@ -464,7 +464,7 @@ iframe {
 #saldoPopup .popup-content input {
     width: 100%;
     padding: 8px;
-    margin: 10px 0;
+    margin: 10px -10px;
 }
 
 .popup-overlay {
