@@ -67,6 +67,9 @@
         </form>
     </div>
     <div>
+        <button id="downloadTemplateButton" onclick="downloadTemplate()">Download Template</button>
+    </div>
+    <div>
         <label for="seletorMesAno">Mes/Ano </label>
         <input type="text" id="seletorMesAno" name="mes_ano">
     </div>
@@ -130,6 +133,21 @@
                 <input type="text" id="saldoInicialInput" readonly value="0,00">
             </td>
         </tr>
+        <tr>
+            <td>
+                <button id="abrirSaldoPopup" onclick="abrirSaldoPopup()">Definir Saldo Inicial</button>
+            </td>
+        </tr>
+        <div id="saldoPopup" class="popup-overlay">
+            <div class="popup-content">
+                <span class="close-btn" onclick="fecharSaldoPopup()">&times;</span>
+                <h3>Definir Saldo Inicial</h3>
+                <label for="novoSaldoInicial">Novo Saldo Inicial:</label>
+                <input type="text" id="novoSaldoInicial" placeholder="0,00">
+                <button onclick="salvarSaldoInicial()">Salvar</button>
+            </div>
+        </div>
+
         </tbody>
     </table>
     <table id="saldoFinalTable">

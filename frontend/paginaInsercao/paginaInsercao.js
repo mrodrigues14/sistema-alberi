@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     initializePage();
     initializePageConsulta();
+    fetchSaldoInicialEFinal();
+
 });
 
 async function loadTemplateAndStyles() {
@@ -234,45 +236,67 @@ function lerExcel() {
         var workbook = XLSX.read(fileData, { type: 'binary' });
         workbook.SheetNames.forEach(function (sheetName) {
             var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-            XL_row_object.forEach(function (row) {
-                if (row['Data'] && !isNaN(row['Data'])) {
-                    row['Data'] = excelDateToJSDate(row['Data']);
-                }
-                row['IDCLIENTE'] = idEmpresa;
-                row['IDBANCO'] = IDBANCO;
 
-                if (row['Saida']) {
-                    row['Saida'] = formatarValorFinanceiro(parseFloat(row['Saida']));
-                }
-                if (row['Entrada']) {
-                    row['Entrada'] = formatarValorFinanceiro(parseFloat(row['Entrada']));
-                }
-            });
-            var json_object = JSON.stringify(XL_row_object);
-            console.log("JSON Convertido:", json_object);
+            // Pega as categorias existentes para verificar
+            fetch(`/insercao/dados-categoria?idcliente=${encodeURIComponent(IDCLIENTE)}`)
+                .then(response => response.json())
+                .then(categorias => {
+                    var categoriasMap = new Map();
+                    categorias.forEach(categoria => {
+                        categoriasMap.set(categoria.NOME.toLowerCase(), categoria);
+                    });
 
-            mostrarPopupCarregamento();
+                    XL_row_object.forEach(function (row) {
+                        if (row['Data'] && !isNaN(row['Data'])) {
+                            row['Data'] = excelDateToJSDate(row['Data']);
+                        }
+                        row['IDCLIENTE'] = idEmpresa;
+                        row['IDBANCO'] = IDBANCO;
 
-            fetch('/insercao/inserir-lote', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: json_object
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erro na resposta do servidor');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    fecharPopupCarregamento();
-                    console.log(data);
+                        if (row['Saida']) {
+                            row['Saida'] = formatarValorFinanceiro(parseFloat(row['Saida']));
+                        }
+                        if (row['Entrada']) {
+                            row['Entrada'] = formatarValorFinanceiro(parseFloat(row['Entrada']));
+                        }
+
+                        // Verifica se a categoria existe
+                        const categoria = row['Categoria'] ? row['Categoria'].toLowerCase() : '';
+                        if (!categoriasMap.has(categoria)) {
+                            row['CategoriaNaoExiste'] = true; // Marca a categoria como inexistente
+                        }
+                    });
+
+                    var json_object = JSON.stringify(XL_row_object);
+                    console.log("JSON Convertido:", json_object);
+
+                    mostrarPopupCarregamento();
+
+                    fetch('/insercao/inserir-lote', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: json_object
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erro na resposta do servidor');
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            fecharPopupCarregamento();
+                            console.log(data);
+                            atualizarTabelaComCategoriaNaoExistente(XL_row_object); // Atualiza a tabela com o estilo
+                        })
+                        .catch(error => {
+                            fecharPopupCarregamento();
+                            console.error('Falha ao enviar dados:', error);
+                        });
                 })
                 .catch(error => {
-                    fecharPopupCarregamento();
-                    console.error('Falha ao enviar dados:', error);
+                    console.error('Erro ao carregar os dados das categorias:', error);
                 });
         });
     };
@@ -282,6 +306,50 @@ function lerExcel() {
     };
 
     reader.readAsBinaryString(input.files[0]);
+}
+
+function atualizarTabelaComCategoriaNaoExistente(dados) {
+    const tbody = document.getElementById('extrato-body');
+    tbody.innerHTML = '';
+
+    dados.forEach((item, index) => {
+        const row = tbody.insertRow();
+        row.dataset.idextrato = item.IDEXTRATO;
+
+        // Aplicar estilo de erro se a categoria não existir
+        if (item.CategoriaNaoExiste) {
+            row.style.color = 'red'; // Destaca a linha em vermelho
+        }
+
+        // Preenche a tabela com os dados, adaptando conforme necessário
+        row.insertCell().textContent = formatDate(item.Data);
+        row.insertCell().textContent = item.Categoria;
+        row.insertCell().textContent = item.NomeNoExtrato;
+        row.insertCell().textContent = item.Descricao;
+        row.insertCell().textContent = item.NomeFornecedor;
+
+        const entradaCell = row.insertCell();
+        const saidaCell = row.insertCell();
+
+        entradaCell.textContent = item.Entrada ? formatarValorParaExibicao(item.Entrada) : "";
+        saidaCell.textContent = item.Saida ? formatarValorParaExibicao(item.Saida) : "";
+
+        const saldoCell = row.insertCell();
+        saldoCell.textContent = ''; // Lógica para calcular o saldo se necessário
+
+        const anexosCell = row.insertCell();
+        const deleteCell = row.insertCell();
+
+        anexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${item.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
+        deleteCell.innerHTML = `
+            <form action="insercao/deletar-extrato" method="post">
+                <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
+                <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
+            </form>
+            <button onclick="editarLinha(this)">EDITAR</button>
+            <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
+        `;
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -670,12 +738,54 @@ function fetchSaldoInicialEFinal() {
 
             const rowFinal = tbodysaldofinal.insertRow();
             rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
+
+            definirSaldoInicialProximoMes(saldoFinal);
         })
         .catch(error => {
             console.error('Erro ao buscar saldo inicial:', error);
             document.getElementById('saldoInicialInput').value = "0,00";
         });
 }
+
+function definirSaldoInicialProximoMes(saldoFinal) {
+    const mesAnoAtual = $('#seletorMesAno').val();
+    const [mes, ano] = mesAnoAtual.split('-');
+    let novoMes = parseInt(mes) + 1;
+    let novoAno = parseInt(ano);
+
+    if (novoMes > 12) {
+        novoMes = 1;
+        novoAno += 1;
+    }
+
+    const dataProximoMes = `${novoAno}-${String(novoMes).padStart(2, '0')}-01`;
+
+    fetch('/consulta/definirSaldoInicial', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            cliente: IDCLIENTE,
+            banco: document.getElementById('seletorBanco').value,
+            data: dataProximoMes,
+            saldo: saldoFinal.toFixed(2)
+        })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro ao salvar saldo inicial para o próximo mês: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Saldo inicial do próximo mês definido com sucesso:', data);
+        })
+        .catch(error => {
+            console.error('Erro ao definir saldo inicial do próximo mês:', error);
+        });
+}
+
 
 let linhasSelecionadas = [];
 function selecionarLinha(buttonElement) {
@@ -1038,17 +1148,38 @@ function confirmarEdicao(buttonElement) {
         return `${ano}-${mes}-${dia}`;
     };
 
+    // Captura dos valores de entrada e saída
+    const entradaCell = cells[6].querySelector('input');
+    const saidaCell = cells[7].querySelector('input');
+
+    const entrada = entradaCell ? parseFloat(entradaCell.value.replace(/\./g, '').replace(',', '.')) : null;
+    const saida = saidaCell ? parseFloat(saidaCell.value.replace(/\./g, '').replace(',', '.')) : null;
+
+    // Determina o tipo de transação baseado nos valores de entrada e saída
+    let tipoTransacao = null;
+    if (entrada && saida) {
+        alert('Não é permitido ter valores tanto em Entrada quanto em Saída. Verifique e tente novamente.');
+        return;
+    } else if (entrada) {
+        tipoTransacao = 'ENTRADA';
+    } else if (saida) {
+        tipoTransacao = 'SAIDA';
+    }
+
+    const categoriaInput = cells[2].querySelector('select'); // Referência ao select de categoria
+    const categoria = categoriaInput ? categoriaInput.value : null;
+
     const dadosEditados = {
         id: idExtrato,
         data: cells[1].querySelector('input').value
             ? formatarData(cells[1].querySelector('input').value)
             : null,
-        categoria: cells[2].querySelector('input').value || null,
+        categoria: categoria || null,
         nome_no_extrato: cells[3].querySelector('input').value || null,
         descricao: cells[4].querySelector('input').value || null,
         fornecedor: cells[5].querySelector('input').value || null,
-        tipo: cells[6].querySelector('input').value || null, // tipo de transação (Entrada/Saída)
-        valor: cells[7].querySelector('input').value || null
+        tipo: tipoTransacao, // Definido baseado nos valores de entrada e saída
+        valor: entrada || saida // Valor é o de entrada ou saída, dependendo de qual foi preenchido
     };
 
     // Enviar os dados editados para o servidor
@@ -1059,19 +1190,25 @@ function confirmarEdicao(buttonElement) {
         },
         body: JSON.stringify(dadosEditados),
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                // Se a resposta não for ok, joga um erro para ser tratado no catch
+                throw new Error(`Erro no servidor: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            if (data.success) {
+            console.log(data); // Verifique os dados de resposta
+            if (data.affectedRows > 0) {
                 alert('Edição confirmada com sucesso!');
                 buscarDados(); // Atualizar a tabela com os dados atualizados
             } else {
-                alert('Erro ao confirmar a edição.');
-                cancelarEdicao(buttonElement); // Restaura os valores originais se a edição falhar
+                alert('Nenhuma mudança foi detectada.');
             }
         })
         .catch(error => {
             console.error('Erro ao confirmar a edição:', error);
-            alert('Erro ao confirmar a edição.');
+            alert('Erro ao confirmar a edição. Por favor, tente novamente.');
             cancelarEdicao(buttonElement); // Restaura os valores originais em caso de erro
         });
 }
@@ -1101,15 +1238,47 @@ function editarLinha(buttonElement) {
     const row = buttonElement.closest('tr');
     const cells = row.querySelectorAll('td');
 
-    // Armazena os valores originais da linha
     row.dataset.originalData = JSON.stringify(
         Array.from(cells).map(cell => cell.textContent.trim())
     );
 
     cells.forEach((cell, index) => {
-        if (index > 0 && index < 8) { // Torna as células editáveis, exceto a primeira e a última
+        if (index === 2) { // Coluna de categoria (index 2)
+            const categoriaAtual = cell.textContent.trim();
+            const select = document.createElement('select');
+
+            fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
+                .then(response => response.json())
+                .then(categorias => {
+                    const optionDefault = document.createElement('option');
+                    optionDefault.value = '';
+                    optionDefault.textContent = 'Selecione uma Rubrica';
+                    select.appendChild(optionDefault);
+
+                    // Construir a árvore de categorias e adicionar ao dropdown
+                    const categoriasTree = construirArvoreDeCategorias(categorias);
+                    adicionarCategoriasAoSelect(select, categoriasTree);
+
+                    // Definir a categoria atual como selecionada
+                    select.value = Object.keys(select.options).find(key => select.options[key].text === categoriaAtual) || '';
+
+                    cell.innerHTML = '';
+                    cell.appendChild(select);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar categorias:', error);
+                });
+        } else if (index > 0 && index < 8) { // Torna as outras células editáveis
             const cellText = cell.textContent.trim();
             cell.innerHTML = `<input type="text" value="${cellText}" class="editavel">`;
+
+            // Aplica a formatação de valor financeiro nos campos de entrada e saída
+            if (index === 6 || index === 7) { // Colunas de entrada (6) e saída (7)
+                const input = cell.querySelector('input');
+                input.addEventListener('input', function () {
+                    this.value = formatarValorFinanceiroInput(this.value);
+                });
+            }
         }
     });
 
@@ -1120,4 +1289,66 @@ function editarLinha(buttonElement) {
         <button onclick="confirmarEdicao(this)" class="confirmar-btn">✔️</button>
         <button onclick="cancelarEdicao(this)" class="cancelar-btn">❌</button>
     `;
+}
+
+function abrirSaldoPopup() {
+    document.getElementById('saldoPopup').style.display = 'flex';
+}
+
+function fecharSaldoPopup() {
+    document.getElementById('saldoPopup').style.display = 'none';
+}
+
+function salvarSaldoInicial() {
+    const novoSaldo = document.getElementById('novoSaldoInicial').value;
+    const cliente = IDCLIENTE;
+    const banco = document.getElementById('seletorBanco').value; // Captura o banco selecionado
+    const data = formatDateToFirstOfMonth($('#seletorMesAno').val());
+
+    fetch('/consulta/definirSaldoInicial', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cliente, banco, data, saldo: formatarValorParaInsercao(novoSaldo) }) // Formata o valor antes de enviar
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro ao salvar saldo inicial: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert('Saldo inicial atualizado com sucesso!');
+            document.getElementById('saldoInicialInput').value = formatarValorParaExibicao(novoSaldo);
+            fecharSaldoPopup();
+            buscarDados();
+        })
+        .catch(error => {
+            console.error('Erro ao salvar saldo inicial:', error);
+            alert('Erro ao salvar saldo inicial. Por favor, tente novamente.');
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const saldoInicialInput = document.getElementById('saldoInicialInput');
+
+    saldoInicialInput.addEventListener('input', function() {
+        this.value = formatarValorFinanceiroInput(this.value);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const saldoInicialInput = document.getElementById('novoSaldoInicial');
+
+    saldoInicialInput.addEventListener('input', function() {
+        this.value = formatarValorFinanceiroInput(this.value);
+    });
+});
+
+function downloadTemplate() {
+    const link = document.createElement('a');
+    link.href = '/paginaInsercao/template.xlsx'; // Substitua pelo caminho real do arquivo template
+    link.download = 'template.xlsx'; // Nome do arquivo que será baixado
+    link.click();
 }

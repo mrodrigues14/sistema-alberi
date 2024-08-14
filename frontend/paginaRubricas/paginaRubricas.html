@@ -8,58 +8,58 @@
 <body>
 <div id="menu-container"></div>
 
-<div class="editorCategoria">
-    <div class="adicionar_editar">
-        <div class="adicionarCategoria">
-            <h2>Adicionar Rubrica</h2>
-            <form action="/categoria/" method="post">
-                <input type="text" name="CATEGORIA" placeholder="Informe a Rubrica" class="texto">
-                <input type="hidden" name="idcliente">
-                <input type="submit" value="Adicionar" class="adicionarButton">
-            </form>
-        </div>
+<div class="lista-rubricas">
+    <h2>Rubricas e Sub-Rubricas</h2>
+    <ul id="rubrica-lista">
+    </ul>
+</div>
 
-        <div class="editarCategoria">
-            <h2>Editar Rubrica</h2>
-            <form action="/categoria/editar" method="post">
-                <label>
-                    <select name="categoriaAntiga" id="seletorCategoria3">
-                        <option value="" disabled selected>Selecione para Remover</option>
-                    </select>
-                </label>
-                <input type="text" name="categoriaNova" placeholder="Informe o novo nome da rubrica" class="texto">
-                <input type="hidden" name="idcliente4">
-                <input type="submit" value="Editar" class="adicionarButton">
-            </form>
-        </div>
-    </div>
-    <div class="adicionarSubcategoria">
-        <h2>Adicionar Sub-Rubrica</h2>
-        <form action="/categoria/subcategoria" method="post">
-            <label>
-                <select name="categoriaPai" id="seletorCategoria">
-                    <option value="" disabled selected>Selecione Rubrica-Pai</option>
-                </select>
-            </label>
-            <input type="text" name="SUBCATEGORIA" placeholder="Informe a sub-rubrica" class="texto">
-            <input type="hidden" name="idcliente2">
-            <input type="submit" value="Adicionar" class="adicionarButton">
-        </form>
-    </div>
+<div class="adicionar-rubrica-container">
+    <button id="adicionar-rubrica-btn" class="adicionar-rubrica-btn">Adicionar Nova Rubrica</button>
+    <button id="adicionar-subrubrica-btn" class="adicionar-subrubrica-btn">Adicionar Nova Subrubrica</button>
+</div>
 
-    <div class="removerCategoria">
-        <h3>Remover Rubrica e Sub-Rubrica</h3>
-        <form action="/categoria/delete/" method="post" id="formRemove">
-            <label>
-                <select name="categoria" id="seletorCategoria2">
-                    <option value="" disabled selected>Selecione para Remover</option>
-                </select>
-            </label>
-            <input type="hidden" name="idcliente3">
-            <input type="submit" value="Remover" class="adicionarButton">
+<div id="popup-adicionar-rubrica" class="popup">
+    <div class="popup-content">
+        <span class="close" onclick="fecharPopup('popup-adicionar-rubrica')">&times;</span>
+        <h2>Adicionar Nova Rubrica</h2>
+        <form id="form-adicionar-rubrica" method="post" action="/categoria/">
+            <input type="text" name="CATEGORIA" placeholder="Nome da Rubrica" required>
+            <input type="hidden" name="idcliente" value="">
+            <button type="submit">Adicionar</button>
         </form>
     </div>
 </div>
+
+<div id="popup-adicionar-subrubrica" class="popup">
+    <div class="popup-content">
+        <span class="close" onclick="fecharPopup('popup-adicionar-subrubrica')">&times;</span>
+        <h2>Adicionar Nova Sub-Rubrica</h2>
+        <form id="form-adicionar-subrubrica" method="post" action="/categoria/subcategoria">
+            <select name="categoriaPai" required>
+                <option value="" disabled selected>Selecione a Rubrica-Pai</option>
+            </select>
+            <input type="text" name="SUBCATEGORIA" placeholder="Nome da Sub-Rubrica" required>
+            <input type="hidden" name="idcliente2" value="">
+            <button type="submit">Adicionar</button>
+        </form>
+    </div>
+</div>
+
+<div id="popup-editar-rubrica" class="popup">
+    <div class="popup-content">
+        <span class="close" onclick="fecharPopup('popup-editar-rubrica')">&times;</span>
+        <h2>Editar Rubrica</h2>
+        <form id="form-editar-rubrica" method="post" action="/categoria/editar">
+            <input type="hidden" name="idcliente" value="">
+            <input type="hidden" name="categoriaAntiga" value="">
+            <input type="text" name="categoriaNova" placeholder="Novo nome da Rubrica" required>
+            <button type="submit">Salvar</button>
+        </form>
+    </div>
+</div>
+
+
 <script src="/paginaRubricas/paginaRubricas.js"></script>
 </body>
 </html>

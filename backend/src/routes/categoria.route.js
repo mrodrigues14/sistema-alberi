@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const {buscar} = require('../repositories/categoria.repository');
+const {buscar, buscarCategoriaPorId} = require('../repositories/categoria.repository');
 const {adicionarOuAssociarCategoria} = require('../repositories/categoria.repository');
 const {deletar} = require('../repositories/categoria.repository');
 const {adicionarSubcategoria} = require('../repositories/categoria.repository');
@@ -35,8 +35,8 @@ router.post('/' , (req, res) => {
 });
 
 router.post('/delete' , (req, res) => {
-    const {idcliente3, categoria} = req.body;
-    deletar(categoria, idcliente3, (err, result) => {
+    const {idCliente, categoria} = req.body;
+    deletar(categoria, idCliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao deletar categoria");
@@ -58,9 +58,9 @@ router.post('/subcategoria', (req, res) => {
 });
 
 router.post('/editar' , (req, res) => {
-    const {idcliente4, categoriaAntiga, categoriaNova} = req.body;
+    const {idcliente, categoriaAntiga, categoriaNova} = req.body;
     console.log(req.body);
-    editarCategoria(categoriaAntiga, categoriaNova, idcliente4, (err, result) => {
+    editarCategoria(categoriaAntiga, categoriaNova, idcliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao editar categoria");
@@ -68,5 +68,17 @@ router.post('/editar' , (req, res) => {
         res.redirect(`/rubricas?successMsg=Rubrica editada para ${categoriaNova}!`);
     });
 });
+
+router.get('/editar/:id', (req, res) => {
+    const idCategoria = req.params.id;
+    buscarCategoriaPorId(idCategoria, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao buscar categoria para edição");
+        }
+        res.json(result);
+    });
+});
+
 
 module.exports = router;

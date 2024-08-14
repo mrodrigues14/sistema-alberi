@@ -51,9 +51,9 @@ function adicionarOuAssociarCategoria(categoria, idCliente, callback) {
 }
 
 
-function deletar(idcategoria, idcliente, callback){
-    console.log(idcategoria, idcliente);
-    mysqlConn.query(`DELETE FROM RELACAOCLIENTECATEGORIA WHERE ID_CLIENTE = ? AND ID_CATEGORIA = ?`, [idcliente, idcategoria],
+function deletar(idcategoria, idCliente, callback){
+    console.log(idcategoria, idCliente);
+     mysqlConn.query(`DELETE FROM RELACAOCLIENTECATEGORIA WHERE ID_CLIENTE = ? AND ID_CATEGORIA = ?`, [idCliente, idcategoria],
     function(err, result, fields) {
         if (err) {
             callback(err, null);
@@ -105,4 +105,19 @@ function editarCategoria(idCategoriaAntiga, categoriaNova, idCliente, callback) 
         }
     });
 }
-module.exports = {buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria, editarCategoria};
+
+function buscarCategoriaPorId(idCategoria, callback) {
+    mysqlConn.query(
+        `SELECT IDCATEGORIA, NOME FROM CATEGORIA WHERE IDCATEGORIA = ?`,
+        [idCategoria],
+        function(err, result) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result[0]);
+            }
+        }
+    );
+}
+
+module.exports = {buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria, editarCategoria, buscarCategoriaPorId};

@@ -112,6 +112,12 @@ function definirSaldoInicial(idCliente, idBanco, data, mesAno, saldo, callback) 
         VALUES (?, ?, ?, ?, ?) 
         ON DUPLICATE KEY UPDATE SALDO = VALUES(SALDO)`;
 
+    console.log('idCliente:', idCliente);
+    console.log('idBanco:', idBanco);
+    console.log('data:', data);
+    console.log('mesAno:', mesAno);
+    console.log('saldo:', saldo);
+
     mysqlConn.query(queryInsertOrUpdate, [idCliente, idBanco, data, mesAno, saldo], function (err, result) {
         if (err) {
             callback(err, null);
@@ -120,5 +126,6 @@ function definirSaldoInicial(idCliente, idBanco, data, mesAno, saldo, callback) 
         }
     });
 }
+
 
 module.exports = { buscar, extratoAEditar, editarExtrato, buscarSaldoInicial, salvarOrdem, definirSaldoInicial };
