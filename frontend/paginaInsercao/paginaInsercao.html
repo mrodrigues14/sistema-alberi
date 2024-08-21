@@ -54,150 +54,156 @@
 <body>
 <div id="menu-container"></div>
 
-<div class="seletores">
-    <div>
-        <select id="seletorBanco" name="id_banco">
-            <option value="" disabled selected>Selecione o Banco Desejado</option>
-        </select>
+<div class="body-insercao">
+    <div class="seletores">
+        <div>
+            <select id="seletorBanco" name="id_banco">
+                <option value="" disabled selected>Selecione o Banco Desejado</option>
+            </select>
+        </div>
+        <div>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="excelFile" accept=".xlsx, .xls" />
+                <input type="button" value="Upload e Processar" onclick="lerExcel()">
+            </form>
+        </div>
+        <div>
+            <button id="downloadTemplateButton" onclick="downloadTemplate()">Download Template</button>
+        </div>
+        <div>
+            <label for="seletorMesAno">Mes/Ano </label>
+            <input type="text" id="seletorMesAno" name="mes_ano">
+        </div>
     </div>
-    <div>
-        <form id="uploadForm" enctype="multipart/form-data">
-            <input type="file" id="excelFile" accept=".xlsx, .xls" />
-            <input type="button" value="Upload e Processar" onclick="lerExcel()">
-        </form>
-    </div>
-    <div>
-        <button id="downloadTemplateButton" onclick="downloadTemplate()">Download Template</button>
-    </div>
-    <div>
-        <label for="seletorMesAno">Mes/Ano </label>
-        <input type="text" id="seletorMesAno" name="mes_ano">
-    </div>
-</div>
 
-<form id="meuFormulario" action="/insercao/" method="post">
-    <div class="tabela">
-        <table>
+    <form id="meuFormulario" action="/insercao/" method="post">
+        <div class="tabela">
+            <table>
+                <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Rubrica</th>
+                    <th>Fornecedor</th>
+                    <th>Observação</th>
+                    <th>Nome no Extrato</th>
+                    <th>Entrada</th>
+                    <th>Saída</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><input type="date" name="Data" id="datepicker"></td>
+                    <td>
+                        <label>
+                            <select name="categoria" id="seletorCategoria"></select>
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            <select name="fornecedor" id="seletorFornecedor"></select>
+                        </label>
+                    </td>
+                    <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="textos"></td>
+                    <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="textos"></td>
+                    <td><input type="text" name="valorEn" id="valorEn" class="valor"></td>
+                    <td><input type="text" name="valorSa" id="valorSa" class="valor"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <input type="hidden" name="id_empresa" id="id_empresa">
+        <input type="hidden" name="id_bancoPost" id="id_bancoPost">
+        <input type="submit" value="Enviar">
+    </form>
+
+    <div id="downloadButtons">
+        <button onclick="gerarPDF()">Gerar PDF</button>
+        <button onclick="gerarExcel()">Gerar Excel</button>
+    </div>
+
+    <div id="saldoinicial">
+        <table id="saldoInicialTable">
             <thead>
             <tr>
-                <th>Data</th>
-                <th>Rubrica</th>
-                <th>Fornecedor</th>
-                <th>Observação</th>
-                <th>Nome no Extrato</th>
-                <th>Entrada</th>
-                <th>Saída</th>
+                <th>Saldo Inicial</th>
             </tr>
             </thead>
             <tbody>
             <tr>
-                <td><input type="date" name="Data" id="datepicker"></td>
                 <td>
-                    <label>
-                        <select name="categoria" id="seletorCategoria"></select>
-                    </label>
+                    <input type="text" id="saldoInicialInput" readonly value="0,00">
                 </td>
-                <td>
-                    <label>
-                        <select name="fornecedor" id="seletorFornecedor"></select>
-                    </label>
-                </td>
-                <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="textos"></td>
-                <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="textos"></td>
-                <td><input type="text" name="valorEn" id="valorEn" class="valor"></td>
-                <td><input type="text" name="valorSa" id="valorSa" class="valor"></td>
             </tr>
+            <tr>
+                <td>
+                    <button id="abrirSaldoPopup" onclick="abrirSaldoPopup()">Definir Saldo Inicial</button>
+                </td>
+            </tr>
+            <div id="saldoPopup" class="popup-overlay">
+                <div class="popup-content">
+                    <span class="close-btn" onclick="fecharSaldoPopup()">&times;</span>
+                    <h3>Definir Saldo Inicial</h3>
+                    <label for="novoSaldoInicial">Novo Saldo Inicial:</label>
+                    <input type="text" id="novoSaldoInicial" placeholder="0,00">
+                    <button onclick="salvarSaldoInicial()">Salvar</button>
+                </div>
+            </div>
+
             </tbody>
         </table>
+        <table id="saldoFinalTable">
+            <thead>
+            <tr>
+                <th>Saldo Final</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
-    <input type="hidden" name="id_empresa" id="id_empresa">
-    <input type="hidden" name="id_bancoPost" id="id_bancoPost">
-    <input type="submit" value="Enviar">
-</form>
 
-<div id="downloadButtons">
-    <button onclick="gerarPDF()">Gerar PDF</button>
-    <button onclick="gerarExcel()">Gerar Excel</button>
-</div>
+    <div id="botão-deletar">
+        <button onclick="deletarSelecionados()">Deletar Selecionados</button>
+    </div>
 
-<div id="saldoinicial">
-    <table id="saldoInicialTable">
+    <table id="consulta">
         <thead>
         <tr>
-            <th>Saldo Inicial</th>
+            <th></th>
+            <th>Data</th>
+            <th>Rubrica</th>
+            <th>Nome no Extrato</th>
+            <th>Observação</th>
+            <th>Fornecedor</th>
+            <th>Entrada</th>
+            <th>Saída</th>
+            <th>Saldo</th>
+            <th>Anexos</th>
+            <th>Ferramentas</th>
         </tr>
         </thead>
-        <tbody>
-        <tr>
-            <td>
-                <input type="text" id="saldoInicialInput" readonly value="0,00">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <button id="abrirSaldoPopup" onclick="abrirSaldoPopup()">Definir Saldo Inicial</button>
-            </td>
-        </tr>
-        <div id="saldoPopup" class="popup-overlay">
-            <div class="popup-content">
-                <span class="close-btn" onclick="fecharSaldoPopup()">&times;</span>
-                <h3>Definir Saldo Inicial</h3>
-                <label for="novoSaldoInicial">Novo Saldo Inicial:</label>
-                <input type="text" id="novoSaldoInicial" placeholder="0,00">
-                <button onclick="salvarSaldoInicial()">Salvar</button>
-            </div>
-        </div>
-
-        </tbody>
-    </table>
-    <table id="saldoFinalTable">
-        <thead>
-        <tr>
-            <th>Saldo Final</th>
-        </tr>
-        </thead>
+        <tbody id="extrato-body"></tbody>
         <tbody></tbody>
     </table>
-</div>
-
-<div id="botão-deletar">
-    <button onclick="deletarSelecionados()">Deletar Selecionados</button>
-</div>
-
-<table id="consulta">
-    <thead>
-    <tr>
-        <th></th>
-        <th>Data</th>
-        <th>Rubrica</th>
-        <th>Nome no Extrato</th>
-        <th>Observação</th>
-        <th>Fornecedor</th>
-        <th>Entrada</th>
-        <th>Saída</th>
-        <th>Saldo</th>
-        <th>Anexos</th>
-        <th>Ferramentas</th>
-    </tr>
-    </thead>
-    <tbody id="extrato-body"></tbody>
-    <tbody></tbody>
-</table>
 
 
-<div id="iframe-container"></div>
+    <div id="iframe-container"></div>
 
-<div id="anexo-popup" class="popup-overlay">
-    <div class="popup-content">
-        <span class="close-btn" onclick="fecharPopup()">&times;</span>
-        <h3>Anexos</h3>
-        <div id="anexo-content"></div>
-        <input type="file" id="anexoFile">
-        <input type="hidden" id="idExtratoAnexo">
-        <button onclick="uploadAnexo()">Enviar Anexo</button>
+    <div id="anexo-popup" class="popup-overlay">
+        <div class="popup-content">
+            <span class="close-btn" onclick="fecharPopup()">&times;</span>
+            <h3>Anexos</h3>
+            <div id="anexo-content"></div>
+            <input type="file" id="anexoFile">
+            <input type="hidden" id="idExtratoAnexo">
+            <button onclick="uploadAnexo()">Enviar Anexo</button>
+        </div>
     </div>
+
 </div>
 
+<div id="loadingSpinner" class="loading-spinner" style="display: none;">
+    <div class="spinner"></div>
+</div>
 
 
 <script src="/paginaInsercao/paginaInsercao.js"></script>

@@ -480,4 +480,45 @@ iframe {
     z-index: 1000;
 }
 
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #000;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.blur-background {
+    filter: blur(5px);
+    pointer-events: none;
+}
+
+.blink-red {
+    animation: blink-red-animation 1s infinite alternate;
+}
+
+@keyframes blink-red-animation {
+    from { background-color: #ffcccc; }
+    to { background-color: #ffe6e6; }
+}
+
+
 

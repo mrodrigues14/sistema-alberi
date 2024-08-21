@@ -1,15 +1,25 @@
+let IDCLIENTE = 0;
+let IDBANCO = 0;
+let categoriasMap = new Map();
+let fornecedoresMap = new Map();
+let saldoinicial
+let saldo
+let linhasSelecionadas = [];
+
+
+
 document.addEventListener('DOMContentLoaded', async function() {
     try {
         await loadTemplateAndStyles();
+        await initializePage();
+        await carregarCategoriasEFornecedores();
+        initializePageConsulta();
+        fetchSaldoInicialEFinal();
     } catch (error) {
         console.error('Erro ao carregar o template:', error);
     }
-
-    initializePage();
-    initializePageConsulta();
-    fetchSaldoInicialEFinal();
-
 });
+
 
 async function loadTemplateAndStyles() {
     const cachedCSS = localStorage.getItem('templateCSS');
@@ -59,8 +69,7 @@ function getStoredEmpresaName() {
     return localStorage.getItem('nomeEmpresaSelecionada');
 }
 
-let IDCLIENTE = 0;
-let IDBANCO = 0;
+
 
 function formatarData(data) {
     if (data === '0000-00-00') return '00/00/0000';
@@ -81,7 +90,7 @@ function initializePage() {
                 select.removeChild(select.firstChild);
             }
 
-            fetch(`/insercao/dados-categoria?idcliente=${encodeURIComponent(IDCLIENTE)}`)
+            fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(data => {
                     const defaultOption = document.createElement('option');
@@ -102,6 +111,7 @@ function initializePage() {
                     const selectBanco = document.getElementById('seletorBanco');
                     data.forEach(banco => {
                         const option = document.createElement('option');
+                        console.log("essas eh option", option)
                         option.value = banco.IDBANCO;
                         IDBANCO = option.value;
                         option.textContent = banco.NOME_TIPO;
@@ -227,9 +237,12 @@ function formatarValorParaExibicao(valor) {
 
 
 function lerExcel() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.querySelector('.body-insercao').classList.add('blur-background');
+    const idBanco = IDBANCO || document.getElementById('seletorBanco').value;
+
     var input = document.getElementById('excelFile');
     var reader = new FileReader();
-    var idEmpresa = IDCLIENTE;
 
     reader.onload = function () {
         var fileData = reader.result;
@@ -237,8 +250,7 @@ function lerExcel() {
         workbook.SheetNames.forEach(function (sheetName) {
             var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
 
-            // Pega as categorias existentes para verificar
-            fetch(`/insercao/dados-categoria?idcliente=${encodeURIComponent(IDCLIENTE)}`)
+            fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(categorias => {
                     var categoriasMap = new Map();
@@ -246,53 +258,83 @@ function lerExcel() {
                         categoriasMap.set(categoria.NOME.toLowerCase(), categoria);
                     });
 
-                    XL_row_object.forEach(function (row) {
-                        if (row['Data'] && !isNaN(row['Data'])) {
-                            row['Data'] = excelDateToJSDate(row['Data']);
-                        }
-                        row['IDCLIENTE'] = idEmpresa;
-                        row['IDBANCO'] = IDBANCO;
+                    fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
+                        .then(response => response.json())
+                        .then(fornecedores => {
+                            var fornecedoresMap = new Map();
+                            fornecedores.forEach(fornecedor => {
+                                fornecedoresMap.set(fornecedor.NOME_TIPO.toLowerCase(), fornecedor);
+                            });
 
-                        if (row['Saida']) {
-                            row['Saida'] = formatarValorFinanceiro(parseFloat(row['Saida']));
-                        }
-                        if (row['Entrada']) {
-                            row['Entrada'] = formatarValorFinanceiro(parseFloat(row['Entrada']));
-                        }
+                            XL_row_object.forEach(async function (row) {
+                                if (row['Data'] && !isNaN(row['Data'])) {
+                                    row['Data'] = excelDateToJSDate(row['Data']);
+                                }
+                                row['IDCLIENTE'] = idEmpresa;
+                                row['IDBANCO'] = idBanco;
 
-                        // Verifica se a categoria existe
-                        const categoria = row['Categoria'] ? row['Categoria'].toLowerCase() : '';
-                        if (!categoriasMap.has(categoria)) {
-                            row['CategoriaNaoExiste'] = true; // Marca a categoria como inexistente
-                        }
-                    });
+                                if (row['Saida']) {
+                                    row['Saida'] = formatarValorFinanceiro(parseFloat(row['Saida']));
+                                }
+                                if (row['Entrada']) {
+                                    row['Entrada'] = formatarValorFinanceiro(parseFloat(row['Entrada']));
+                                }
 
-                    var json_object = JSON.stringify(XL_row_object);
-                    console.log("JSON Convertido:", json_object);
+                                if (row['Entrada'] && !row['Saida']) {
+                                    row['TIPO'] = 'ENTRADA';
+                                    row['VALOR'] = row['Entrada'];
+                                } else if (row['Saida'] && !row['Entrada']) {
+                                    row['TIPO'] = 'SAIDA';
+                                    row['VALOR'] = row['Saida'];
+                                } else if (row['Entrada'] && row['Saida']) {
+                                    console.error('Erro: ambos os campos "Entrada" e "Saida" estão preenchidos.');
+                                } else {
+                                    console.error('Erro: Nenhum valor em "Entrada" ou "Saida".');
+                                }
 
-                    mostrarPopupCarregamento();
+                                const categoriaNome = row['Categoria'] ? row['Categoria'].toLowerCase() : '';
+                                if (!categoriasMap.has(categoriaNome)) {
+                                    const idCategoria = await adicionarCategoria(categoriaNome, idEmpresa);
+                                    row['IDCATEGORIA'] = idCategoria;
+                                } else {
+                                    row['IDCATEGORIA'] = categoriasMap.get(categoriaNome).IDCATEGORIA;
+                                }
 
-                    fetch('/insercao/inserir-lote', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: json_object
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Erro na resposta do servidor');
-                            }
-                            return response.text();
-                        })
-                        .then(data => {
-                            fecharPopupCarregamento();
-                            console.log(data);
-                            atualizarTabelaComCategoriaNaoExistente(XL_row_object); // Atualiza a tabela com o estilo
+                                const fornecedorNome = row['NomeFornecedor'] ? row['NomeFornecedor'].toLowerCase() : '';
+                                if (!fornecedoresMap.has(fornecedorNome)) {
+                                    const idFornecedor = await adicionarFornecedor(fornecedorNome, idEmpresa);
+                                    row['IDFORNECEDOR'] = idFornecedor;
+                                } else {
+                                    row['IDFORNECEDOR'] = fornecedoresMap.get(fornecedorNome).IDFORNECEDOR;
+                                }
+                            });
+
+                            var json_object = JSON.stringify(XL_row_object);
+                            console.log(json_object)
+                            fetch('/insercao/inserir-lote', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: json_object
+                            })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Erro na resposta do servidor');
+                                    }
+                                    return response.text();
+                                })
+                                .then(data => {
+                                    fecharPopupCarregamentoInsercao();
+                                    location.reload();
+                                })
+                                .catch(error => {
+                                    fecharPopupCarregamentoInsercao();
+                                    console.error('Falha ao enviar dados:', error);
+                                });
                         })
                         .catch(error => {
-                            fecharPopupCarregamento();
-                            console.error('Falha ao enviar dados:', error);
+                            console.error('Erro ao carregar os dados dos fornecedores:', error);
                         });
                 })
                 .catch(error => {
@@ -308,49 +350,48 @@ function lerExcel() {
     reader.readAsBinaryString(input.files[0]);
 }
 
-function atualizarTabelaComCategoriaNaoExistente(dados) {
-    const tbody = document.getElementById('extrato-body');
-    tbody.innerHTML = '';
-
-    dados.forEach((item, index) => {
-        const row = tbody.insertRow();
-        row.dataset.idextrato = item.IDEXTRATO;
-
-        // Aplicar estilo de erro se a categoria não existir
-        if (item.CategoriaNaoExiste) {
-            row.style.color = 'red'; // Destaca a linha em vermelho
-        }
-
-        // Preenche a tabela com os dados, adaptando conforme necessário
-        row.insertCell().textContent = formatDate(item.Data);
-        row.insertCell().textContent = item.Categoria;
-        row.insertCell().textContent = item.NomeNoExtrato;
-        row.insertCell().textContent = item.Descricao;
-        row.insertCell().textContent = item.NomeFornecedor;
-
-        const entradaCell = row.insertCell();
-        const saidaCell = row.insertCell();
-
-        entradaCell.textContent = item.Entrada ? formatarValorParaExibicao(item.Entrada) : "";
-        saidaCell.textContent = item.Saida ? formatarValorParaExibicao(item.Saida) : "";
-
-        const saldoCell = row.insertCell();
-        saldoCell.textContent = ''; // Lógica para calcular o saldo se necessário
-
-        const anexosCell = row.insertCell();
-        const deleteCell = row.insertCell();
-
-        anexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${item.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
-        deleteCell.innerHTML = `
-            <form action="insercao/deletar-extrato" method="post">
-                <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
-                <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-            </form>
-            <button onclick="editarLinha(this)">EDITAR</button>
-            <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
-        `;
-    });
+async function adicionarCategoria(nomeCategoria, idCliente) {
+    try {
+        const response = await fetch('/categoria', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ CATEGORIA: nomeCategoria, idcliente: idCliente })
+        });
+        const data = await response.json();
+        return data.idCategoria;
+    } catch (error) {
+        console.error('Erro ao adicionar nova categoria:', error);
+        throw error;
+    }
 }
+
+// Função para adicionar novo fornecedor
+async function adicionarFornecedor(nomeFornecedor, idCliente) {
+    try {
+        const response = await fetch('/fornecedor/adicionar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nomeFornecedor, cnpj: null, cpf: null, tipoProduto: null, idcliente: idCliente })
+        });
+        const data = await response.json();
+        return data.idFornecedor;
+    } catch (error) {
+        console.error('Erro ao adicionar novo fornecedor:', error);
+        throw error;
+    }
+}
+
+function fecharPopupCarregamentoInsercao() {
+    document.getElementById('loadingSpinner').style.display = 'none';
+}
+
+
+
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const seletorBanco = document.getElementById('seletorBanco');
@@ -533,7 +574,7 @@ function buscarDados() {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            console.log('Dados recebidos:', data);
+            console.log('Dados  data:', data);
             atualizarTabela(data);
         })
         .catch(error => {
@@ -545,11 +586,46 @@ function formatarValorNumerico(valor) {
     return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-let saldoinicial
-let saldo
+
+
+function carregarCategoriasEFornecedores() {
+    fetch(`/insercao/dados-categoria?idcliente=${idEmpresa}`)
+        .then(response => response.json())
+        .then(categorias => {
+            console.log("Dados recebidos no front-end:", categorias);
+
+            categorias.forEach(categoria => {
+                categoriasMap.set(categoria.IDCATEGORIA, categoria);
+
+                if (categoria.ID_CATEGORIA_PAI) {
+                    const categoriaPai = categoriasMap.get(categoria.ID_CATEGORIA_PAI);
+                    if (categoriaPai) {
+                        const chaveCombinada = `${categoriaPai.NOME.toLowerCase().trim()} - ${categoria.NOME.toLowerCase().trim()}`;
+                        categoriasMap.set(chaveCombinada, categoria.IDCATEGORIA);
+                    }
+                } else {
+                    categoriasMap.set(categoria.NOME.toLowerCase().trim(), categoria.IDCATEGORIA);
+                }
+            });
+
+            console.log("Mapa de categorias:", categoriasMap);
+        })
+        .catch(error => {
+            console.error('Erro ao buscar dados:', error);
+        });
+
+
+    fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(fornecedor => {
+                fornecedoresMap.set(fornecedor.NOME_TIPO.toLowerCase().trim(), fornecedor.IDFORNECEDOR);
+            });
+            console.log(fornecedoresMap)
+        });
+}
 
 function atualizarTabela(dados) {
-    console.log('Atualizando tabela com:', dados);
     const tbody = document.getElementById('extrato-body');
     tbody.innerHTML = '';
     const saldoInicial = parseFloat(document.getElementById('saldoInicialInput').value.replace(/\./g, '').replace(',', '.')) || 0;
@@ -567,11 +643,30 @@ function atualizarTabela(dados) {
             dragCell.appendChild(dragIcon);
 
             row.insertCell().textContent = formatDate(item.DATA);
-            const categoria = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
-            row.insertCell().textContent = categoria;
+
+            const categoriaCell = row.insertCell();
+            const categoriaText = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
+            categoriaCell.textContent = categoriaText || 'Categoria não encontrada';
+
+            const categoriaNome = item.SUBCATEGORIA
+                ? item.SUBCATEGORIA.toLowerCase()
+                : item.CATEGORIA.toLowerCase();
+
+            if (!categoriasMap.has(categoriaNome)) {
+                categoriaCell.classList.add('blink-red');
+            }
+
             row.insertCell().textContent = item.NOME_NO_EXTRATO;
             row.insertCell().textContent = item.DESCRICAO;
-            row.insertCell().textContent = item.NOME_FORNECEDOR;
+
+            // Verificar fornecedor
+            const fornecedorCell = row.insertCell();
+            fornecedorCell.textContent = item.NOME_FORNECEDOR || 'Fornecedor não encontrado';
+
+            const fornecedorNome = item.NOME_FORNECEDOR ? item.NOME_FORNECEDOR.toLowerCase() : '';
+            if (!fornecedoresMap.has(fornecedorNome)) {
+                fornecedorCell.classList.add('blink-red');
+            }
 
             const entradaCell = row.insertCell();
             const saidaCell = row.insertCell();
@@ -579,11 +674,7 @@ function atualizarTabela(dados) {
             const valorEntrada = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? parseFloat(item.VALOR) : 0;
             const valorSaida = item.TIPO_DE_TRANSACAO === 'SAIDA' ? parseFloat(item.VALOR) : 0;
 
-            if (index === 0) {
-                saldo = saldoInicial + (valorEntrada - valorSaida);
-            } else {
-                saldo += (valorEntrada - valorSaida);
-            }
+            saldo += (valorEntrada - valorSaida);
 
             entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
             saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
@@ -602,40 +693,6 @@ function atualizarTabela(dados) {
                 <button onclick="editarLinha(this)">EDITAR</button>
                 <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}">SELECIONAR</button>
             `;
-
-            dados.forEach(subItem => {
-                if (subItem.ID_SUBEXTRATO === item.IDEXTRATO) {
-                    const subRow = tbody.insertRow();
-                    subRow.classList.add('sub-linha');
-                    subRow.dataset.idextrato = subItem.IDEXTRATO;
-
-                    subRow.insertCell().textContent = '';
-                    subRow.insertCell().textContent = formatDate(subItem.DATA);
-                    subRow.insertCell().textContent = subItem.CATEGORIA;
-                    subRow.insertCell().textContent = subItem.DESCRICAO;
-                    subRow.insertCell().textContent = subItem.NOME_NO_EXTRATO;
-                    subRow.insertCell().textContent = subItem.NOME_FORNECEDOR;
-
-                    const subEntradaCell = subRow.insertCell();
-                    const subSaidaCell = subRow.insertCell();
-                    subEntradaCell.textContent = subItem.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(subItem.VALOR) : "";
-                    subSaidaCell.textContent = subItem.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(subItem.VALOR) : "";
-
-                    subRow.insertCell().textContent = ''; // Subdivisões não exibem saldo
-
-                    const subAnexosCell = subRow.insertCell();
-                    const subDeleteCell = subRow.insertCell();
-
-                    subAnexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${subItem.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
-                    subDeleteCell.innerHTML = `
-                        <form action="insercao/deletar-extrato" method="post">
-                            <input type="hidden" name="idExtrato" value="${subItem.IDEXTRATO}">
-                            <button type="submit" class="delete-btn" style="width: 2vw; cursor: pointer"><img src="paginaInsercao/imagens/lixeira.png" style="width: 100%;"></button>
-                        </form>
-                        <button onclick="editarExtrato(${subItem.IDEXTRATO})">EDITAR</button>
-                        <button onclick="selecionarLinha(this)" data-idextrato="${subItem.IDEXTRATO}">SELECIONAR</button>`;
-                }
-            });
         }
     });
 
@@ -709,7 +766,7 @@ function fetchSaldoInicialEFinal() {
     const mesAno = $('#seletorMesAno').val();
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
 
-    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${dataFormatada}&cliente=${IDCLIENTE}`)
+    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${dataFormatada}&cliente=${idEmpresa}`)
         .then(response => response.json())
         .then(data => {
             const saldoInicialInput = document.getElementById('saldoInicialInput');
@@ -757,7 +814,7 @@ function definirSaldoInicialProximoMes(saldoFinal) {
         novoMes = 1;
         novoAno += 1;
     }
-
+    console.log(idEmpresa)
     const dataProximoMes = `${novoAno}-${String(novoMes).padStart(2, '0')}-01`;
 
     fetch('/consulta/definirSaldoInicial', {
@@ -766,7 +823,7 @@ function definirSaldoInicialProximoMes(saldoFinal) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            cliente: IDCLIENTE,
+            cliente: idEmpresa,
             banco: document.getElementById('seletorBanco').value,
             data: dataProximoMes,
             saldo: saldoFinal.toFixed(2)
@@ -787,7 +844,6 @@ function definirSaldoInicialProximoMes(saldoFinal) {
 }
 
 
-let linhasSelecionadas = [];
 function selecionarLinha(buttonElement) {
     const idExtrato = buttonElement.getAttribute('data-idextrato');
     if (linhasSelecionadas.includes(idExtrato)) {
@@ -1108,7 +1164,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     salvarSaldoInicialBtn.addEventListener('click', function() {
         const novoSaldo = parseFloat(saldoInicialInput.value.replace('.', '').replace(',', '.')).toFixed(2);
-        const cliente = IDCLIENTE;
+        const cliente = idEmpresa;
         const banco = IDBANCO;
         const data = formatDateToFirstOfMonth($('#seletorMesAno').val());
 
@@ -1237,7 +1293,6 @@ function cancelarEdicao(buttonElement) {
 function editarLinha(buttonElement) {
     const row = buttonElement.closest('tr');
     const cells = row.querySelectorAll('td');
-
     row.dataset.originalData = JSON.stringify(
         Array.from(cells).map(cell => cell.textContent.trim())
     );

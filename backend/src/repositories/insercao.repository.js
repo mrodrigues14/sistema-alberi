@@ -1,19 +1,31 @@
 const mysqlConn = require("../base/database");
 
 async function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor){
-    if(!id_fornecedor){
-        id_fornecedor = null;
-    }
-    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor];
-    console.log(parameters);
-
     try {
+        // Verifica se o fornecedor existe na tabela FORNECEDOR
+        if (id_fornecedor) {
+            const [rows] = await mysqlConn.query(
+                `SELECT IDFORNECEDOR FROM FORNECEDOR WHERE IDFORNECEDOR = ?`,
+                [id_fornecedor]
+            );
+
+            if (rows.length === 0) {
+                throw new Error(`Fornecedor com ID ${id_fornecedor} não encontrado.`);
+            }
+        } else {
+            // Se id_fornecedor for null ou undefined, você pode definir como null para evitar problemas de chave estrangeira
+            id_fornecedor = null;
+        }
+
+        // Agora insere a linha no EXTRATO
+        const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor];
+        console.log(parameters);
+
         const result = await mysqlConn.execute(
             `INSERT INTO EXTRATO (IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE, ID_FORNECEDOR)
              VALUES (null,?,?,?,?,?,?,?,?,?)`,
             parameters
         );
-
     } catch (error) {
         console.error(`Erro ao inserir dados: ${error.message}`);
         throw error;
@@ -184,6 +196,7 @@ function buscarSaldoMesAnterior(clienteId, mesAno, callback) {
         }
     });
 }
+
 
 
 module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior};

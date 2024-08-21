@@ -67,6 +67,7 @@ router.get('/dados-categoria', (req, res) => {
             return res.status(500).send("Erro ao buscar dados");
         }
         res.json(result);
+        console.log(result, idcliente)
     });
 });
 
@@ -98,9 +99,9 @@ router.post('/inserir-lote', async (req, res) => {
 
     try {
         for (const entrada of entradas) {
-            const { Data,	Categoria,	Descricao,	Nome,	Tipo,	Valor, IDBANCO, IDCLIENTE } = entrada;
+            const { Data,	Categoria,	Descricao,	Nome,	TIPO,	VALOR, IDBANCO, IDCLIENTE } = entrada;
 
-            await inserir(Data,	Categoria,	Descricao,	Nome,	Tipo,	Valor, IDBANCO, IDCLIENTE);
+            await inserir(Data,	Categoria,	Descricao,	Nome,	TIPO,	VALOR, IDBANCO, IDCLIENTE);
         }
         res.status(200).send("Dados inseridos com sucesso");
     } catch (error) {
