@@ -1,49 +1,28 @@
 const mysqlConn = require("../base/database");
 
 function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor, callback) {
-    if (id_fornecedor) {
-        mysqlConn.query(
-            `SELECT IDFORNECEDOR FROM FORNECEDOR WHERE IDFORNECEDOR = ?`,
-            [id_fornecedor],
-            function(error, rows) {
-                if (error) {
-                    console.error(`Erro ao verificar fornecedor: ${error.message}`);
-                    return callback(error, null);
-                }
 
-                if (rows.length === 0) {
-                    const notFoundError = new Error(`Fornecedor com ID ${id_fornecedor} não encontrado.`);
-                    console.error(notFoundError.message);
-                    return callback(notFoundError, null);
-                }
+    id_fornecedor = null;
 
-                proceedWithInsert();
+
+    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor];
+    console.log(parameters);
+
+    mysqlConn.query(
+        `INSERT INTO EXTRATO (IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE, ID_FORNECEDOR)
+         VALUES (null,?,?,?,?,?,?,?,?,?)`,
+        parameters,
+        function(err, result, fields) {
+            if (err) {
+                console.error(`Erro ao inserir dados: ${err.message}`);
+                callback(err, null);
+            } else {
+                callback(null, result);
             }
-        );
-    } else {
-        id_fornecedor = null;
-        proceedWithInsert();
-    }
-
-    function proceedWithInsert() {
-        const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor];
-        console.log(parameters);
-
-        mysqlConn.query(
-            `INSERT INTO EXTRATO (IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE, ID_FORNECEDOR)
-             VALUES (null,?,?,?,?,?,?,?,?,?)`,
-            parameters,
-            function(err, result, fields) {
-                if (err) {
-                    console.error(`Erro ao inserir dados: ${err.message}`);
-                    callback(err, null);
-                }else {
-                    callback(null, result);
-                }
-            }
-        );
-    }
+        }
+    );
 }
+
 
 
 function buscarBanco(idcliente, callback){

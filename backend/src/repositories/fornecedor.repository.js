@@ -3,7 +3,7 @@ const mysqlConn = require("../base/database");
 function adicionarFornecedor(nomeFornecedor, cnpjFornecedor, cpfFornecedor, tipoProduto, idcliente, callback) {
     if(cnpjFornecedor === "") cnpjFornecedor = null;
     if(cpfFornecedor === "") cpfFornecedor = null;
-
+    if(tipoProduto === null) tipoProduto = " "
     const buscaFornecedorQuery = `
         SELECT IDFORNECEDOR FROM FORNECEDOR 
         WHERE NOME = ? AND (CNPJ = ? OR CPF = ?) LIMIT 1;

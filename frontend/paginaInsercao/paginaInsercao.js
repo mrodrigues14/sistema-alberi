@@ -272,95 +272,59 @@ function lerExcel() {
         workbook.SheetNames.forEach(function (sheetName) {
             var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
 
-            fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
-                .then(response => response.json())
-                .then(categorias => {
-                    var categoriasMap = new Map();
-                    categorias.forEach(categoria => {
-                        categoriasMap.set(categoria.NOME.toLowerCase(), categoria);
-                    });
+            XL_row_object.forEach(function (row) {
+                if (row['Data'] && !isNaN(row['Data'])) {
+                    row['Data'] = excelDateToJSDate(row['Data']);
+                }
+                row['IDCLIENTE'] = idEmpresa;
+                row['IDBANCO'] = idBanco;
 
-                    fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
-                        .then(response => response.json())
-                        .then(fornecedores => {
-                            var fornecedoresMap = new Map();
-                            fornecedores.forEach(fornecedor => {
-                                fornecedoresMap.set(fornecedor.NOME_TIPO.toLowerCase(), fornecedor);
-                            });
+                if (row['Saida']) {
+                    row['Saida'] = formatarValorFinanceiro(parseFloat(row['Saida']));
+                }
+                if (row['Entrada']) {
+                    row['Entrada'] = formatarValorFinanceiro(parseFloat(row['Entrada']));
+                }
 
-                            XL_row_object.forEach(async function (row) {
-                                if (row['Data'] && !isNaN(row['Data'])) {
-                                    row['Data'] = excelDateToJSDate(row['Data']);
-                                }
-                                row['IDCLIENTE'] = idEmpresa;
-                                row['IDBANCO'] = idBanco;
+                if (row['Entrada'] && !row['Saida']) {
+                    row['TIPO'] = 'ENTRADA';
+                    row['VALOR'] = row['Entrada'];
+                } else if (row['Saida'] && !row['Entrada']) {
+                    row['TIPO'] = 'SAIDA';
+                    row['VALOR'] = row['Saida'];
+                } else if (row['Entrada'] && row['Saida']) {
+                    console.error('Erro: ambos os campos "Entrada" e "Saida" estão preenchidos.');
+                } else {
+                    console.error('Erro: Nenhum valor em "Entrada" ou "Saida".');
+                }
 
-                                if (row['Saida']) {
-                                    row['Saida'] = formatarValorFinanceiro(parseFloat(row['Saida']));
-                                }
-                                if (row['Entrada']) {
-                                    row['Entrada'] = formatarValorFinanceiro(parseFloat(row['Entrada']));
-                                }
+                // Mapeia a categoria e fornecedor diretamente do Excel, sem verificação
+                row['IDCATEGORIA'] = row['Categoria'] ? row['Categoria'].toLowerCase() : '';
+                row['IDFORNECEDOR'] = row['NomeFornecedor'] ? row['NomeFornecedor'].toLowerCase() : '';
+            });
 
-                                if (row['Entrada'] && !row['Saida']) {
-                                    row['TIPO'] = 'ENTRADA';
-                                    row['VALOR'] = row['Entrada'];
-                                } else if (row['Saida'] && !row['Entrada']) {
-                                    row['TIPO'] = 'SAIDA';
-                                    row['VALOR'] = row['Saida'];
-                                } else if (row['Entrada'] && row['Saida']) {
-                                    console.error('Erro: ambos os campos "Entrada" e "Saida" estão preenchidos.');
-                                } else {
-                                    console.error('Erro: Nenhum valor em "Entrada" ou "Saida".');
-                                }
-
-                                const categoriaNome = row['Categoria'] ? row['Categoria'].toLowerCase() : '';
-                                if (!categoriasMap.has(categoriaNome)) {
-                                    const idCategoria = await adicionarCategoria(categoriaNome, idEmpresa);
-                                    row['IDCATEGORIA'] = idCategoria;
-                                } else {
-                                    row['IDCATEGORIA'] = categoriasMap.get(categoriaNome).IDCATEGORIA;
-                                }
-
-                                const fornecedorNome = row['NomeFornecedor'] ? row['NomeFornecedor'].toLowerCase() : '';
-                                if (!fornecedoresMap.has(fornecedorNome)) {
-                                    const idFornecedor = await adicionarFornecedor(fornecedorNome, idEmpresa);
-                                    row['IDFORNECEDOR'] = idFornecedor;
-                                } else {
-                                    row['IDFORNECEDOR'] = fornecedoresMap.get(fornecedorNome).IDFORNECEDOR;
-                                }
-                            });
-
-                            var json_object = JSON.stringify(XL_row_object);
-                            console.log(json_object)
-                            fetch('/insercao/inserir-lote', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: json_object
-                            })
-                                .then(response => {
-                                    if (!response.ok) {
-                                        throw new Error('Erro na resposta do servidor');
-                                    }
-                                    return response.text();
-                                })
-                                .then(data => {
-                                    fecharPopupCarregamentoInsercao();
-                                    location.reload();
-                                })
-                                .catch(error => {
-                                    fecharPopupCarregamentoInsercao();
-                                    console.error('Falha ao enviar dados:', error);
-                                });
-                        })
-                        .catch(error => {
-                            console.error('Erro ao carregar os dados dos fornecedores:', error);
-                        });
+            var json_object = JSON.stringify(XL_row_object);
+            console.log(json_object);
+            fetch('/insercao/inserir-lote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: json_object
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na resposta do servidor');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    fecharPopupCarregamentoInsercao();
+                    location.reload();
                 })
                 .catch(error => {
-                    console.error('Erro ao carregar os dados das categorias:', error);
+                    fecharPopupCarregamentoInsercao();
+                    console.error('Falha ao enviar dados:', error);
                 });
         });
     };
