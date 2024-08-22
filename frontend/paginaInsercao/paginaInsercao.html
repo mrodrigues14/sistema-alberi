@@ -67,6 +67,7 @@
                 <input type="button" value="Upload e Processar" onclick="lerExcel()">
             </form>
         </div>
+        <button id="processarExtratoBtn">Processar Extrato Automático</button>
         <div>
             <button id="downloadTemplateButton" onclick="downloadTemplate()">Download Template</button>
         </div>
@@ -76,7 +77,7 @@
         </div>
     </div>
 
-    <form id="meuFormulario" action="/insercao/" method="post">
+    <form id="meuFormulario">
         <div class="tabela">
             <table>
                 <thead>
@@ -103,8 +104,8 @@
                             <select name="fornecedor" id="seletorFornecedor"></select>
                         </label>
                     </td>
-                    <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="textos"></td>
-                    <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="textos"></td>
+                    <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="valor"></td>
+                    <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="valor"></td>
                     <td><input type="text" name="valorEn" id="valorEn" class="valor"></td>
                     <td><input type="text" name="valorSa" id="valorSa" class="valor"></td>
                 </tr>
@@ -205,11 +206,50 @@
     <div class="spinner"></div>
 </div>
 
+<div id="extratoPopup" class="popup-insercao-container">
+    <h3 class="popup-insercao-header">Linhas do Extrato Processadas</h3>
+    <table id="extratoTable" class="popup-insercao-table">
+        <thead>
+        <tr>
+            <th class="popup-insercao-table-header">Data</th>
+            <th class="popup-insercao-table-header">Rubrica</th>
+            <th class="popup-insercao-table-header">Nome no Extrato</th>
+            <th class="popup-insercao-table-header">Observação</th>
+            <th class="popup-insercao-table-header">Fornecedor</th>
+            <th class="popup-insercao-table-header">Saída</th>
+            <th class="popup-insercao-table-header">Entrada</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- As linhas do extrato serão inseridas aqui dinamicamente -->
+        </tbody>
+    </table>
+    <div class="popup-insercao-buttons">
+        <button class="popup-insercao-button" onclick="salvarAlteracoes()">Salvar Alterações</button>
+        <button class="popup-insercao-button" onclick="fecharExtratoPopup()">Fechar</button>
+    </div>
+</div>
 
-<script src="/paginaInsercao/paginaInsercao.js"></script>
+<div id="bancoPopup" style="display: none; position: fixed; z-index: 10000; left: 50%; top: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0px 0px 10px rgba(0,0,0,0.1);">
+    <h3>Selecione o Banco</h3>
+    <select id="bancoSelect">
+        <option value="">Selecione um banco</option>
+        <option value="Caixa">Caixa Econômica Federal</option>
+        <option value="Itau">Itaú</option>
+        <option value="Banco do Brasil">Banco do Brasil</option>
+    </select>
+    <br><br>
+    <button onclick="confirmarBanco()">Confirmar</button>
+    <button onclick="fecharBancoPopup()">Cancelar</button>
+</div>
+
+
+    <script src="/paginaInsercao/paginaInsercao.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
 
 </body>
 </html>

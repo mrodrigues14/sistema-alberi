@@ -1,36 +1,50 @@
 const mysqlConn = require("../base/database");
 
-async function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor){
-    try {
-        // Verifica se o fornecedor existe na tabela FORNECEDOR
-        if (id_fornecedor) {
-            const [rows] = await mysqlConn.query(
-                `SELECT IDFORNECEDOR FROM FORNECEDOR WHERE IDFORNECEDOR = ?`,
-                [id_fornecedor]
-            );
+function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor, callback) {
+    if (id_fornecedor) {
+        mysqlConn.query(
+            `SELECT IDFORNECEDOR FROM FORNECEDOR WHERE IDFORNECEDOR = ?`,
+            [id_fornecedor],
+            function(error, rows) {
+                if (error) {
+                    console.error(`Erro ao verificar fornecedor: ${error.message}`);
+                    return callback(error, null);
+                }
 
-            if (rows.length === 0) {
-                throw new Error(`Fornecedor com ID ${id_fornecedor} não encontrado.`);
+                if (rows.length === 0) {
+                    const notFoundError = new Error(`Fornecedor com ID ${id_fornecedor} não encontrado.`);
+                    console.error(notFoundError.message);
+                    return callback(notFoundError, null);
+                }
+
+                proceedWithInsert();
             }
-        } else {
-            // Se id_fornecedor for null ou undefined, você pode definir como null para evitar problemas de chave estrangeira
-            id_fornecedor = null;
-        }
+        );
+    } else {
+        id_fornecedor = null;
+        proceedWithInsert();
+    }
 
-        // Agora insere a linha no EXTRATO
+    function proceedWithInsert() {
         const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, id_fornecedor];
         console.log(parameters);
 
-        const result = await mysqlConn.execute(
+        mysqlConn.query(
             `INSERT INTO EXTRATO (IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE, ID_FORNECEDOR)
              VALUES (null,?,?,?,?,?,?,?,?,?)`,
-            parameters
+            parameters,
+            function(err, result, fields) {
+                if (err) {
+                    console.error(`Erro ao inserir dados: ${err.message}`);
+                    callback(err, null);
+                }else {
+                    callback(null, result);
+                }
+            }
         );
-    } catch (error) {
-        console.error(`Erro ao inserir dados: ${error.message}`);
-        throw error;
     }
 }
+
 
 function buscarBanco(idcliente, callback){
     mysqlConn.query(`SELECT B.IDBANCO, CONCAT(B.NOME, ' - ' ,B.TIPO) AS NOME_TIPO FROM BANCO B 

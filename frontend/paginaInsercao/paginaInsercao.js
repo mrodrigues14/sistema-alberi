@@ -5,7 +5,7 @@ let fornecedoresMap = new Map();
 let saldoinicial
 let saldo
 let linhasSelecionadas = [];
-
+let NOMEBANCO
 
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -111,7 +111,6 @@ function initializePage() {
                     const selectBanco = document.getElementById('seletorBanco');
                     data.forEach(banco => {
                         const option = document.createElement('option');
-                        console.log("essas eh option", option)
                         option.value = banco.IDBANCO;
                         IDBANCO = option.value;
                         option.textContent = banco.NOME_TIPO;
@@ -160,6 +159,57 @@ function construirArvoreDeCategorias(categorias) {
 function resetForm() {
     document.getElementById('meuFormulario').reset();
 }
+document.getElementById('meuFormulario').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Previne o envio padrão do formulário
+
+    // Captura os valores do formulário
+    const formData = new FormData(this);
+
+    const Data = formData.get('Data');
+    const categoria = formData.get('categoria');
+    const fornecedor = formData.get('fornecedor');
+    const descricao = formData.get('descricao');
+    const nomeExtrato = formData.get('nomeExtrato');
+    const valorEn = document.getElementById('valorEn').value.replace(/\./g, '').replace(',', '.'); // Captura e formata o valor de entrada
+    const valorSa = document.getElementById('valorSa').value.replace(/\./g, '').replace(',', '.'); // Captura e formata o valor de saída
+    const id_empresa = formData.get('id_empresa');
+    const id_bancoPost = IDBANCO;
+
+    // Monta o objeto para enviar via fetch
+    const dados = {
+        Data,
+        categoria,
+        descricao,
+        nomeExtrato,
+        valorEn,
+        valorSa,
+        id_bancoPost,
+        id_empresa,
+        fornecedor
+    };
+    console.log(dados)
+    try {
+        const response = await fetch('/insercao/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dados)
+        });
+
+        if (response.ok) {
+            // Redireciona ou mostra uma mensagem de sucesso
+            window.location.href = '/insercao';
+        } else {
+            throw new Error('Erro ao inserir dados');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Ocorreu um erro ao inserir os dados. Por favor, tente novamente.');
+    }
+});
+
+
 
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
     categorias.forEach(categoria => {
@@ -183,34 +233,10 @@ function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
 }
 
 
-function abrirPopUp() {
-    document.getElementById("popup").style.display = "block";
-    document.getElementById("sobreposicao").style.display = "block";
-}
-
-function fecharPopUp() {
-    document.getElementById("popup").style.display = "none";
-    document.getElementById("sobreposicao").style.display = "none";
-    location.reload();
-}
-
 function excelDateToJSDate(excelDate) {
     const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
     const convertedDate = date.toISOString().split('T')[0];
     return convertedDate;
-}
-
-function mostrarPopupCarregamento() {
-    var popup = document.getElementById('loadingPopup');
-    if (popup) {
-        popup.style.display = 'block';
-    } else {
-        console.error('Loading popup element not found');
-    }
-}
-
-function fecharPopupCarregamento() {
-    document.getElementById('loadingPopup').style.display = 'none';
 }
 
 function formatarValorFinanceiro(valor) {
@@ -233,14 +259,10 @@ function formatarValorParaExibicao(valor) {
     return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-
-
-
 function lerExcel() {
     document.getElementById('loadingSpinner').style.display = 'block';
     document.querySelector('.body-insercao').classList.add('blur-background');
     const idBanco = IDBANCO || document.getElementById('seletorBanco').value;
-
     var input = document.getElementById('excelFile');
     var reader = new FileReader();
 
@@ -367,7 +389,6 @@ async function adicionarCategoria(nomeCategoria, idCliente) {
     }
 }
 
-// Função para adicionar novo fornecedor
 async function adicionarFornecedor(nomeFornecedor, idCliente) {
     try {
         const response = await fetch('/fornecedor/adicionar', {
@@ -388,9 +409,6 @@ async function adicionarFornecedor(nomeFornecedor, idCliente) {
 function fecharPopupCarregamentoInsercao() {
     document.getElementById('loadingSpinner').style.display = 'none';
 }
-
-
-
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -586,8 +604,6 @@ function formatarValorNumerico(valor) {
     return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-
-
 function carregarCategoriasEFornecedores() {
     fetch(`/insercao/dados-categoria?idcliente=${idEmpresa}`)
         .then(response => response.json())
@@ -636,14 +652,17 @@ function atualizarTabela(dados) {
             const row = tbody.insertRow();
             row.dataset.idextrato = item.IDEXTRATO;
 
+            // Drag handle
             const dragCell = row.insertCell();
             const dragIcon = document.createElement('img');
             dragIcon.src = '/paginaInsercao/imagens/dragItem.png';
             dragIcon.classList.add('drag-handle');
             dragCell.appendChild(dragIcon);
 
+            // Data
             row.insertCell().textContent = formatDate(item.DATA);
 
+            // Categoria
             const categoriaCell = row.insertCell();
             const categoriaText = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
             categoriaCell.textContent = categoriaText || 'Categoria não encontrada';
@@ -652,39 +671,43 @@ function atualizarTabela(dados) {
                 ? item.SUBCATEGORIA.toLowerCase()
                 : item.CATEGORIA.toLowerCase();
 
-            if (!categoriasMap.has(categoriaNome)) {
+            if (!categoriaNome) {
                 categoriaCell.classList.add('blink-red');
             }
 
+            // Nome no Extrato
             row.insertCell().textContent = item.NOME_NO_EXTRATO;
+
+            // Descrição
             row.insertCell().textContent = item.DESCRICAO;
 
-            // Verificar fornecedor
+            // Fornecedor
             const fornecedorCell = row.insertCell();
             fornecedorCell.textContent = item.NOME_FORNECEDOR || 'Fornecedor não encontrado';
 
             const fornecedorNome = item.NOME_FORNECEDOR ? item.NOME_FORNECEDOR.toLowerCase() : '';
-            if (!fornecedoresMap.has(fornecedorNome)) {
+            if (!fornecedorNome) {
                 fornecedorCell.classList.add('blink-red');
             }
 
+            // Entrada
             const entradaCell = row.insertCell();
-            const saidaCell = row.insertCell();
-
-            const valorEntrada = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? parseFloat(item.VALOR) : 0;
-            const valorSaida = item.TIPO_DE_TRANSACAO === 'SAIDA' ? parseFloat(item.VALOR) : 0;
-
-            saldo += (valorEntrada - valorSaida);
-
             entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
+
+            // Saída
+            const saidaCell = row.insertCell();
             saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
 
+            // Saldo
+            saldo += (parseFloat(item.VALOR) || 0) * (item.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
             row.insertCell().textContent = formatarValorParaExibicao(saldo);
 
+            // Anexos
             const anexosCell = row.insertCell();
-            const deleteCell = row.insertCell();
-
             anexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${item.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
+
+            // Ações (Editar, Selecionar, Deletar)
+            const deleteCell = row.insertCell();
             deleteCell.innerHTML = `
                 <form action="insercao/deletar-extrato" method="post">
                     <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
@@ -1407,3 +1430,453 @@ function downloadTemplate() {
     link.download = 'template.xlsx'; // Nome do arquivo que será baixado
     link.click();
 }
+
+function processarDadosDoExtratoBancoDoBrasil(data) {
+    const extrato = [];
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+    const valueRegex = /-?\d+,\d{2}/;
+    const saldoRegex = /saldo/i;
+
+    let linhaAtual = null;
+    let dentroDoIntervaloSaldo = false;
+    let encontrouPrimeiroSaldo = false;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i];
+
+        if (text.match(saldoRegex)) {
+            if (encontrouPrimeiroSaldo) {
+                dentroDoIntervaloSaldo = false;
+                break;
+            } else {
+                dentroDoIntervaloSaldo = true;
+                encontrouPrimeiroSaldo = true;
+            }
+        }
+
+        if (dentroDoIntervaloSaldo) {
+            if (text.match(valueRegex)) {
+                if (linhaAtual) {
+                    extrato.push(linhaAtual);
+                }
+                const valor = parseFloat(text.replace(/\./g, '').replace(',', '.'));
+                const tipo = text.includes('(-)') ? 'saida' : 'entrada';
+                linhaAtual = { valor: formatarValorFinanceiro(Math.abs(valor)), tipo, data: '', descricao: '' };
+            } else if (text.match(dateRegex) && linhaAtual) {
+                linhaAtual.data = text;
+            } else if (linhaAtual) {
+                linhaAtual.descricao += ` ${text}`.trim();
+            }
+        }
+    }
+
+    if (linhaAtual && dentroDoIntervaloSaldo) {
+        extrato.push(linhaAtual);
+    }
+
+    return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+}
+
+async function processarExtratoPDFBancoDoBrasil() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf';
+    input.onchange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            alert('Por favor, selecione um arquivo PDF.');
+            return;
+        }
+
+        const fileReader = new FileReader();
+        fileReader.onload = async function() {
+            const typedArray = new Uint8Array(this.result);
+            const pdf = await pdfjsLib.getDocument(typedArray).promise;
+
+            const data = [];
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                textContent.items.forEach((item) => {
+                    data.push(item.str);
+                });
+            }
+
+            const linhasExtrato = processarDadosDoExtratoBancoDoBrasil(data);
+            mostrarExtratoPopup(linhasExtrato);
+        };
+        fileReader.readAsArrayBuffer(file);
+    };
+    input.click();
+}
+
+function processarDadosDoExtratoItau(data) {
+    const extrato = [];
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+    const valueRegex = /(-?)\s?R\$\s?(\d{1,3}(\.\d{3})*,\d{2})/;
+    const descricaoRegex = /^[A-Za-z]/;
+    const symbolToIgnore = "";
+
+    let linhaAtual = null;
+    let dataAtual = null;
+    let ultimaDescricao = null;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        if (text === "" || text === symbolToIgnore) {
+            continue;
+        }
+
+        if (text.match(dateRegex)) {
+            dataAtual = text;
+        } else if (text.match(valueRegex)) {
+            const match = text.match(valueRegex);
+            const valor = parseFloat(match[1] + match[2].replace(/\./g, '').replace(',', '.')); // Inclui o sinal de negativo no valor
+            const tipo = valor < 0 ? 'saida' : 'entrada';
+
+            if (ultimaDescricao && dataAtual && !ultimaDescricao.toLowerCase().includes('saldo')) {
+                linhaAtual = { data: dataAtual, descricao: ultimaDescricao, valor: formatarValorFinanceiro(Math.abs(valor)), tipo };
+                extrato.push(linhaAtual);
+                linhaAtual = null;
+                ultimaDescricao = null;
+            } else if (!ultimaDescricao.toLowerCase().includes('saldo')) {
+                console.error('Erro: Valor encontrado sem descrição ou data anterior válida:', text);
+            }
+        } else if (text.match(descricaoRegex)) {
+            ultimaDescricao = text;
+        } else if (ultimaDescricao) {
+            ultimaDescricao += ` ${text}`;
+        }
+    }
+
+    console.log(JSON.stringify(extrato, null, 2));
+    return extrato;
+}
+
+async function processarExtratoPDFItau() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf';
+    input.onchange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            alert('Por favor, selecione um arquivo PDF.');
+            return;
+        }
+
+        const fileReader = new FileReader();
+        fileReader.onload = async function() {
+            const typedArray = new Uint8Array(this.result);
+            const pdf = await pdfjsLib.getDocument(typedArray).promise;
+
+            const data = [];
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                textContent.items.forEach((item) => {
+                    data.push(item.str);
+                });
+            }
+
+            const linhasExtrato = processarDadosDoExtratoItau(data);
+            mostrarExtratoPopup(linhasExtrato);
+        };
+        fileReader.readAsArrayBuffer(file);
+    };
+    input.click();
+}
+
+async function processarExcelCaixa() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx, .xls';
+    input.onchange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            alert('Por favor, selecione um arquivo Excel.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function (event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+            const processedData = processarDadosDoExcelCaixa(jsonData);
+            mostrarExtratoPopup(processedData);
+        };
+        reader.readAsArrayBuffer(file);
+    };
+    input.click();
+}
+
+function excelDateToJSDate(excelDate) {
+    const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+function processarDadosDoExcelCaixa(data) {
+    const extrato = [];
+    const valorRegex = /(\d{1,3}(\.\d{3})*,\d{2})\s([CD])/;
+
+    data.forEach((row, index) => {
+        if (index === 0) return;
+
+        const [dataMov, , historico, valor] = row;
+
+        if (!dataMov || !historico || !valor) return;
+
+        const dataFormatada = typeof dataMov === 'number' ? excelDateToJSDate(dataMov) : dataMov;
+        const match = valor.match(valorRegex);
+        if (!match) return;
+
+        const valorNumerico = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        const tipo = match[3] === 'C' ? 'entrada' : 'saida';
+
+        extrato.push({
+            data: dataFormatada,
+            descricao: historico,
+            valor: formatarValorFinanceiro(Math.abs(valorNumerico)),
+            tipo: tipo
+        });
+    });
+
+    return extrato;
+}
+
+function mostrarExtratoPopup(extrato) {
+    const extratoTableBody = document.getElementById('extratoTable').querySelector('tbody');
+    document.querySelector('.body-insercao').classList.add('blur-background');
+
+    extratoTableBody.innerHTML = '';
+
+    extrato.forEach((linha, index) => {
+        const row = document.createElement('tr');
+        row.dataset.index = index; // Armazenar o índice da linha
+
+        // Data
+        const dataCell = document.createElement('td');
+        const dataInput = document.createElement('input');
+        dataInput.type = 'text';
+        dataInput.value = linha.data;
+        dataCell.appendChild(dataInput);
+        row.appendChild(dataCell);
+
+        // Rubrica
+        const rubricaCell = document.createElement('td');
+        const rubricaSelect = document.createElement('select');
+        preencherSelectComOpcoes(rubricaSelect, document.getElementById('seletorCategoria')); // Preenche com as opções de categoria
+        rubricaSelect.value = linha.rubrica || ''; // Define o valor atual
+        rubricaCell.appendChild(rubricaSelect);
+        row.appendChild(rubricaCell);
+
+        // Nome no Extrato
+        const nomeCell = document.createElement('td');
+        const nomeInput = document.createElement('input');
+        nomeInput.type = 'text';
+        nomeInput.value = linha.descricao;
+        nomeCell.appendChild(nomeInput);
+        row.appendChild(nomeCell);
+
+        // Observação
+        const obsCell = document.createElement('td');
+        const obsInput = document.createElement('input');
+        obsInput.type = 'text';
+        obsInput.value = linha.observacao || ''; // Campo de observação, se houver
+        obsCell.appendChild(obsInput);
+        row.appendChild(obsCell);
+
+        // Fornecedor
+        const fornecedorCell = document.createElement('td');
+        const fornecedorSelect = document.createElement('select');
+        preencherSelectComOpcoes(fornecedorSelect, document.getElementById('seletorFornecedor')); // Preenche com as opções de fornecedor
+        fornecedorSelect.value = linha.fornecedor || ''; // Define o valor atual
+        fornecedorCell.appendChild(fornecedorSelect);
+        row.appendChild(fornecedorCell);
+
+        // Saída
+        const saidaCell = document.createElement('td');
+        const saidaInput = document.createElement('input');
+        saidaInput.type = 'text';
+        saidaInput.value = linha.tipo === 'saida' ? linha.valor : '';
+        saidaCell.appendChild(saidaInput);
+        row.appendChild(saidaCell);
+
+        // Entrada
+        const entradaCell = document.createElement('td');
+        const entradaInput = document.createElement('input');
+        entradaInput.type = 'text';
+        entradaInput.value = linha.tipo === 'entrada' ? linha.valor : '';
+        entradaCell.appendChild(entradaInput);
+        row.appendChild(entradaCell);
+
+        // Botão de Remover (Lixeira)
+        const removerCell = document.createElement('td');
+        const removerButton = document.createElement('button');
+        removerButton.innerHTML = '🗑️'; // Ícone de lixeira
+        removerButton.classList.add('remover-linha');
+        removerButton.addEventListener('click', () => {
+            // Remover a linha da tabela visualmente
+            row.remove();
+            // Remover a linha do array de extrato
+            extrato.splice(index, 1);
+        });
+        removerCell.appendChild(removerButton);
+        row.appendChild(removerCell);
+
+        extratoTableBody.appendChild(row);
+    });
+
+    document.getElementById('extratoPopup').style.display = 'block';
+}
+
+function preencherSelectComOpcoes(selectElement, modelSelectElement) {
+    // Copia todas as opções do modelo para o novo select, incluindo a propriedade `disabled`
+    Array.from(modelSelectElement.options).forEach(option => {
+        const newOption = document.createElement('option');
+        newOption.value = option.value;
+        newOption.textContent = option.textContent;
+        newOption.disabled = option.disabled; // Mantém a propriedade disabled
+        selectElement.appendChild(newOption);
+    });
+}
+
+function fecharExtratoPopup() {
+    document.getElementById('extratoPopup').style.display = 'none';
+    document.querySelector('.body-insercao').classList.remove('blur-background');
+
+}
+
+function salvarAlteracoes() {
+    const tabelaExtrato = document.getElementById('extratoTable').querySelector('tbody');
+    const linhas = tabelaExtrato.querySelectorAll('tr');
+    const entradas = [];
+
+    linhas.forEach(linha => {
+        const data = linha.querySelector('td:nth-child(1) input').value;
+        const categoria = linha.querySelector('td:nth-child(2) select').value || '';  // Se não selecionado, fica vazio
+        const nome = linha.querySelector('td:nth-child(3) input').value || '';
+        const descricao = linha.querySelector('td:nth-child(4) input').value || '';
+        const fornecedor = linha.querySelector('td:nth-child(5) select').value || '';  // Se não selecionado, fica vazio
+        const saida = linha.querySelector('td:nth-child(6) input').value || '0,00';
+        const entrada = linha.querySelector('td:nth-child(7) input').value || '0,00';
+
+        // Determina o tipo de transação
+        let tipo = '';
+        let valor = '';
+
+        if (entrada !== '0,00') {
+            tipo = 'ENTRADA';
+            valor = formatarValorParaInsercao(entrada);
+        } else if (saida !== '0,00') {
+            tipo = 'SAIDA';
+            valor = formatarValorParaInsercao(saida);
+        }
+
+        entradas.push({
+            Data: data,
+            Categoria: categoria,
+            Descricao: descricao,
+            Nome: nome,
+            TIPO: tipo,
+            VALOR: valor,
+            IDBANCO: IDBANCO,
+            IDCLIENTE: IDCLIENTE,
+            Fornecedor: fornecedor
+        });
+    });
+
+    const json_object = JSON.stringify(entradas);
+    console.log(json_object)
+    fetch('/insercao/inserir-lote', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: json_object
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro na resposta do servidor');
+            }
+            return response.text();
+        })
+        .then(data => {
+            alert('Dados inseridos com sucesso!');
+            fecharExtratoPopup();
+        })
+        .catch(error => {
+            console.error('Falha ao enviar dados:', error);
+            alert('Erro ao inserir os dados.');
+        });
+}
+
+document.getElementById('processarExtratoBtn').addEventListener('click', function() {
+    document.getElementById('bancoPopup').style.display = 'block';
+    document.querySelector('.body-insercao').classList.add('blur-background');
+
+});
+
+function confirmarBanco() {
+    const bancoSelecionado = document.getElementById('bancoSelect').value;
+
+    if (bancoSelecionado) {
+        processarExtratoPorBanco(bancoSelecionado);
+        fecharBancoPopup();
+    } else {
+        alert('Por favor, selecione um banco.');
+    }
+}
+
+function fecharBancoPopup() {
+    document.getElementById('bancoPopup').style.display = 'none';
+    document.querySelector('.body-insercao').classList.remove('blur-background');
+}
+
+function processarExtratoPorBanco(banco) {
+    const bancoIdentificado = identificarBanco(banco);
+    console.log(bancoIdentificado);
+
+    if (bancoIdentificado === 'Caixa') {
+        processarExcelCaixa();
+    } else if (bancoIdentificado === 'Itau') {
+        processarExtratoPDFItau();
+    } else if (bancoIdentificado === 'Banco do Brasil') {
+        processarExtratoPDFBancoDoBrasil();
+    } else {
+        alert('Banco não identificado ou não suportado!');
+    }
+}
+
+function identificarBanco(nomeBanco) {
+    if (!nomeBanco) {
+        console.error('Nome do banco não fornecido');
+        return null;
+    }
+
+    const nomeBancoLower = nomeBanco.toLowerCase();
+
+    if (nomeBancoLower.includes('caixa') || nomeBancoLower.includes('cef') || nomeBancoLower.includes('caixa economica federal')) {
+        return 'Caixa';
+    } else if (nomeBancoLower.includes('itau') || nomeBancoLower.includes('itaú')) {
+        return 'Itau';
+    } else if (nomeBancoLower.includes('banco do brasil') || nomeBancoLower.includes('bb')) {
+        return 'Banco do Brasil';
+    }
+    return null;
+}
+
+
+
+
+
+
+
+

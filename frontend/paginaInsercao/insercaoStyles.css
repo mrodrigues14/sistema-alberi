@@ -520,5 +520,113 @@ iframe {
     to { background-color: #ffe6e6; }
 }
 
+.popup-insercao-container {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 90vw;
+    border-radius: 8px;
+}
+
+.popup-insercao-header {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.popup-insercao-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.popup-insercao-table-header {
+    background-color: #8BACAF;
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+.popup-insercao-table-header:first-child {
+    border-top-left-radius: 5px;
+}
+
+.popup-insercao-table-header:last-child {
+    border-top-right-radius: 5px;
+}
+
+.popup-insercao-table td,
+.popup-insercao-table th {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.popup-insercao-table td input,
+.popup-insercao-table td select {
+    width: 100%;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.popup-insercao-buttons {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.popup-insercao-button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin: 0 10px;
+}
+
+.popup-insercao-button:hover {
+    background-color: #218838;
+}
+
+.popup-insercao-button:last-child {
+    background-color: #dc3545;
+}
+
+.popup-insercao-button:last-child:hover {
+    background-color: #c82333;
+}
+
+#bancoPopup {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#bancoPopup h3 {
+    margin-top: 0;
+}
+
+#bancoPopup select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+#bancoPopup button {
+    margin: 5px;
+    padding: 10px 20px;
+}
 
 

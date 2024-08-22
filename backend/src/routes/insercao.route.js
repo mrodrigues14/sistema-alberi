@@ -74,41 +74,69 @@ router.get('/dados-categoria', (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const { Data, categoria, descricao, nomeExtrato, valorEn, valorSa, id_bancoPost, id_empresa, fornecedor } = req.body;
-        console.log(req.body);
+        console.log("Dados recebidos no body:", req.body);
+
         let tipo;
         let valor = 0;
-        if(valorEn){
+        if (valorEn) {
             tipo = "Entrada";
             valor = valorEn;
-        }
-        else{
+        } else {
             tipo = "Saída";
             valor = valorSa;
         }
 
-        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa, fornecedor);
+        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa, fornecedor, (err, result) => {
+            if (err) {
+                console.error("Erro durante a inserção:", err);
+                return res.status(500).send("Erro ao inserir dados");
+            }
 
-        res.redirect('/insercao');
+            console.log("Inserção bem-sucedida:", result);
+            res.redirect('/insercao');
+        });
+
     } catch (error) {
-        console.error(error);
+        console.error("Erro durante a inserção:", error);
         res.status(500).send("Erro ao inserir dados");
     }
 });
+
+
+function formatarDataParaBanco(data) {
+    // Supondo que a data venha no formato DD/MM/YYYY
+    const [dia, mes, ano] = data.split('/');
+    return `${ano}-${mes}-${dia}`;
+}
+
 router.post('/inserir-lote', async (req, res) => {
     const entradas = req.body;
 
     try {
         for (const entrada of entradas) {
-            const { Data,	Categoria,	Descricao,	Nome,	TIPO,	VALOR, IDBANCO, IDCLIENTE } = entrada;
+            let { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, Fornecedor } = entrada;
 
-            await inserir(Data,	Categoria,	Descricao,	Nome,	TIPO,	VALOR, IDBANCO, IDCLIENTE);
+            // Formata a data para o formato YYYY-MM-DD
+            Data = formatarDataParaBanco(Data);
+
+            // Aguarda a inserção, utilizando um callback
+            await new Promise((resolve, reject) => {
+                inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, Fornecedor, (err, result) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(result);
+                });
+            });
         }
         res.status(200).send("Dados inseridos com sucesso");
     } catch (error) {
-        console.error(error);
+        console.error("Erro durante a inserção em lote:", error);
         res.status(500).send("Erro ao inserir dados");
     }
 });
+
+
 
 router.post('/deletar-extrato', (req, res) => {
     const { idExtrato } = req.body;
