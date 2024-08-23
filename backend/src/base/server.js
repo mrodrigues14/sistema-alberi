@@ -32,15 +32,15 @@ app.get('/api/isLoggedIn', (req, res) => {
 routing(app);
 
 // Para HTTPS (comente a linha abaixo se quiser usar HTTPS)
-app.listen(port, () => {
+/*app.listen(port, () => {
    console.log(`Server running on http://localhost:${port}`);
-});
+});*/
 
 // Para HTTPS, descomente e ajuste conforme necessário
-/*const options = {
+const options = {
     key: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/privkey.pem'),
     cert: fs.readFileSync('/etc/letsencrypt/live/albericonsult.com.br/fullchain.pem'),
 };
 https.createServer(options, app).listen(port, () => {
     console.log(`Server running securely on https://albericonsult.com.br`);
-});*/
+});
