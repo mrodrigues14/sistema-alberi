@@ -434,11 +434,6 @@ function addNewItem() {
     const idcliente = localStorage.getItem('idEmpresaSelecionada');
     const prioridade = document.getElementById('prioridade-edit').value;
 
-    if (!prioridade) {
-        alert('Por favor, selecione uma prioridade.');
-        return;
-    }
-
     // Sempre considerar a descrição como uma lista de itens
     const descriptions = [];
     const descContainers = document.querySelectorAll('#additionalDescriptions .desc-container');
