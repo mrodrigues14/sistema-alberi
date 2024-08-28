@@ -525,12 +525,7 @@ function updateItem(index, column) {
     const authorId = document.getElementById('author').value;
     const companyId = document.getElementById('company').value;
     const dueDate = document.getElementById('dueDate').value;
-    const prioridade = document.getElementById('prioridade-edit').value; // Obtém a prioridade selecionada
-
-    if (!prioridade) {
-        alert('Por favor, selecione uma prioridade.');
-        return;
-    }
+    const prioridade = document.getElementById('prioridade-edit').value;
 
     const descriptions = [];
     const descContainers = document.querySelectorAll('#additionalDescriptions .desc-container');
