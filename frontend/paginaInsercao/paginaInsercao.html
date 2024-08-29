@@ -39,7 +39,13 @@
                 <option value="insercaoExcel">Inserção de Excel Preenchido</option>
             </select>
         </div>
-        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display: none;" />
+        <div>
+            <form id="uploadForm" enctype="multipart/form-data" style="display:none;">
+                <input type="file" id="excelFile" accept=".xlsx, .xls" />
+                <input type="button" value="Upload e Processar" onclick="lerExcel()">
+            </form>
+        </div>
+
         <div>
             <button id="downloadTemplateButton" onclick="downloadTemplate()">Download Template</button>
         </div>

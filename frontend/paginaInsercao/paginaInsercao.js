@@ -351,6 +351,9 @@ function lerExcel() {
                 // Mapeia a categoria e fornecedor diretamente do Excel, sem verificação
                 row['IDCATEGORIA'] = row['Categoria'] ? row['Categoria'].toLowerCase() : '';
                 row['IDFORNECEDOR'] = row['NomeFornecedor'] ? row['NomeFornecedor'].toLowerCase() : '';
+
+                // Trate o campo DESCRICAO para garantir que receba " " em vez de null
+                row['DESCRICAO'] = row['DESCRICAO'] || " "; // Substitui null por " "
             });
 
             var json_object = JSON.stringify(XL_row_object);
@@ -1822,23 +1825,42 @@ document.getElementById('processarExtratoBtn').addEventListener('click', process
 
 
 function mostrarOpcoesInsercao() {
-    var metodo = document.getElementById("metodoInsercao").value;
-    document.getElementById("opcoesManual").style.display = metodo === "manual" ? "block" : "none";
-    document.getElementById("opcoesAutomatizado").style.display = metodo === "automatizado" ? "block" : "none";
+    var metodo = document.getElementById('metodoInsercao').value;
+    var opcoesAutomatizado = document.getElementById('opcoesAutomatizado');
+    var excelFileInput = document.getElementById('excelFile');
+
+    if (metodo === 'automatizado') {
+        opcoesAutomatizado.style.display = 'block';
+    } else {
+        opcoesAutomatizado.style.display = 'none';
+        excelFileInput.style.display = 'none'; // Esconde o campo de arquivo se método não for automatizado
+    }
 }
 
 function executarMetodoAutomatizado() {
-    var opcao = document.getElementById("metodoAutomatizado").value;
-    if (opcao === "leituraAutomatica") {
-        processarExtrato();
-    } else if (opcao === "insercaoExcel") {
-        document.getElementById('excelFile').click();
+    var metodoAutomatizado = document.getElementById('metodoAutomatizado').value;
+    var uploadForm = document.getElementById('uploadForm');
+    var excelFileInput = document.getElementById('excelFile');
+
+    if (metodoAutomatizado === 'insercaoExcel') {
+        uploadForm.style.display = 'block'; // Exibe o formulário para upload de Excel
+        excelFileInput.click(); // Abre automaticamente o seletor de arquivos
+    } else {
+        uploadForm.style.display = 'none'; // Esconde o formulário caso outro método seja selecionado
     }
 }
 
 document.getElementById('excelFile').addEventListener('change', function() {
-    lerExcel();
-});;
+    var fileLabel = document.getElementById('fileLabel');
+    var uploadProcessButton = document.getElementById('uploadProcessButton');
+
+    if (this.files && this.files[0]) {
+        fileLabel.style.display = 'inline-block';
+        fileLabel.textContent = this.files[0].name; // Exibe o nome do arquivo selecionado
+        uploadProcessButton.style.display = 'inline-block'; // Exibe o botão "Upload e Processar"
+    }
+});
+
 
 
 
