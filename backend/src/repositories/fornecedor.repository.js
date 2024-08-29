@@ -95,5 +95,16 @@ function removerFornecedor(idFornecedor, idcliente, callback) {
     });
 }
 
+function editarFornecedor(idFornecedor, nomeFornecedor, cnpjFornecedor, cpfFornecedor, tipoProduto, idcliente, callback) {
+    const query = `
+        UPDATE FORNECEDOR 
+        SET NOME = ?, CNPJ = ?, CPF = ?, TIPO_DE_PRODUTO = ?
+        WHERE IDFORNECEDOR = ?;
+    `;
+    mysqlConn.query(query, [nomeFornecedor, cnpjFornecedor, cpfFornecedor, tipoProduto, idFornecedor], function(err, result) {
+        if (err) return callback(err);
+        callback(null, result);
+    });
+}
 
-module.exports = {adicionarFornecedor, listarFornecedor, removerFornecedor};
+module.exports = { adicionarFornecedor, listarFornecedor, removerFornecedor, editarFornecedor };

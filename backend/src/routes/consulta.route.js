@@ -82,7 +82,7 @@ router.post('/salvar-ordem', (req, res) => {
 
 router.post('/definirSaldoInicial', (req, res) => {
     const { cliente, banco, data, saldo } = req.body;
-    const mesAno = data.slice(0, 7); // Extrai o ano e o mês da data (formato YYYY-MM)
+    const mesAno = data.slice(0, 7);
     definirSaldoInicial(cliente, banco, `${mesAno}-01`, mesAno, saldo, (err, result) => {
         if (err) {
             console.error('Erro ao definir saldo inicial:', err);

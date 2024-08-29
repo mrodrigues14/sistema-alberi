@@ -4,6 +4,7 @@ const path = require('path');
 const {adicionarFornecedor} = require('../repositories/fornecedor.repository.js');
 const {listarFornecedor} = require('../repositories/fornecedor.repository.js');
 const {removerFornecedor} = require('../repositories/fornecedor.repository.js');
+const {editarFornecedor} = require("../repositories/fornecedor.repository");
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaAdicionarFornecedor/adicionarFornecedor.html'));
@@ -49,6 +50,16 @@ router.post('/remover', (req, res) => {
     });
 });
 
-
+router.post('/editar', (req, res) => {
+    const { idFornecedor, nomeFornecedor, cnpj, cpf, tipoProduto, idcliente } = req.body;
+    editarFornecedor(idFornecedor, nomeFornecedor, cnpj, cpf, tipoProduto, idcliente, (err, result) => {
+        if(err) {
+            console.error(err);
+            res.status(500).send('Erro ao editar fornecedor');
+        } else {
+            res.redirect(`/fornecedor?successMsg=Fornecedor ${nomeFornecedor} editado com sucesso!`);
+        }
+    });
+});
 
 module.exports = router;

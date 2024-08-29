@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
             script.onload = function() {
                 loadAndDisplayUsername();
                 handleEmpresa();
-            };            document.body.appendChild(script);
+            };
+            document.body.appendChild(script);
         })
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
@@ -29,54 +30,23 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    var seletor = document.getElementById('seletorCNPJ');
-    var cpfInput = document.getElementById('cpf');
-    var cnpjInput = document.getElementById('cnpj');
+    const seletorDocumento = document.getElementById('seletorCNPJ');
+    const cpfInput = document.getElementById('cpf');
+    const cnpjInput = document.getElementById('cnpj');
 
-    function toggleInputs() {
-        var selectedValue = seletor.options[seletor.selectedIndex].value;
-
-        if(selectedValue === '0') {
+    seletorDocumento.addEventListener('change', function() {
+        const selectedValue = seletorDocumento.value;
+        if (selectedValue === '0') {
             cpfInput.style.display = 'block';
             cnpjInput.style.display = 'none';
-        }
-        else if(selectedValue === '1') {
+        } else {
             cpfInput.style.display = 'none';
             cnpjInput.style.display = 'block';
         }
-    }
-    seletor.addEventListener('change', toggleInputs);
+    });
 
-    cpfInput.style.display = 'none';
+    cpfInput.style.display = 'block';
     cnpjInput.style.display = 'none';
-
-    seletor.selectedIndex = 0;
-    toggleInputs();
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    var seletor = document.getElementById('seletorCNPJ');
-    var cpfLabel = document.querySelector('label[for="cpf"]');
-    var cnpjLabel = document.querySelector('label[for="cnpj"]');
-    function toggleLabels() {
-        var selectedValue = seletor.options[seletor.selectedIndex].value;
-
-        if(selectedValue === '0') {
-            cpfLabel.style.display = 'block';
-            cnpjLabel.style.display = 'none';
-        } else if(selectedValue === '1') {
-            cpfLabel.style.display = 'none';
-            cnpjLabel.style.display = 'block';
-        }
-    }
-
-    seletor.addEventListener('change', toggleLabels);
-
-    cpfLabel.style.display = 'none';
-    cnpjLabel.style.display = 'none';
-
-    seletor.selectedIndex = 0;
-    toggleLabels();
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -85,27 +55,97 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data && data.length > 0) {
-                const campoOculto = document.querySelector('input[name="idcliente"]');
-                const campoOculto2 = document.querySelector('input[name="idcliente2"]');
-                if (campoOculto) {
-                    campoOculto.value = data[0].IDCLIENTE;
-                    campoOculto2.value = data[0].IDCLIENTE;
-                    idcliente = data[0].IDCLIENTE;
-                    fetch(`/fornecedor/listar?idcliente=${idcliente}`)
-                        .then(response => response.json())
-                        .then(data =>{
-                            const selectBanco = document.getElementById('selectBanco');
-                            data.forEach(banco => {
-                                const option = document.createElement('option');
-                                option.value = banco.IDFORNECEDOR;
-                                option.text = banco.NOME_TIPO;
-                                selectBanco.appendChild(option);
-                            });
-                        })
+                idcliente = data[0].IDCLIENTE;
+                carregarFornecedores(idcliente);
+            }
+        });
+});
+
+function carregarFornecedores(idcliente) {
+    fetch(`/fornecedor/listar?idcliente=${idcliente}`)
+        .then(response => response.json())
+        .then(fornecedores => {
+            const selectBanco = document.getElementById('selectBanco');
+            const selectEditFornecedor = document.getElementById('selectEditFornecedor');
+
+            fornecedores.forEach(fornecedor => {
+                const nomeFornecedor = fornecedor.NOME_TIPO.split(' - ')[0]; // Removendo o traço e qualquer coisa após ele
+                const option = document.createElement('option');
+                option.value = fornecedor.IDFORNECEDOR;
+                option.text = nomeFornecedor; // Exibe apenas o nome do fornecedor
+                selectBanco.appendChild(option);
+                selectEditFornecedor.appendChild(option.cloneNode(true));
+            });
+
+            selectEditFornecedor.addEventListener('change', function() {
+                const fornecedorSelecionadoId = this.value;
+                const fornecedorSelecionado = fornecedores.find(f => f.IDFORNECEDOR == fornecedorSelecionadoId);
+
+                if (fornecedorSelecionado) {
+                    document.getElementById('novoNomeFornecedor').value = fornecedorSelecionado.NOME_TIPO.split(' - ')[0];
+                    document.getElementById('novoTipoProduto').value = fornecedorSelecionado.NOME_TIPO.split(' - ')[1];
+
+                    const novoSeletorDocumento = document.getElementById('novoSeletorDocumento');
+                    if (fornecedorSelecionado.CPF) {
+                        novoSeletorDocumento.value = 'CPF';
+                        document.getElementById('novoCpf').value = fornecedorSelecionado.CPF;
+                        document.getElementById('novoCpf').style.display = 'block';
+                        document.getElementById('novoCnpj').style.display = 'none';
+                    } else {
+                        novoSeletorDocumento.value = 'CNPJ';
+                        document.getElementById('novoCnpj').value = fornecedorSelecionado.CNPJ;
+                        document.getElementById('novoCpf').style.display = 'none';
+                        document.getElementById('novoCnpj').style.display = 'block';
+                    }
                 }
+            });
+        });
+}
+
+function adicionarFornecedor(event) {
+    event.preventDefault();
+
+    const nomeFornecedor = document.getElementById('nomeEmpresa').value;
+    const tipoDocumento = document.getElementById('seletorCNPJ').value;
+    const cpf = document.getElementById('cpf').value || null;
+    const cnpj = document.getElementById('cnpj').value || null;
+    const tipoProduto = document.getElementById('tipoProduto').value || null;
+
+    const dados = {
+        nomeFornecedor,
+        tipoProduto,
+        idcliente
+    };
+
+    if (tipoDocumento === '0') {
+        dados.cpf = cpf;
+    } else {
+        dados.cnpj = cnpj;
+    }
+
+    fetch('/fornecedor/adicionar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dados)
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            } else {
+                throw new Error('Erro ao adicionar fornecedor');
             }
         })
-});
+        .then(successMsg => {
+            alert(successMsg);
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Ocorreu um erro ao adicionar o fornecedor.');
+        });
+}
 
 document.addEventListener('DOMContentLoaded', (event) => {
     const params = new URLSearchParams(window.location.search);

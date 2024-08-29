@@ -14,7 +14,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         await initializePage();
         await carregarCategoriasEFornecedores();
         initializePageConsulta();
-        fetchSaldoInicialEFinal();
+        fetchSaldoInicial();
+        fetchSaldoFinal();
     } catch (error) {
         console.error('Erro ao carregar o template:', error);
     }
@@ -67,14 +68,6 @@ function applyHTML(htmlData) {
 
 function getStoredEmpresaName() {
     return localStorage.getItem('nomeEmpresaSelecionada');
-}
-
-
-
-function formatarData(data) {
-    if (data === '0000-00-00') return '00/00/0000';
-    const [ano, mes, dia] = data.split('-');
-    return `${dia}/${mes}/${ano}`;
 }
 
 function initializePage() {
@@ -135,6 +128,67 @@ function initializePage() {
         });
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const mesSelector = document.getElementById('mesSelector');
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();  // 0-based (Janeiro é 0, Fevereiro é 1, etc.)
+    const currentYear = currentDate.getFullYear();
+
+    function gerarMeses() {
+        for (let ano = currentYear - 1; ano <= currentYear + 1; ano++) {
+            for (let mes = 0; mes < 12; mes++) {
+                const button = document.createElement('button');
+                button.classList.add('mes-button');
+                const monthName = new Date(ano, mes).toLocaleString('pt-BR', { month: 'long' });
+                button.textContent = `${monthName}/${ano}`;
+                button.dataset.mesAno = `${String(mes + 1).padStart(2, '0')}-${ano}`;
+                button.addEventListener('click', function() {
+                    selecionarMesAno(button.dataset.mesAno);
+                });
+                mesSelector.appendChild(button);
+
+                if (ano === currentYear && mes === currentMonth) {
+                    button.classList.add('active');
+                    selecionarMesAno(button.dataset.mesAno);
+                }
+            }
+        }
+    }
+
+    gerarMeses();
+});
+
+function selecionarMesAno(mesAno) {
+    const monthButtons = document.querySelectorAll('.mes-button');
+    monthButtons.forEach(btn => btn.classList.remove('active'));
+
+    const selectedButton = [...monthButtons].find(btn => btn.dataset.mesAno === mesAno);
+    if (selectedButton) {
+        selectedButton.classList.add('active');
+    }
+
+    // Armazena o valor selecionado no elemento hidden
+    const mesSelectorValue = document.getElementById('mesSelectorValue');
+    mesSelectorValue.value = mesAno;
+
+    // Chama a função que atualiza os dados para o mês selecionado
+    buscarDados();
+}
+
+// Função de rolagem para os botões de mês
+function scrollMeses(direcao) {
+    const mesSelector = document.getElementById('mesSelectorValue');
+    const scrollAmount = 150; // Quantidade de pixels para deslocar a cada clique
+
+    if (direcao === 'left') {
+        mesSelector.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    } else if (direcao === 'right') {
+        mesSelector.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+}
+
+
+
 function construirArvoreDeCategorias(categorias) {
     let mapa = {};
     let arvore = [];
@@ -154,7 +208,6 @@ function construirArvoreDeCategorias(categorias) {
     });
     return arvore;
 }
-
 
 function resetForm() {
     document.getElementById('meuFormulario').reset();
@@ -209,8 +262,6 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
     }
 });
 
-
-
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
     categorias.forEach(categoria => {
         const existingOption = Array.from(select.options).find(option => option.value === categoria.IDCATEGORIA.toString());
@@ -231,7 +282,6 @@ function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
         }
     });
 }
-
 
 function excelDateToJSDate(excelDate) {
     const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
@@ -374,7 +424,6 @@ function fecharPopupCarregamentoInsercao() {
     document.getElementById('loadingSpinner').style.display = 'none';
 }
 
-
 document.addEventListener('DOMContentLoaded', function() {
     const seletorBanco = document.getElementById('seletorBanco');
     const idBancoPost = document.getElementById('id_bancoPost');
@@ -476,7 +525,7 @@ function initializePageConsulta() {
                     })
                     .then(() => {
                         // Definir o mês atual no seletor de mês/ano
-                        const seletorMesAno = document.getElementById('seletorMesAno');
+                        const seletorMesAno = document.getElementById('mesSelectorValue');
                         const hoje = new Date();
                         const mes = String(hoje.getMonth() + 1).padStart(2, '0');
                         const ano = hoje.getFullYear();
@@ -512,8 +561,17 @@ function initializePageConsulta() {
         });
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const seletorBanco = document.getElementById('seletorBanco');
+
+    seletorBanco.addEventListener('change', function() {
+        IDBANCO = this.value;
+        buscarDados();
+    });
+});
+
 $(document).ready(function() {
-    $('#seletorMesAno').datepicker({
+    $('#mesSelectorValue').datepicker({
         changeMonth: true,
         changeYear: true,
         showButtonPanel: true,
@@ -532,7 +590,7 @@ $(document).ready(function() {
             var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
             $(this).datepicker('setDate', new Date(year, month, 1));
             $(this).val($.datepicker.formatDate('mm-yy', new Date(year, month, 1)));
-            buscarDados();
+            buscarDados(); // Realiza a consulta novamente ao trocar de mês/ano
         }
     });
 });
@@ -544,24 +602,32 @@ function formatDateToFirstOfMonth(mesAnoString) {
     return `${ano}-${mes}-01`;
 }
 
-function buscarDados() {
-    const idBanco = IDBANCO || document.getElementById('seletorBanco').value;
-    const mesAno = $('#seletorMesAno').val();
+async function buscarDados() {
+    const idBancoElement = document.getElementById('seletorBanco');
+    const idBanco = IDBANCO || (idBancoElement ? idBancoElement.value : null);
+
+    if (!idBanco) {
+        console.error('Banco não selecionado ou elemento não encontrado.');
+        return;
+    }
+
+    const mesAno = document.getElementById('mesSelectorValue').value;
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
 
     console.log('Buscando dados para o banco:', idBanco, 'e data:', dataFormatada, 'e empresa:', idEmpresa);
 
-    const url = `/consulta/dados?banco=${idBanco}&data=${dataFormatada}&empresa=${idEmpresa}`;
+    try {
+        const saldoInicial = await fetchSaldoInicial();
 
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Dados  data:', data);
-            atualizarTabela(data);
-        })
-        .catch(error => {
-            console.error('Erro ao buscar os dados:', error);
-        });
+        const response = await fetch(`/consulta/dados?banco=${idBanco}&data=${dataFormatada}&empresa=${idEmpresa}`);
+        const data = await response.json();
+
+        atualizarTabela(data, saldoInicial);
+
+        fetchSaldoFinal();
+    } catch (error) {
+        console.error('Erro ao buscar os dados:', error);
+    }
 }
 
 function formatarValorNumerico(valor) {
@@ -608,7 +674,22 @@ function carregarCategoriasEFornecedores() {
 function atualizarTabela(dados) {
     const tbody = document.getElementById('extrato-body');
     tbody.innerHTML = '';
-    const saldoInicial = parseFloat(document.getElementById('saldoInicialInput').value.replace(/\./g, '').replace(',', '.')) || 0;
+
+    const saldoInicialTable = document.getElementById('saldoInicialTable');
+    let saldoInicial = 0;
+
+    if (saldoInicialTable) {
+        const saldoInicialRow = saldoInicialTable.querySelector('tbody tr');
+        if (saldoInicialRow) {
+            const saldoInicialText = saldoInicialRow.cells[0].textContent;
+            saldoInicial = parseFloat(saldoInicialText.replace(/\./g, '').replace(',', '.')) || 0;
+        } else {
+            console.warn('Nenhum saldo inicial encontrado na tabela.');
+        }
+    } else {
+        console.warn('Elemento saldoInicialTable não encontrado.');
+    }
+
     let saldo = saldoInicial;
 
     dados.forEach((item, index) => {
@@ -683,116 +764,102 @@ function atualizarTabela(dados) {
         }
     });
 
-    fetchSaldoInicialEFinal(saldo);
+    fetchSaldoInicial(saldo);
+    const saldoFinalTable = document.getElementById('saldoFinalTable').querySelector('tbody');
+    saldoFinalTable.innerHTML = '';
+
+    const rowFinal = saldoFinalTable.insertRow();
+    rowFinal.insertCell().textContent = formatarValorParaExibicao(saldo);
 }
 
-function adicionarSubdivisao(idExtrato) {
-    const row = document.querySelector(`[data-idextrato='${idExtrato}']`);
-    const newRow = document.createElement('tr');
-    newRow.classList.add('sub-linha');
-    newRow.innerHTML = `
-        <td></td>
-        <td><input type="date" name="dataSub" required></td>
-        <td><input type="text" name="categoriaSub" required></td>
-        <td><input type="text" name="descricaoSub" required></td>
-        <td><input type="text" name="nomeExtratoSub" required></td>
-        <td><input type="text" name="fornecedorSub" required></td>
-        <td><input type="number" name="valorEntradaSub"></td>
-        <td><input type="number" name="valorSaidaSub"></td>
-        <td></td>
-        <td><input type="file" name="anexoSub"></td>
-        <td><button onclick="salvarSubdivisao(${idExtrato}, this)">Salvar</button></td>
-    `;
-    row.insertAdjacentElement('afterend', newRow);
-}
-
-function salvarSubdivisao(idExtratoPrincipal, button) {
-    const row = button.closest('tr');
-    const data = row.querySelector('input[name="dataSub"]').value;
-    const categoria = row.querySelector('input[name="categoriaSub"]').value;
-    const descricao = row.querySelector('input[name="descricaoSub"]').value;
-    const nomeExtrato = row.querySelector('input[name="nomeExtratoSub"]').value;
-    const fornecedor = row.querySelector('input[name="fornecedorSub"]').value;
-    const valorEntrada = row.querySelector('input[name="valorEntradaSub"]').value || 0;
-    const valorSaida = row.querySelector('input[name="valorSaidaSub"]').value || 0;
-    const anexo = row.querySelector('input[name="anexoSub"]').files[0];
-
-    const formData = new FormData();
-    formData.append('idExtratoPrincipal', idExtratoPrincipal);
-    formData.append('data', data);
-    formData.append('categoria', categoria);
-    formData.append('descricao', descricao);
-    formData.append('nomeExtrato', nomeExtrato);
-    formData.append('fornecedor', fornecedor);
-    formData.append('valorEntrada', valorEntrada);
-    formData.append('valorSaida', valorSaida);
-    if (anexo) {
-        formData.append('anexo', anexo);
-    }
-
-    fetch('/insercao/salvar-subdivisao', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Subdivisão salva com sucesso');
-                buscarDados();
-            } else {
-                alert('Erro ao salvar subdivisão');
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao salvar subdivisão:', error);
-            alert('Erro ao salvar subdivisão');
-        });
-}
-
-function fetchSaldoInicialEFinal() {
-    const mesAno = $('#seletorMesAno').val();
+async function fetchSaldoInicial() {
+    const mesAno = $('#mesSelectorValue').val();
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
 
-    fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${dataFormatada}&cliente=${idEmpresa}`)
-        .then(response => response.json())
-        .then(data => {
-            const saldoInicialInput = document.getElementById('saldoInicialInput');
-            const table2 = document.getElementById('saldoFinalTable');
-            const tbodysaldofinal = table2.querySelector('tbody');
-            tbodysaldofinal.innerHTML = '';
-            console.log(data.SALDO)
+    try {
+        const response = await fetch(`/consulta/saldoinicial?banco=${document.getElementById('seletorBanco').value}&data=${dataFormatada}&cliente=${idEmpresa}`);
+        const data = await response.json();
 
-            let saldoinicial = 0;
+        const saldoInicialTable = document.getElementById('saldoInicialTable').querySelector('tbody');
+        saldoInicialTable.innerHTML = '';
 
-            if (data && data.SALDO) {
-                saldoinicial = parseFloat(data.SALDO || 0);
-            }
-            console.log("Saldo Inicial:", saldoinicial);
-            saldoInicialInput.value = formatarValorNumerico(saldoinicial);
+        let saldoinicial = 0;
 
-            const extratoBody = document.getElementById('extrato-body');
-            const rows = extratoBody.getElementsByTagName('tr');
-            let saldoFinal = saldoinicial;
+        if (data && data.SALDO) {
+            saldoinicial = parseFloat(data.SALDO || 0);
+        }
 
-            if (rows.length > 0) {
-                const lastRow = rows[rows.length - 1];
-                const lastSaldoCell = lastRow.cells[8];
-                saldoFinal = parseFloat(lastSaldoCell.textContent.replace(/\./g, '').replace(',', '.')) || saldoinicial;
-            }
+        const rowInicial = saldoInicialTable.insertRow();
+        rowInicial.insertCell().textContent = formatarValorNumerico(saldoinicial);
 
-            const rowFinal = tbodysaldofinal.insertRow();
-            rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
-
-            definirSaldoInicialProximoMes(saldoFinal);
-        })
-        .catch(error => {
-            console.error('Erro ao buscar saldo inicial:', error);
-            document.getElementById('saldoInicialInput').value = "0,00";
-        });
+        return saldoinicial;
+    } catch (error) {
+        console.error('Erro ao buscar saldo inicial:', error);
+        return 0;
+    }
 }
 
+function fetchSaldoFinal() {
+    const extratoBody = document.getElementById('extrato-body');
+    const rows = extratoBody.getElementsByTagName('tr');
+    const saldoFinalTable = document.getElementById('saldoFinalTable').querySelector('tbody');
+
+    const saldoInicialTable = document.getElementById('saldoInicialTable');
+    let saldoInicial = 0;
+
+    if (saldoInicialTable) {
+        const saldoInicialRow = saldoInicialTable.querySelector('tbody tr');
+        if (saldoInicialRow) {
+            const saldoInicialText = saldoInicialRow.cells[0].textContent;
+            saldoInicial = parseFloat(saldoInicialText.replace(/\./g, '').replace(',', '.')) || 0;
+        } else {
+            console.warn('Nenhum saldo inicial encontrado na tabela.');
+        }
+    } else {
+        console.warn('Elemento saldoInicialTable não encontrado.');
+    }
+
+    let saldoFinal = saldoInicial;
+
+    if (rows.length > 0) {
+        Array.from(rows).forEach(row => {
+            const entradaCell = row.cells[6].textContent.trim();
+            const saidaCell = row.cells[7].textContent.trim();
+
+            const entrada = parseFloat(entradaCell.replace(/\./g, '').replace(',', '.')) || 0;
+            const saida = parseFloat(saidaCell.replace(/\./g, '').replace(',', '.')) || 0;
+
+            saldoFinal += entrada - saida;
+        });
+    }
+
+    saldoFinalTable.innerHTML = '';
+    const rowFinal = saldoFinalTable.insertRow();
+    rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
+
+    definirSaldoInicialProximoMes(saldoFinal);
+}
+
+$(function() {
+    $("#consulta tbody").sortable({
+        handle: '.drag-handle',
+        stop: function(event, ui) {
+            let order = [];
+            $("#consulta tbody tr").each(function(index) {
+                const idExtrato = $(this).data("idextrato");
+                order.push({ idExtrato: idExtrato, ordem: index + 1 });
+            });
+            salvarOrdem(order);
+
+            buscarDados(); // Isso recarrega e atualiza a tabela inteira, incluindo o saldo final
+        }
+    }).disableSelection();
+});
+
 function definirSaldoInicialProximoMes(saldoFinal) {
-    const mesAnoAtual = $('#seletorMesAno').val();
+    const mesAnoAtual = $('#mesSelectorValue').val();
+    console.log(mesAnoAtual)
+
     const [mes, ano] = mesAnoAtual.split('-');
     let novoMes = parseInt(mes) + 1;
     let novoAno = parseInt(ano);
@@ -801,8 +868,9 @@ function definirSaldoInicialProximoMes(saldoFinal) {
         novoMes = 1;
         novoAno += 1;
     }
-    console.log(idEmpresa)
     const dataProximoMes = `${novoAno}-${String(novoMes).padStart(2, '0')}-01`;
+
+    console.log("Definindo saldo inicial para o próximo mês", dataProximoMes, "com saldo:", saldoFinal);
 
     fetch('/consulta/definirSaldoInicial', {
         method: 'POST',
@@ -830,18 +898,20 @@ function definirSaldoInicialProximoMes(saldoFinal) {
         });
 }
 
-
 function selecionarLinha(buttonElement) {
     const idExtrato = buttonElement.getAttribute('data-idextrato');
+    const linha = buttonElement.closest('tr');
+
     if (linhasSelecionadas.includes(idExtrato)) {
         const index = linhasSelecionadas.indexOf(idExtrato);
         linhasSelecionadas.splice(index, 1);
-        buttonElement.classList.remove('selecionado');
+        linha.classList.remove('linha-selecionada');
     } else {
         linhasSelecionadas.push(idExtrato);
-        buttonElement.classList.add('selecionado');
+        linha.classList.add('linha-selecionada');
     }
 }
+
 
 function deletarSelecionados() {
     if (linhasSelecionadas.length === 0) {
@@ -947,7 +1017,7 @@ function gerarPDF() {
 
     var nomeBanco = document.getElementById('seletorBanco').options[document.getElementById('seletorBanco').selectedIndex].text;
     var nomeEmpresa = getStoredEmpresaName();
-    var mesAnoSelecionado = $('#seletorMesAno').val();
+    var mesAnoSelecionado = $('#mesSelectorValue').val();
     var partesData = mesAnoSelecionado.split('-');
     var dataFormatada = partesData[1] + '-' + partesData[0];
     var nomeArquivo = `Tabela_${nomeEmpresa}_${nomeBanco}_${dataFormatada}.pdf`;
@@ -1065,50 +1135,12 @@ function formatDate(dateString) {
     return `${day}/${month}/${year}`;
 }
 
-$(function() {
-    $("#consulta tbody").sortable({
-        handle: '.drag-handle',
-        stop: function(event, ui) {
-            let order = [];
-            $("#consulta tbody tr").each(function(index) {
-                const idExtrato = $(this).data("idextrato");
-                order.push({ idExtrato: idExtrato, ordem: index + 1 });
-            });
-            salvarOrdem(order);
 
-            const rows = document.querySelectorAll('#extrato-body tr');
-            const saldoInicial = parseFloat(document.getElementById('saldoInicialInput').value.replace(/\./g, '').replace(',', '.')) || 0;
-            let saldo = saldoInicial;
-
-            rows.forEach((row, index) => {
-                const entradaCell = row.cells[6];
-                const saidaCell = row.cells[7];
-                const saldoCell = row.cells[8];
-
-                const entrada = parseFloat(entradaCell.textContent.replace(/\./g, '').replace(',', '.')) || 0;
-                const saida = parseFloat(saidaCell.textContent.replace(/\./g, '').replace(',', '.')) || 0;
-
-                const categoria = row.cells[2].textContent;
-                const isExcluded = ["NÃO CONTABILIZAR", "ENTRE CONTAS"].includes(categoria);
-
-                if (index === 0) {
-                    saldo = saldoInicial + (isExcluded ? 0 : entrada - saida);
-                } else {
-                    saldo += (isExcluded ? 0 : entrada - saida);
-                }
-
-                saldoCell.textContent = formatarValorNumerico(saldo);
-            });
-
-            fetchSaldoInicialEFinal();
-        }
-    }).disableSelection();
-});
 
 document.addEventListener('DOMContentLoaded', function() {
     initializePage();
     initializePageConsulta();
-    fetchSaldoInicialEFinal();
+    fetchSaldoInicial();
 });
 
 function salvarOrdem(ordem) {
@@ -1153,7 +1185,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const novoSaldo = parseFloat(saldoInicialInput.value.replace('.', '').replace(',', '.')).toFixed(2);
         const cliente = idEmpresa;
         const banco = IDBANCO;
-        const data = formatDateToFirstOfMonth($('#seletorMesAno').val());
+        const data = formatDateToFirstOfMonth($('#mesSelectorValue').val());
 
         fetch('/consulta/definirSaldoInicial', {
             method: 'POST',
@@ -1241,10 +1273,10 @@ function confirmarEdicao(buttonElement) {
             return response.json();
         })
         .then(data => {
-            console.log(data); // Verifique os dados de resposta
+            console.log(data);
             if (data.affectedRows > 0) {
                 alert('Edição confirmada com sucesso!');
-                buscarDados(); // Atualizar a tabela com os dados atualizados
+                buscarDados();
             } else {
                 alert('Nenhuma mudança foi detectada.');
             }
@@ -1252,7 +1284,7 @@ function confirmarEdicao(buttonElement) {
         .catch(error => {
             console.error('Erro ao confirmar a edição:', error);
             alert('Erro ao confirmar a edição. Por favor, tente novamente.');
-            cancelarEdicao(buttonElement); // Restaura os valores originais em caso de erro
+            cancelarEdicao(buttonElement);
         });
 }
 
@@ -1333,45 +1365,6 @@ function editarLinha(buttonElement) {
     `;
 }
 
-function abrirSaldoPopup() {
-    document.getElementById('saldoPopup').style.display = 'flex';
-}
-
-function fecharSaldoPopup() {
-    document.getElementById('saldoPopup').style.display = 'none';
-}
-
-function salvarSaldoInicial() {
-    const novoSaldo = document.getElementById('novoSaldoInicial').value;
-    const cliente = IDCLIENTE;
-    const banco = document.getElementById('seletorBanco').value; // Captura o banco selecionado
-    const data = formatDateToFirstOfMonth($('#seletorMesAno').val());
-
-    fetch('/consulta/definirSaldoInicial', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ cliente, banco, data, saldo: formatarValorParaInsercao(novoSaldo) }) // Formata o valor antes de enviar
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Erro ao salvar saldo inicial: ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert('Saldo inicial atualizado com sucesso!');
-            document.getElementById('saldoInicialInput').value = formatarValorParaExibicao(novoSaldo);
-            fecharSaldoPopup();
-            buscarDados();
-        })
-        .catch(error => {
-            console.error('Erro ao salvar saldo inicial:', error);
-            alert('Erro ao salvar saldo inicial. Por favor, tente novamente.');
-        });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const saldoInicialInput = document.getElementById('saldoInicialInput');
 
@@ -1395,6 +1388,78 @@ function downloadTemplate() {
     link.click();
 }
 
+//-----------------------------------extratos automaticos---------------------//
+//funcao principal
+async function processarExtrato() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf, .xlsx, .xls';
+    input.onchange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            alert('Por favor, selecione um arquivo.');
+            return;
+        }
+
+        const fileName = file.name.toLowerCase();
+        const fileExtension = fileName.split('.').pop();
+
+        // Obtém o seletor e o texto da opção selecionada
+        const seletorBanco = document.getElementById('seletorBanco');
+        const nomeBanco = seletorBanco.options[seletorBanco.selectedIndex].text.toLowerCase();
+
+        if (fileExtension === 'pdf') {
+            const typedArray = new Uint8Array(await file.arrayBuffer());
+            const pdf = await pdfjsLib.getDocument(typedArray).promise;
+
+            const data = [];
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                textContent.items.forEach((item) => {
+                    data.push(item.str);
+                });
+            }
+            console.log(data)
+            // Verificação do banco baseado no texto da opção selecionada e conteúdo do PDF
+            if (nomeBanco.includes('banco do brasil')) {
+                if (data.some(item => item.includes("BB Cash - Conta corrente - Consulta autorizaveis - Extrato de conta corrente" || "Consultas - Extrato de conta corrente"))) {
+                    const linhasExtrato = processarDadosDoExtratoBancoDoBrasil2(data);
+                    mostrarExtratoPopup(linhasExtrato);
+                } else {
+                    const linhasExtrato = processarDadosDoExtratoBancoDoBrasil(data);
+                    mostrarExtratoPopup(linhasExtrato);
+                }
+            } else if (nomeBanco.includes('itau')) {
+                const linhasExtrato = processarDadosDoExtratoItau(data);
+                mostrarExtratoPopup(linhasExtrato);
+            } else {
+                console.error('Banco não identificado no PDF ou o banco selecionado não corresponde ao conteúdo.');
+            }
+
+        } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+            const data = new Uint8Array(await file.arrayBuffer());
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+            if (nomeBanco.includes('caixa')) {
+                const linhasExtrato = processarDadosDoExcelCaixa(jsonData);
+                mostrarExtratoPopup(linhasExtrato);
+            } else {
+                console.error('Banco não identificado no Excel ou o banco selecionado não corresponde ao conteúdo.');
+            }
+        } else {
+            alert('Formato de arquivo não suportado.');
+        }
+    };
+    input.click();
+}
+
+//funcoes auxiliares
+
+//banco do brasil
 function processarDadosDoExtratoBancoDoBrasil(data) {
     const extrato = [];
     const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
@@ -1440,40 +1505,68 @@ function processarDadosDoExtratoBancoDoBrasil(data) {
 
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
+function processarDadosDoExtratoBancoDoBrasil2(data) {
+    const extrato = [];
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+    const valueRegex = /-?\d{1,3}(\.\d{3})*,\d{2} [CD]/;
+    const saldoRegex = /saldo anterior/i;
+    const finalizacaoExtratoRegex = /S\s*A\s*L\s*D\s*O\s*-/i; // Regex para identificar "S A L D O-"
 
-async function processarExtratoPDFBancoDoBrasil() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/pdf';
-    input.onchange = async (event) => {
-        const file = event.target.files[0];
-        if (!file) {
-            alert('Por favor, selecione um arquivo PDF.');
-            return;
+    let dentroDoIntervaloSaldo = false;
+    let linhaAtual = null;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        // Verificação inicial para identificar se o processamento deve começar
+        if (text.match(saldoRegex)) {
+            dentroDoIntervaloSaldo = true;
+            continue;
         }
 
-        const fileReader = new FileReader();
-        fileReader.onload = async function() {
-            const typedArray = new Uint8Array(this.result);
-            const pdf = await pdfjsLib.getDocument(typedArray).promise;
+        // Verificação para identificar se deve parar o processamento
+        if (dentroDoIntervaloSaldo && text.match(finalizacaoExtratoRegex)) {
+            break;
+        }
 
-            const data = [];
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-                const textContent = await page.getTextContent();
-                textContent.items.forEach((item) => {
-                    data.push(item.str);
-                });
+        if (dentroDoIntervaloSaldo) {
+            if (text.match(dateRegex)) {
+                // Adiciona a linha anterior, se válida
+                if (linhaAtual && linhaAtual.data && linhaAtual.descricao && linhaAtual.valor) {
+                    extrato.push(linhaAtual);
+                }
+                // Inicia uma nova linha
+                linhaAtual = {
+                    data: text,
+                    descricao: '',
+                    valor: null,
+                    tipo: null
+                };
+            } else if (text.match(valueRegex) && linhaAtual) {
+                // Verifica e adiciona o valor
+                const valorStr = text.slice(0, -2).replace(/\./g, '').replace(',', '.');
+                const tipo = text.endsWith('C') ? 'entrada' : 'saida';
+                linhaAtual.valor = formatarValorFinanceiro(parseFloat(valorStr)) ;
+                linhaAtual.tipo = tipo;
+            } else if (linhaAtual && !text.match(/^\d+$/)) {
+                if (text.match(finalizacaoExtratoRegex)) {
+                    break;
+                }
+                linhaAtual.descricao += ` ${text}`.trim();
             }
+        }
+    }
 
-            const linhasExtrato = processarDadosDoExtratoBancoDoBrasil(data);
-            mostrarExtratoPopup(linhasExtrato);
-        };
-        fileReader.readAsArrayBuffer(file);
-    };
-    input.click();
+    if (linhaAtual && linhaAtual.data && linhaAtual.descricao && linhaAtual.valor && !linhaAtual.descricao.match(finalizacaoExtratoRegex)) {
+        extrato.push(linhaAtual);
+    }
+
+    console.log(extrato);
+
+    return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
 
+//itau
 function processarDadosDoExtratoItau(data) {
     const extrato = [];
     const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
@@ -1518,66 +1611,7 @@ function processarDadosDoExtratoItau(data) {
     return extrato;
 }
 
-async function processarExtratoPDFItau() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/pdf';
-    input.onchange = async (event) => {
-        const file = event.target.files[0];
-        if (!file) {
-            alert('Por favor, selecione um arquivo PDF.');
-            return;
-        }
-
-        const fileReader = new FileReader();
-        fileReader.onload = async function() {
-            const typedArray = new Uint8Array(this.result);
-            const pdf = await pdfjsLib.getDocument(typedArray).promise;
-
-            const data = [];
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-                const textContent = await page.getTextContent();
-                textContent.items.forEach((item) => {
-                    data.push(item.str);
-                });
-            }
-
-            const linhasExtrato = processarDadosDoExtratoItau(data);
-            mostrarExtratoPopup(linhasExtrato);
-        };
-        fileReader.readAsArrayBuffer(file);
-    };
-    input.click();
-}
-
-async function processarExcelCaixa() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.xlsx, .xls';
-    input.onchange = async (event) => {
-        const file = event.target.files[0];
-        if (!file) {
-            alert('Por favor, selecione um arquivo Excel.');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = async function (event) {
-            const data = new Uint8Array(event.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-            const processedData = processarDadosDoExcelCaixa(jsonData);
-            mostrarExtratoPopup(processedData);
-        };
-        reader.readAsArrayBuffer(file);
-    };
-    input.click();
-}
-
+//caixa
 function excelDateToJSDate(excelDate) {
     const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
     const day = String(date.getDate()).padStart(2, '0');
@@ -1585,7 +1619,6 @@ function excelDateToJSDate(excelDate) {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
 }
-
 function processarDadosDoExcelCaixa(data) {
     const extrato = [];
     const valorRegex = /(\d{1,3}(\.\d{3})*,\d{2})\s([CD])/;
@@ -1614,6 +1647,10 @@ function processarDadosDoExcelCaixa(data) {
 
     return extrato;
 }
+
+
+
+///------------------------------------------------------------------//
 
 function mostrarExtratoPopup(extrato) {
     const extratoTableBody = document.getElementById('extratoTable').querySelector('tbody');
@@ -1702,7 +1739,6 @@ function mostrarExtratoPopup(extrato) {
 }
 
 function preencherSelectComOpcoes(selectElement, modelSelectElement) {
-    // Copia todas as opções do modelo para o novo select, incluindo a propriedade `disabled`
     Array.from(modelSelectElement.options).forEach(option => {
         const newOption = document.createElement('option');
         newOption.value = option.value;
@@ -1782,60 +1818,30 @@ function salvarAlteracoes() {
         });
 }
 
-document.getElementById('processarExtratoBtn').addEventListener('click', function() {
-    document.getElementById('bancoPopup').style.display = 'block';
-    document.querySelector('.body-insercao').classList.add('blur-background');
+document.getElementById('processarExtratoBtn').addEventListener('click', processarExtrato);
 
-});
 
-function confirmarBanco() {
-    const bancoSelecionado = document.getElementById('bancoSelect').value;
+function mostrarOpcoesInsercao() {
+    var metodo = document.getElementById("metodoInsercao").value;
+    document.getElementById("opcoesManual").style.display = metodo === "manual" ? "block" : "none";
+    document.getElementById("opcoesAutomatizado").style.display = metodo === "automatizado" ? "block" : "none";
+}
 
-    if (bancoSelecionado) {
-        processarExtratoPorBanco(bancoSelecionado);
-        fecharBancoPopup();
-    } else {
-        alert('Por favor, selecione um banco.');
+function executarMetodoAutomatizado() {
+    var opcao = document.getElementById("metodoAutomatizado").value;
+    if (opcao === "leituraAutomatica") {
+        processarExtrato();
+    } else if (opcao === "insercaoExcel") {
+        document.getElementById('excelFile').click();
     }
 }
 
-function fecharBancoPopup() {
-    document.getElementById('bancoPopup').style.display = 'none';
-    document.querySelector('.body-insercao').classList.remove('blur-background');
-}
+document.getElementById('excelFile').addEventListener('change', function() {
+    lerExcel();
+});;
 
-function processarExtratoPorBanco(banco) {
-    const bancoIdentificado = identificarBanco(banco);
-    console.log(bancoIdentificado);
 
-    if (bancoIdentificado === 'Caixa') {
-        processarExcelCaixa();
-    } else if (bancoIdentificado === 'Itau') {
-        processarExtratoPDFItau();
-    } else if (bancoIdentificado === 'Banco do Brasil') {
-        processarExtratoPDFBancoDoBrasil();
-    } else {
-        alert('Banco não identificado ou não suportado!');
-    }
-}
 
-function identificarBanco(nomeBanco) {
-    if (!nomeBanco) {
-        console.error('Nome do banco não fornecido');
-        return null;
-    }
-
-    const nomeBancoLower = nomeBanco.toLowerCase();
-
-    if (nomeBancoLower.includes('caixa') || nomeBancoLower.includes('cef') || nomeBancoLower.includes('caixa economica federal')) {
-        return 'Caixa';
-    } else if (nomeBancoLower.includes('itau') || nomeBancoLower.includes('itaú')) {
-        return 'Itau';
-    } else if (nomeBancoLower.includes('banco do brasil') || nomeBancoLower.includes('bb')) {
-        return 'Banco do Brasil';
-    }
-    return null;
-}
 
 
 

@@ -3,42 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Inserção e Consulta</title>
-    <style>
-        #extratoButton, #inserirButton, #consultaButton {
-            background-color: #8BACAF;
-        }
-
-        /* Adicione estilos para o pop-up */
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .popup-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 50%;
-            max-width: 600px;
-            max-height: 80%;
-            overflow-y: auto;
-        }
-
-        .popup-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-        }
-    </style>
     <link rel="stylesheet" href="/paginaInsercao/insercaoStyles.css">
     <link rel="stylesheet" href="/paginaConsulta/paginaConsulta.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -62,60 +26,69 @@
             </select>
         </div>
         <div>
-            <form id="uploadForm" enctype="multipart/form-data">
-                <input type="file" id="excelFile" accept=".xlsx, .xls" />
-                <input type="button" value="Upload e Processar" onclick="lerExcel()">
-            </form>
+            <select id="metodoInsercao" name="metodo_insercao" onchange="mostrarOpcoesInsercao()">
+                <option value="" disabled selected>Selecione o Método de Inserção</option>
+                <option value="manual">Manual</option>
+                <option value="automatizado">Automatizado</option>
+            </select>
         </div>
-        <button id="processarExtratoBtn">Processar Extrato Automático</button>
+        <div id="opcoesAutomatizado" style="display: none;">
+            <select id="metodoAutomatizado" name="metodo_automatizado" onchange="executarMetodoAutomatizado()">
+                <option value="" disabled selected>Selecione a Opção Automatizada</option>
+                <option value="leituraAutomatica">Leitura Automática</option>
+                <option value="insercaoExcel">Inserção de Excel Preenchido</option>
+            </select>
+        </div>
+        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display: none;" />
         <div>
             <button id="downloadTemplateButton" onclick="downloadTemplate()">Download Template</button>
         </div>
-        <div>
-            <label for="seletorMesAno">Mes/Ano </label>
-            <input type="text" id="seletorMesAno" name="mes_ano">
-        </div>
     </div>
 
-    <form id="meuFormulario">
-        <div class="tabela">
-            <table>
-                <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Rubrica</th>
-                    <th>Fornecedor</th>
-                    <th>Observação</th>
-                    <th>Nome no Extrato</th>
-                    <th>Entrada</th>
-                    <th>Saída</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td><input type="date" name="Data" id="datepicker"></td>
-                    <td>
-                        <label>
-                            <select name="categoria" id="seletorCategoria"></select>
-                        </label>
-                    </td>
-                    <td>
-                        <label>
-                            <select name="fornecedor" id="seletorFornecedor"></select>
-                        </label>
-                    </td>
-                    <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="valor"></td>
-                    <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="valor"></td>
-                    <td><input type="text" name="valorEn" id="valorEn" class="valor"></td>
-                    <td><input type="text" name="valorSa" id="valorSa" class="valor"></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <input type="hidden" name="id_empresa" id="id_empresa">
-        <input type="hidden" name="id_bancoPost" id="id_bancoPost">
-        <input type="submit" value="Enviar">
-    </form>
+    <!-- Nova barra de seleção de data -->
+
+    <!-- Formulário Manual permanece aqui -->
+    <div id="opcoesManual" style="display: none;">
+        <form id="meuFormulario">
+            <div class="tabela">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Rubrica</th>
+                        <th>Fornecedor</th>
+                        <th>Observação</th>
+                        <th>Nome no Extrato</th>
+                        <th>Entrada</th>
+                        <th>Saída</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><input type="date" name="Data" id="datepicker"></td>
+                        <td>
+                            <label>
+                                <select name="categoria" id="seletorCategoria"></select>
+                            </label>
+                        </td>
+                        <td>
+                            <label>
+                                <select name="fornecedor" id="seletorFornecedor"></select>
+                            </label>
+                        </td>
+                        <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="valor"></td>
+                        <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="valor"></td>
+                        <td><input type="text" name="valorEn" id="valorEn" class="valor"></td>
+                        <td><input type="text" name="valorSa" id="valorSa" class="valor"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <input type="hidden" name="id_empresa" id="id_empresa">
+            <input type="hidden" name="id_bancoPost" id="id_bancoPost">
+            <input type="submit" value="Enviar">
+        </form>
+    </div>
 
     <div id="downloadButtons">
         <button onclick="gerarPDF()">Gerar PDF</button>
@@ -130,26 +103,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td>
-                    <input type="text" id="saldoInicialInput" readonly value="0,00">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <button id="abrirSaldoPopup" onclick="abrirSaldoPopup()">Definir Saldo Inicial</button>
-                </td>
-            </tr>
-            <div id="saldoPopup" class="popup-overlay">
-                <div class="popup-content">
-                    <span class="close-btn" onclick="fecharSaldoPopup()">&times;</span>
-                    <h3>Definir Saldo Inicial</h3>
-                    <label for="novoSaldoInicial">Novo Saldo Inicial:</label>
-                    <input type="text" id="novoSaldoInicial" placeholder="0,00">
-                    <button onclick="salvarSaldoInicial()">Salvar</button>
-                </div>
-            </div>
-
+            <!-- Saldo Inicial será inserido aqui -->
             </tbody>
         </table>
         <table id="saldoFinalTable">
@@ -158,13 +112,24 @@
                 <th>Saldo Final</th>
             </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+            <!-- Saldo Final será inserido aqui -->
+            </tbody>
         </table>
     </div>
 
     <div id="botão-deletar">
         <button onclick="deletarSelecionados()">Deletar Selecionados</button>
     </div>
+
+    <div class="mes-selector-container" id="mesSelectorWrapper">
+        <button class="arrow-button" onclick="scrollMeses('left')">&#8249;</button>
+        <div class="mes-selector" id="mesSelector">
+            <!-- Botões de meses serão gerados aqui -->
+        </div>
+        <button class="arrow-button" onclick="scrollMeses('right')">&#8250;</button>
+    </div>
+    <input type="hidden" id="mesSelectorValue" value="" />
 
     <table id="consulta">
         <thead>
@@ -185,7 +150,6 @@
         <tbody id="extrato-body"></tbody>
         <tbody></tbody>
     </table>
-
 
     <div id="iframe-container"></div>
 
@@ -230,26 +194,12 @@
     </div>
 </div>
 
-<div id="bancoPopup" style="display: none; position: fixed; z-index: 10000; left: 50%; top: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0px 0px 10px rgba(0,0,0,0.1);">
-    <h3>Selecione o Banco</h3>
-    <select id="bancoSelect">
-        <option value="">Selecione um banco</option>
-        <option value="Caixa">Caixa Econômica Federal</option>
-        <option value="Itau">Itaú</option>
-        <option value="Banco do Brasil">Banco do Brasil</option>
-    </select>
-    <br><br>
-    <button onclick="confirmarBanco()">Confirmar</button>
-    <button onclick="fecharBancoPopup()">Cancelar</button>
-</div>
 
-
-    <script src="/paginaInsercao/paginaInsercao.js"></script>
+<script src="/paginaInsercao/paginaInsercao.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-
 
 </body>
 </html>

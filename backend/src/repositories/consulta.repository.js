@@ -74,7 +74,7 @@ function editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, va
 }
 
 function buscarSaldoInicial(idCliente, idBanco, data, callback) {
-    const mesAno = data.slice(0, 7);
+    const mesAno = data.slice(0, 7); // Extrai o mês e o ano no formato YYYY-MM
     const querySaldoManual = `
         SELECT SALDO FROM SALDO_INICIAL 
         WHERE ID_CLIENTE = ? AND ID_BANCO = ? AND MES_ANO = ?`;
@@ -85,22 +85,11 @@ function buscarSaldoInicial(idCliente, idBanco, data, callback) {
         } else if (result.length > 0) {
             callback(null, result[0]);
         } else {
-            const querySaldoAutomatico = `
-                SELECT SUM(CASE WHEN TIPO_DE_TRANSACAO = 'ENTRADA' THEN VALOR ELSE 0 END) - 
-                       SUM(CASE WHEN TIPO_DE_TRANSACAO = 'SAIDA' THEN VALOR ELSE 0 END) AS saldo 
-                FROM EXTRATO 
-                WHERE ID_CLIENTE = ? AND ID_BANCO = ? AND DATA < ?`;
-
-            mysqlConn.query(querySaldoAutomatico, [idCliente, idBanco, data], function (err, result) {
-                if (err) {
-                    callback(err, null);
-                } else {
-                    callback(null, result[0]);
-                }
-            });
+            callback(null, { SALDO: 0 });
         }
     });
 }
+
 
 function salvarOrdem(ordem, callback) {
     const promises = ordem.map(item => {

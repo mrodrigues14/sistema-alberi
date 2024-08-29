@@ -104,7 +104,6 @@ router.post('/', async (req, res) => {
 
 
 function formatarDataParaBanco(data) {
-    // Supondo que a data venha no formato DD/MM/YYYY
     const [dia, mes, ano] = data.split('/');
     return `${ano}-${mes}-${dia}`;
 }
@@ -116,10 +115,8 @@ router.post('/inserir-lote', async (req, res) => {
         for (const entrada of entradas) {
             let { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, Fornecedor } = entrada;
 
-            // Formata a data para o formato YYYY-MM-DD
             Data = formatarDataParaBanco(Data);
 
-            // Aguarda a inserção, utilizando um callback
             await new Promise((resolve, reject) => {
                 inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, Fornecedor, (err, result) => {
                     if (err) {

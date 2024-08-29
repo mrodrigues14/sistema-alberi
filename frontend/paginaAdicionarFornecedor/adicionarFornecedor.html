@@ -2,56 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Adicionar Fornecedor</title>
-    <style>
-        #extratoButton{
-            background-color: #8BACAF;
-        }
-        #fornecedorButton{
-            background-color: #8BACAF;
-        }
-    </style>
+    <title>Gerenciar Fornecedor</title>
     <link rel="stylesheet" href="/paginaAdicionarFornecedor/adicionarFornecedor.css">
 </head>
 <body>
-    <div id="menu-container"></div>
-    <div class="main">
-        <div id="Adicionar-cliente">
-            <h1>Adicionar Fornecedor</h1>
-            <form id="formAdd" action="/fornecedor/adicionar" method="post">
-                <label for="nomeEmpresa">
-                    Nome do Fornecedor:
-                    <input type="text" id="nomeEmpresa" name="nomeFornecedor">
-                </label>
-                <select id="seletorCNPJ">
+<div id="menu-container"></div>
+<main class="main-content">
+    <section id="Adicionar-cliente">
+        <h1>Adicionar Fornecedor</h1>
+        <form id="formAdd" onsubmit="adicionarFornecedor(event)">
+            <div class="form-group">
+                <label for="nomeEmpresa">Nome do Fornecedor:</label>
+                <input type="text" id="nomeEmpresa" name="nomeFornecedor" required>
+            </div>
+            <div class="form-group">
+                <label for="seletorCNPJ">Tipo de Documento:</label>
+                <select id="seletorCNPJ" >
                     <option value="0">CPF</option>
                     <option value="1">CNPJ</option>
                 </select>
-                <input type="text" id="cpf" name="cpf" placeholder="CPF" class="cpf/cnpj">
-                <input type="text" id="cnpj" name="cnpj" placeholder="CNPJ" class="cpf/cnpj">
-                <label for="telefone">
-                    Tipo de Produto:
-                    <input type="text" id="telefone" name="tipoProduto">
-                </label>
-                <input type="hidden" name="idcliente">
-                <input type="submit" value="Adicionar" id="addButton">
-            </form>
-        </div>
+            </div>
+            <div class="form-group">
+                <input type="text" id="cpf" name="cpf" placeholder="CPF" class="cpf-cnpj">
+                <input type="text" id="cnpj" name="cnpj" placeholder="CNPJ" class="cpf-cnpj" style="display:none;">
+            </div>
+            <div class="form-group">
+                <label for="tipoProduto">Tipo de Produto:</label>
+                <input type="text" id="tipoProduto" name="tipoProduto" >
+            </div>
+            <button type="submit" class="btn-primary btn">Adicionar</button>
+        </form>
+    </section>
 
-        <div id="Remover Conta">
-            <h1>Remover Fornecedor</h1>
-            <form id="formRemove" action="/fornecedor/remover" method="post">
-                <label for="selectBanco">
-                    Nome do fornecedor a ser removido:
-                    <select id="selectBanco" name="selectNomeEmpresa">
+    <section id="Editar-Fornecedor">
+        <h1>Editar Fornecedor</h1>
+        <form id="formEdit" action="/fornecedor/editar" method="post">
+            <div class="form-group">
+                <label for="selectEditFornecedor">Selecione o Fornecedor:</label>
+                <select id="selectEditFornecedor" name="idFornecedor" required></select>
+            </div>
+            <div class="form-group">
+                <label for="novoNomeFornecedor">Novo Nome do Fornecedor:</label>
+                <input type="text" id="novoNomeFornecedor" name="nomeFornecedor" required>
+            </div>
+            <div class="form-group">
+                <label for="novoSeletorDocumento">Novo Documento:</label>
+                <select id="novoSeletorDocumento">
+                    <option value="CPF">CPF</option>
+                    <option value="CNPJ">CNPJ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="text" id="novoCpf" name="cpf" placeholder="CPF">
+                <input type="text" id="novoCnpj" name="cnpj" placeholder="CNPJ" style="display:none;">
+            </div>
+            <div class="form-group">
+                <label for="novoTipoProduto">Novo Tipo de Produto:</label>
+                <input type="text" id="novoTipoProduto" name="tipoProduto">
+            </div>
+            <button type="submit" class="btn-primary btn">Editar</button>
+        </form>
+    </section>
 
-                    </select>
-                </label>
-                <input type="hidden" name="idcliente2" id="idcliente2">
-                <input type="submit" value="Remover" id="removeButton">
-            </form>
-        </div>
-    </div>
-    <script src="/paginaAdicionarFornecedor/adicionarFornecedor.js"></script>
+    <section id="RemoverConta">
+        <h1>Remover Fornecedor</h1>
+        <form id="formRemove" action="/fornecedor/remover" method="post">
+            <div class="form-group">
+                <label for="selectBanco">Nome do fornecedor a ser removido:</label>
+                <select id="selectBanco" name="selectNomeEmpresa"></select>
+            </div>
+            <button type="submit" class="btn-danger btn">Remover</button>
+        </form>
+    </section>
+</main>
+<script src="/paginaAdicionarFornecedor/adicionarFornecedor.js"></script>
 </body>
 </html>

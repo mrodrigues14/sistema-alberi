@@ -2,57 +2,110 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dados do cliente</title>
-    <style>
-        #dadosButton{
-            background-color: #8BACAF;
-        }
-    </style>
-
+    <title>Dados do Cliente</title>
     <link rel="stylesheet" href="/paginaDados/paginaDados.css">
 </head>
 <body>
-    <div id="menu-container"></div>
-    <div class="main">
-        <div id="Adicionar-Conta">
-            <h1>Adicionar Conta</h1>
-            <form id="formAdd" action="/dados/adicionar" method="post">
-                <fieldset>
-                    <legend>Informações da Conta</legend>
-                    <label for="nomeBanco">Nome do Banco:
-                        <input type="text" id="nomeBanco" name="nomeBanco" required>
-                    </label>
-                    <label for="tipoConta">Tipo:
-                        <select id="tipoConta" name="tipoConta" required>
-                            <option value="CONTA CORRENTE">Conta Corrente</option>
-                            <option value="CONTA SALARIO">Conta Salário</option>
-                            <option value="CONTA INVESTIMENTO">Conta Investimento</option>
-                        </select>
-                    </label>
-                    <input type="hidden" name="idcliente">
-                    <input type="submit" value="Adicionar" id="addButton">
-                </fieldset>
-            </form>
-        </div>
+<div id="menu-container"></div>
+<main class="main-content">
+    <div class="form-group">
+        <label for="selectAction">Selecione uma ação:</label>
+        <select id="selectAction">
+            <option value="Adicionar-Conta">Adicionar Conta</option>
+            <option value="Editar-Conta">Editar Conta</option>
+            <option value="Remover-Conta">Remover Conta</option>
+            <option value="Definir-Saldo-Inicial">Definir Saldo Inicial</option>
+        </select>
+    </div>
 
-
-        <div id="Remover Conta">
-            <h1>Remover Conta</h1>
+    <section id="Adicionar-Conta" class="action-section">
+        <h1>Adicionar Conta</h1>
+        <form id="formAdd" action="/dados/adicionar" method="post">
             <fieldset>
                 <legend>Informações da Conta</legend>
-                <form id="formRemove" action="/dados/remover" method="post">
-                    <label for="nomeBanco">
-                        Nome do Banco:
-                        <select id="selectBanco" name="idbanco">
-
-                        </select>
-                    </label>
-                    <input type="hidden" name="idcliente2">
-                    <input type="submit" value="Remover" id="removeButton">
-                </form>
+                <div class="form-group">
+                    <label for="nomeBanco">Nome do Banco:</label>
+                    <input type="text" id="nomeBanco" name="nomeBanco" required>
+                </div>
+                <div class="form-group">
+                    <label for="tipoConta">Tipo:</label>
+                    <select id="tipoConta" name="tipoConta" required>
+                        <option value="CONTA CORRENTE">Conta Corrente</option>
+                        <option value="CONTA SALARIO">Conta Salário</option>
+                        <option value="CONTA INVESTIMENTO">Conta Investimento</option>
+                    </select>
+                </div>
+                <input type="hidden" name="idcliente">
+                <button type="submit" class="btn-primary btn">Adicionar</button>
             </fieldset>
-        </div>
-    </div>
-    <script src="/paginaDados/paginaDados.js"></script>
+        </form>
+    </section>
+
+    <section id="Editar-Conta" class="action-section" style="display: none;">
+        <h1>Editar Conta</h1>
+        <form id="formEdit" action="/dados/editar" method="post">
+            <fieldset>
+                <legend>Editar Informações da Conta</legend>
+                <div class="form-group">
+                    <label for="selectEditBanco">Selecione o Banco:</label>
+                    <select id="selectEditBanco" name="idbanco" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="novoNomeBanco">Novo Nome do Banco:</label>
+                    <input type="text" id="novoNomeBanco" name="novoNome" required>
+                </div>
+                <div class="form-group">
+                    <label for="novoTipoConta">Novo Tipo:</label>
+                    <select id="novoTipoConta" name="novoTipo" required>
+                        <option value="CONTA CORRENTE">Conta Corrente</option>
+                        <option value="CONTA SALARIO">Conta Salário</option>
+                        <option value="CONTA INVESTIMENTO">Conta Investimento</option>
+                    </select>
+                </div>
+                <input type="hidden" name="idcliente">
+                <button type="submit" class="btn-primary btn">Editar</button>
+            </fieldset>
+        </form>
+    </section>
+
+    <section id="Remover-Conta" class="action-section" style="display: none;">
+        <h1>Remover Conta</h1>
+        <form id="formRemove" action="/dados/remover" method="post">
+            <fieldset>
+                <legend>Informações da Conta</legend>
+                <div class="form-group">
+                    <label for="selectBanco">Nome do Banco:</label>
+                    <select id="selectBanco" name="idbanco"></select>
+                </div>
+                <input type="hidden" name="idcliente2">
+                <button type="submit" class="btn-danger btn">Remover</button>
+            </fieldset>
+        </form>
+    </section>
+
+    <section id="Definir-Saldo-Inicial" class="action-section" style="display: none;">
+        <h1>Definir Saldo Inicial</h1>
+        <form id="formSaldo">
+            <fieldset>
+                <legend>Definir Saldo Inicial da Conta</legend>
+                <div class="form-group">
+                    <label for="selectSaldoBanco">Selecione o Banco:</label>
+                    <select id="selectSaldoBanco" name="idbanco" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="mesAno">Mês/Ano:</label>
+                    <input type="month" id="mesAno" name="mesAno" required>
+                </div>
+                <div class="form-group">
+                    <label for="saldoInicial">Saldo Inicial:</label>
+                    <input type="text" id="saldoInicial" name="saldo" class="inputSaldoInicial" required>
+                </div>
+                <button type="submit" class="btn-primary btn">Definir Saldo</button>
+            </fieldset>
+        </form>
+    </section>
+
+</main>
+<script src="/paginaDados/paginaDados.js"></script>
 </body>
 </html>

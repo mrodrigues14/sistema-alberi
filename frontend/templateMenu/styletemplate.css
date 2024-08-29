@@ -13,6 +13,7 @@ body {
     align-items: center;
     flex-wrap: nowrap;
     justify-content: space-between;
+    flex-direction: row;
 }
 
 .navbar-all .menu-inline {
@@ -20,6 +21,7 @@ body {
     display: flex;
     margin: 0;
     padding: 0;
+    flex-wrap: wrap;
 }
 
 .navbar-all .menu-inline li {
@@ -82,7 +84,6 @@ body {
     border-radius: 5px;
     box-sizing: border-box;
     padding: 10px 0;
-
 }
 
 .navbar-all #searchInput {
@@ -129,7 +130,6 @@ body {
     text-decoration: none;
     display: block;
     font-size: 16px;
-
 }
 
 .navbar-all .dropdown a:hover {
@@ -301,6 +301,7 @@ body {
     .navbar-all .dropdown-content {
         width: 100%;
     }
+
     .hamburger-menu {
         display: block;
     }
@@ -308,4 +309,9 @@ body {
 
 hr {
     margin: 0;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
