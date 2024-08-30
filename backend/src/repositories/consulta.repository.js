@@ -1,11 +1,13 @@
 const mysqlConn = require("../base/database");
 
 function buscar(banco, data, cliente, callback) {
-    const dataProximoMes = new Date(data);
-    dataProximoMes.setMonth(dataProximoMes.getMonth() + 2);
-    dataProximoMes.setDate(0);
+    const [ano, mes] = data.split('-');
 
-    const parametros = [banco, data, dataProximoMes.toISOString().split('T')[0], cliente];
+    const dataInicio = `${ano}-${mes}-01`;
+
+    const dataFim = new Date(ano, mes, 0).toISOString().split('T')[0];
+
+    const parametros = [banco, dataInicio, dataFim, cliente];
 
     mysqlConn.query(`SELECT IDEXTRATO, DATA, 
                     IFNULL(
