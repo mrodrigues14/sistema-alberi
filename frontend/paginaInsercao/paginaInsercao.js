@@ -1424,7 +1424,6 @@ async function processarExtrato() {
                 });
             }
             console.log(data)
-            // Verificação do banco baseado no texto da opção selecionada e conteúdo do PDF
             if (nomeBanco.includes('banco do brasil')) {
                 if (data.some(item => item.includes("BB Cash - Conta corrente - Consulta autorizaveis - Extrato de conta corrente" || "Consultas - Extrato de conta corrente"))) {
                     const linhasExtrato = processarDadosDoExtratoBancoDoBrasil2(data);
@@ -1434,12 +1433,43 @@ async function processarExtrato() {
                     mostrarExtratoPopup(linhasExtrato);
                 }
             } else if (nomeBanco.includes('itau')) {
-                const linhasExtrato = processarDadosDoExtratoItau(data);
+                if (data.some((item => item.includes("Total contratado. O uso do Limite da Conta e Limite da Conta adicional poderá ter cobrança de juros + IOF.")))) {
+                    const linhasExtrato = processarDadosDoExtratoItauPersonalite(data)
+                    mostrarExtratoPopup(linhasExtrato);
+                } else {
+                    const linhasExtrato = processarDadosDoExtratoItau(data);
+                    mostrarExtratoPopup(linhasExtrato);
+                }
+
+            } else if (nomeBanco.includes('bradesco')) {
+                if (data.some(item => item.includes("Bradesco Internet Banking"))) {
+                    const linhasExtrato = processarDadosDoExtratoBradesco1(data);
+                    mostrarExtratoPopup(linhasExtrato);
+                } else {
+                    const linhasExtrato = processarDadosDoExtratoBradesco2(data);
+                    mostrarExtratoPopup(linhasExtrato);
+                }
+
+            } else if(nomeBanco.includes('mercado pago' || 'mercadoPago' || 'Mercado Pago' || 'MercadoPago')) {
+                if (data.some(item => item.includes("DETALHE DOS MOVIMENTOS"))) {
+                    const linhasExtrato = processarDadosDoExtratoMercadoPago1(data);
+                    mostrarExtratoPopup(linhasExtrato);
+                } else {
+                    const linhasExtrato = processarDadosDoExtratoMercadoPago2(data);
+                    mostrarExtratoPopup(linhasExtrato);
+                }
+            } else if (nomeBanco.includes('stone')) {
+                const linhasExtrato = processarDadosDoExtratoStone(data);
+                mostrarExtratoPopup(linhasExtrato);
+            } else if (nomeBanco.includes('sicoob')) {
+                const linhasExtrato = processarDadosDoExtratoSicoob(data);
+                mostrarExtratoPopup(linhasExtrato);
+            } else if (nomeBanco.includes('santander')) {
+                const linhasExtrato = processarDadosDoExtratoBancoDoSantander(data);
                 mostrarExtratoPopup(linhasExtrato);
             } else {
                 console.error('Banco não identificado no PDF ou o banco selecionado não corresponde ao conteúdo.');
             }
-
         } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
             const data = new Uint8Array(await file.arrayBuffer());
             const workbook = XLSX.read(data, { type: 'array' });
@@ -1461,6 +1491,423 @@ async function processarExtrato() {
 }
 
 //funcoes auxiliares
+
+//santander
+function processarDadosDoExtratoBancoDoSantander(data) {
+    const extrato = [];
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+    const valueRegex = /-?\d+,\d{2}/;
+    const saldoRegex = /saldo\s*\(R\$\)/i;
+    const saldoAnteriorRegex = /Saldo anterior/i;
+
+    let linhaAtual = null;
+    let dentroDoIntervaloSaldo = false;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+
+        // Parar o processamento se encontrar "Saldo anterior"
+        if (text.match(saldoAnteriorRegex)) {
+            break;
+        }
+
+        // Iniciar a captura ao encontrar "Saldo (R$)"
+        if (text.match(saldoRegex)) {
+            dentroDoIntervaloSaldo = true;
+            continue;
+        }
+
+        if (dentroDoIntervaloSaldo) {
+            // Captura a data e inicia uma nova linha de extrato
+            if (text.match(dateRegex)) {
+                if (linhaAtual && linhaAtual.valor !== null) {
+                    extrato.push(linhaAtual);
+                }
+                linhaAtual = { data: text, descricao: '', valor: null, tipo: null };
+            }
+            // Captura o valor da transação e define o tipo (entrada ou saída)
+            else if (linhaAtual && text.match(valueRegex)) {
+                const valorStr = text.replace(/\./g, '').replace(',', '.');
+                const valor = parseFloat(valorStr);
+
+                // Verifica se o valor atual é o da transação ou do saldo
+                if (linhaAtual.valor === null) {
+                    linhaAtual.valor = formatarValorFinanceiro(Math.abs(valor));
+                    linhaAtual.tipo = valor < 0 ? 'saida' : 'entrada';
+                }
+                // Se já capturou um valor, ignora o saldo e armazena a transação
+                else {
+                    extrato.push(linhaAtual);
+                    linhaAtual = null;
+                }
+            }
+            // Ignora a linha de doc que contém somente números
+            else if (linhaAtual && /^\d+$/.test(text)) {
+                continue;
+            }
+            // Captura a descrição da transação
+            else if (linhaAtual) {
+                linhaAtual.descricao += ` ${text}`.trim();
+            }
+        }
+    }
+
+    if (linhaAtual && linhaAtual.valor !== null) {
+        extrato.push(linhaAtual);
+    }
+
+    return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+}
+
+//sicoob
+function processarDadosDoExtratoSicoob(data) {
+    const extrato = [];
+    const dateRegex = /\d{2}\/\d{2}/;
+    const valueRegex = /\d{1,3}(\.\d{3})*,\d{2}[DC]/;
+    const saldoDoDiaRegex = /SALDO DO DIA/i;
+    const saldoBloqAnteriorRegex = /SALDO BLOQ.ANTERIOR/i;
+
+    let linhaAtual = null;
+    let dentroDoExtrato = false;
+    let anoAtual = null; // Variável para armazenar o ano
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        // Captura o ano a partir do período
+        if (text === "PERÍODO:") {
+            const periodo = data[i + 1].match(/\d{2}\/\d{2}\/(\d{4})/);
+            if (periodo) {
+                anoAtual = periodo[1]; // Armazena o ano extraído
+            }
+            continue;
+        }
+
+        // Ignorar tudo até encontrar "SALDO DO DIA" pela primeira vez
+        if (text.match(saldoDoDiaRegex)) {
+            dentroDoExtrato = true;
+            continue;
+        }
+
+        // Se encontrar "SALDO BLOQ.ANTERIOR", parar o processamento
+        if (text.match(saldoBloqAnteriorRegex)) {
+            break;
+        }
+
+        if (dentroDoExtrato && anoAtual) { // Certifica-se de que o ano foi capturado
+            // Captura a data e inicia uma nova linha do extrato
+            if (text.match(dateRegex)) {
+                if (linhaAtual && linhaAtual.valor !== null) {
+                    extrato.push(linhaAtual);
+                }
+                linhaAtual = { data: `${text}/${anoAtual}`, descricao: '', valor: null, tipo: null };
+            }
+            // Captura o valor e define o tipo (entrada ou saída)
+            else if (linhaAtual && text.match(valueRegex)) {
+                const valorStr = text.replace(/[^\d,-]/g, '').replace(',', '.');
+                const valor = parseFloat(valorStr);
+                const tipo = text.endsWith('D') ? 'saida' : 'entrada';
+                linhaAtual.valor = formatarValorFinanceiro(valor);
+                linhaAtual.tipo = tipo;
+            }
+            // Captura a descrição da transação, ignorando espaços vazios, a 3ª parte e a última parte (doc)
+            else if (linhaAtual && !text.match(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/) && text !== '') {
+                if (linhaAtual.descricao) {
+                    linhaAtual.descricao += ` - ${text}`;
+                } else {
+                    linhaAtual.descricao = text;
+                }
+            }
+        }
+    }
+
+    // Adiciona a última linha do extrato se ela existir
+    if (linhaAtual && linhaAtual.valor !== null) {
+        extrato.push(linhaAtual);
+    }
+
+    console.log(extrato);
+
+    return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+}
+
+//stone
+function processarDadosDoExtratoStone(data) {
+    const extrato = [];
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+    const valueRegex = /-?\d{1,3}(\.\d{3})*,\d{2}/;
+    const startRegex = /contraparte/i;
+
+    let linhaAtual = null;
+    let dentroDoIntervalo = false;
+    let valorCapturado = false;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        // Iniciar a captura após encontrar "CONTRAPARTE"
+        if (text.match(startRegex)) {
+            dentroDoIntervalo = true;
+            continue;
+        }
+
+        if (dentroDoIntervalo) {
+            // Captura a data para iniciar uma nova linha de extrato
+            if (text.match(dateRegex)) {
+                if (linhaAtual && linhaAtual.valor !== null) {
+                    extrato.push(linhaAtual);
+                }
+                linhaAtual = { data: text, descricao: '', valor: null, tipo: null };
+                valorCapturado = false;
+            }
+            // Captura o valor da transação antes do saldo
+            else if (text.match(valueRegex) && linhaAtual && !valorCapturado) {
+                const valorStr = text.replace(/\./g, '').replace(',', '.');
+                const valor = parseFloat(valorStr);
+                linhaAtual.valor = formatarValorFinanceiro(Math.abs(valor));
+                linhaAtual.tipo = valor < 0 ? 'saida' : 'entrada';
+                valorCapturado = true;
+            }
+            // Ignora o saldo e campos específicos como "Parcela", "Transferência", etc.
+            else if (valorCapturado && text.match(valueRegex)) {
+                // Ignorar o valor de saldo e quaisquer outros valores depois
+                continue;
+            }
+            else if (linhaAtual && !text.match(/(Parcela|Transferência|Pix|Empréstimo)/i) && !text.match(dateRegex)) {
+                linhaAtual.descricao += ` ${text}`.trim();
+            }
+        }
+    }
+
+    // Adiciona a última linha se estiver completa
+    if (linhaAtual && linhaAtual.valor !== null) {
+        extrato.push(linhaAtual);
+    }
+
+    console.log(extrato);
+
+    return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+}
+
+//mercadopago
+function processarDadosDoExtratoMercadoPago1(data) {
+    const extrato = [];
+    const dateRegex = /\d{2}-\d{2}-\d{4}/;
+    const valueRegex = /^R\$\s*-?\d{1,3}(\.\d{3})*,\d{2}$/;
+    const saldoRegex = /saldo/i;
+
+    let linhaAtual = null;
+    let capturarValor = false;
+
+    function formatarData(data) {
+        return data.replace(/-/g, '/');
+    }
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        // Ignorar fragmentos como "1/4" ou espaços em branco isolados
+        if (text.match(/^\d{1,2}$/) || text === "/" || text === "") {
+            continue;
+        }
+
+        // Ignorar linhas até encontrar a palavra "Saldo"
+        if (text.match(saldoRegex)) {
+            capturarValor = false;
+            continue;
+        }
+
+        // Iniciar a captura de uma nova transação ao encontrar uma data
+        if (text.match(dateRegex)) {
+            if (linhaAtual && linhaAtual.valor !== null) {
+                extrato.push(linhaAtual);
+            }
+            linhaAtual = { data: formatarData(text), descricao: '', valor: null, tipo: null };
+            capturarValor = true;
+        } else if (text.match(valueRegex) && capturarValor) {
+            // Capturar o valor da transação e determinar o tipo (entrada/saida)
+            const valorStr = text.replace(/[^\d,-]/g, '').replace('.', '').replace(',', '.');
+            const valor = parseFloat(valorStr);
+            linhaAtual.valor = formatarValorFinanceiro(Math.abs(valor));
+            linhaAtual.tipo = valor < 0 ? 'saida' : 'entrada';
+            capturarValor = false;
+        } else if (linhaAtual && text.match(/^R\$/)) {
+            continue;
+        } else if (linhaAtual && text.match(/^\d+$/)) {
+            continue;
+        } else if (linhaAtual) {
+            linhaAtual.descricao += ` ${text}`.trim();
+        }
+    }
+
+    if (linhaAtual && linhaAtual.valor !== null) {
+        extrato.push(linhaAtual);
+    }
+
+    console.log(extrato);
+
+    return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+}
+function processarDadosDoExtratoMercadoPago2(data) {
+        const extrato = [];
+        const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+        const valueRegex = /-?\d+,\d{2}/;
+        const saldoRegex = /saldo/i;
+
+        let linhaAtual = null;
+        let dentroDoIntervaloSaldo = false;
+        let encontrouPrimeiroSaldo = false;
+
+        for (let i = 0; i < data.length; i++) {
+            const text = data[i];
+
+            if (text.match(saldoRegex)) {
+                if (encontrouPrimeiroSaldo) {
+                    dentroDoIntervaloSaldo = false;
+                    break;
+                } else {
+                    dentroDoIntervaloSaldo = true;
+                    encontrouPrimeiroSaldo = true;
+                }
+            }
+
+            if (dentroDoIntervaloSaldo) {
+                if (text.match(valueRegex)) {
+                    if (linhaAtual) {
+                        extrato.push(linhaAtual);
+                    }
+                    const valor = parseFloat(text.replace(/\./g, '').replace(',', '.'));
+                    const tipo = text.includes('(-)') ? 'saida' : 'entrada';
+                    linhaAtual = { valor: formatarValorFinanceiro(Math.abs(valor)), tipo, data: '', descricao: '' };
+                } else if (text.match(dateRegex) && linhaAtual) {
+                    linhaAtual.data = text;
+                } else if (linhaAtual) {
+                    linhaAtual.descricao += ` ${text}`.trim();
+                }
+            }
+        }
+
+        if (linhaAtual && dentroDoIntervaloSaldo) {
+            extrato.push(linhaAtual);
+        }
+
+        return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+    }
+
+
+//bradesco
+function processarDadosDoExtratoBradesco1(data) {
+    const extrato = [];
+    const saldoAnteriorRegex = /saldo anterior/i;
+    const dateRegex = /^\d{2}\/\d{2}\/\d{2}$/;
+    const valueRegex = /^-?\d+,\d{2}$/;
+
+    let descricoes = [];
+    let coletandoDescricoes = true;
+    let transacoes = [];
+    let descricaoIndex = 0;
+    let ignorarPrimeiraData = true;  // Flag para ignorar a primeira data
+
+    // Coleta as descrições primeiro (antes de "SALDO ANTERIOR")
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        if (text.match(saldoAnteriorRegex)) {
+            coletandoDescricoes = false;
+            continue;
+        }
+
+        if (coletandoDescricoes) {
+            descricoes.unshift(text); // Coletar as descrições em ordem reversa para corrigi-la
+        } else {
+            // A partir daqui, começa o processamento das transações após "SALDO ANTERIOR"
+            if (text.match(dateRegex)) {
+                // Ignora a primeira data que corresponde ao "SALDO ANTERIOR"
+                if (ignorarPrimeiraData) {
+                    ignorarPrimeiraData = false; // Desativa a flag após ignorar a primeira data
+                    continue;
+                }
+
+                // Nova transação detectada
+                transacoes.push({
+                    data: text,
+                    descricao: descricoes[descricaoIndex++] || '',
+                    valores: []
+                });
+            } else if (text.match(valueRegex)) {
+                // Captura os valores relevantes
+                if (transacoes.length > 0) {
+                    transacoes[transacoes.length - 1].valores.push(parseFloat(text.replace(/\./g, '').replace(',', '.')));
+                }
+            }
+        }
+    }
+
+    // Agora, montamos o extrato final, garantindo que apenas as transações com descrições válidas sejam incluídas
+    transacoes.forEach(transacao => {
+        const valores = transacao.valores;
+
+        valores.forEach(valor => {
+            extrato.push({
+                data: transacao.data,
+                descricao: transacao.descricao,
+                valor: formatarValorFinanceiro(valor),
+                tipo: valor < 0 ? 'saida' : 'entrada'
+            });
+        });
+    });
+
+    console.log(extrato);
+
+    return extrato.slice(0, descricoes.length);
+}
+function processarDadosDoExtratoBradesco2(data) {
+    const extrato = [];
+    console.log(extrato)
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+    const valueRegex = /-?\d+,\d{2}/;
+    const saldoRegex = /saldo/i;
+
+    let linhaAtual = null;
+    let dentroDoIntervaloSaldo = false;
+    let encontrouPrimeiroSaldo = false;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i];
+
+        if (text.match(saldoRegex)) {
+            if (encontrouPrimeiroSaldo) {
+                dentroDoIntervaloSaldo = false;
+                break;
+            } else {
+                dentroDoIntervaloSaldo = true;
+                encontrouPrimeiroSaldo = true;
+            }
+        }
+
+        if (dentroDoIntervaloSaldo) {
+            if (text.match(valueRegex)) {
+                if (linhaAtual) {
+                    extrato.push(linhaAtual);
+                }
+                const valor = parseFloat(text.replace(/\./g, '').replace(',', '.'));
+                const tipo = text.includes('(-)') ? 'saida' : 'entrada';
+                linhaAtual = { valor: formatarValorFinanceiro(Math.abs(valor)), tipo, data: '', descricao: '' };
+            } else if (text.match(dateRegex) && linhaAtual) {
+                linhaAtual.data = text;
+            } else if (linhaAtual) {
+                linhaAtual.descricao += ` ${text}`.trim();
+            }
+        }
+    }
+
+    if (linhaAtual && dentroDoIntervaloSaldo) {
+        extrato.push(linhaAtual);
+    }
+
+    return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+}
 
 //banco do brasil
 function processarDadosDoExtratoBancoDoBrasil(data) {
@@ -1513,32 +1960,32 @@ function processarDadosDoExtratoBancoDoBrasil2(data) {
     const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
     const valueRegex = /-?\d{1,3}(\.\d{3})*,\d{2} [CD]/;
     const saldoRegex = /saldo anterior/i;
-    const finalizacaoExtratoRegex = /S\s*A\s*L\s*D\s*O\s*-/i; // Regex para identificar "S A L D O-"
+    const finalizacaoExtratoRegex = /S A L D O/i;
 
     let dentroDoIntervaloSaldo = false;
-    let linhaAtual = null;
-
+    let linhaAtual = null
+    console.log(extrato)
     for (let i = 0; i < data.length; i++) {
         const text = data[i].trim();
 
-        // Verificação inicial para identificar se o processamento deve começar
+        if (text.match(finalizacaoExtratoRegex)) {
+            break;
+        }
+
         if (text.match(saldoRegex)) {
             dentroDoIntervaloSaldo = true;
             continue;
         }
 
-        // Verificação para identificar se deve parar o processamento
         if (dentroDoIntervaloSaldo && text.match(finalizacaoExtratoRegex)) {
             break;
         }
 
         if (dentroDoIntervaloSaldo) {
             if (text.match(dateRegex)) {
-                // Adiciona a linha anterior, se válida
                 if (linhaAtual && linhaAtual.data && linhaAtual.descricao && linhaAtual.valor) {
                     extrato.push(linhaAtual);
                 }
-                // Inicia uma nova linha
                 linhaAtual = {
                     data: text,
                     descricao: '',
@@ -1546,21 +1993,17 @@ function processarDadosDoExtratoBancoDoBrasil2(data) {
                     tipo: null
                 };
             } else if (text.match(valueRegex) && linhaAtual) {
-                // Verifica e adiciona o valor
                 const valorStr = text.slice(0, -2).replace(/\./g, '').replace(',', '.');
                 const tipo = text.endsWith('C') ? 'entrada' : 'saida';
-                linhaAtual.valor = formatarValorFinanceiro(parseFloat(valorStr)) ;
+                linhaAtual.valor = formatarValorFinanceiro(parseFloat(valorStr));
                 linhaAtual.tipo = tipo;
             } else if (linhaAtual && !text.match(/^\d+$/)) {
-                if (text.match(finalizacaoExtratoRegex)) {
-                    break;
-                }
                 linhaAtual.descricao += ` ${text}`.trim();
             }
         }
     }
 
-    if (linhaAtual && linhaAtual.data && linhaAtual.descricao && linhaAtual.valor && !linhaAtual.descricao.match(finalizacaoExtratoRegex)) {
+    if (linhaAtual && linhaAtual.data && linhaAtual.descricao && linhaAtual.valor) {
         extrato.push(linhaAtual);
     }
 
@@ -1612,6 +2055,79 @@ function processarDadosDoExtratoItau(data) {
 
     console.log(JSON.stringify(extrato, null, 2));
     return extrato;
+}
+function processarDadosDoExtratoItauPersonalite(data) {
+    const extrato = [];
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+    const valueRegex = /-?\d+,\d{2}/;
+    const saldoRegex = /saldo\s*\(R\$\)/i;
+    const saldoTotalDiaRegex = /SALDO TOTAL DISPONÍVEL DIA/i;
+    const saldoAnteriorRegex = /SALDO ANTERIOR/i;
+
+    let linhaAtual = null;
+    let dentroDoIntervaloSaldo = false;
+    let encontrouSaldoTotalDia = false;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        // Ignorar fragmentos e elementos indesejados
+        if (
+            text.match(/^\d{1,2}$/) ||
+            text === "/" ||
+            text === "" ||
+            text.includes('extrato-lancamentos') ||
+            text.includes('about:blank') ||
+            text.match(/^\d{2}\/\d{2}\/\d{2}, \d{2}:\d{2}$/)
+        ) {
+            continue;
+        }
+
+        // Iniciar a captura ao encontrar "saldo (R$)"
+        if (text.match(saldoRegex)) {
+            dentroDoIntervaloSaldo = true;
+            continue;
+        }
+
+        if (dentroDoIntervaloSaldo) {
+            // Se encontrar "SALDO TOTAL DISPONÍVEL DIA", marcar que encontrou mas continuar processando
+            if (text.match(saldoTotalDiaRegex)) {
+                encontrouSaldoTotalDia = true;
+                continue;
+            }
+
+            // Ignorar linhas com "SALDO ANTERIOR"
+            if (text.match(saldoAnteriorRegex)) {
+                linhaAtual = null;
+                continue;
+            }
+
+            // Captura a data e inicia uma nova linha de extrato
+            if (text.match(dateRegex)) {
+                if (linhaAtual && linhaAtual.valor !== null) {
+                    extrato.push(linhaAtual);
+                }
+                linhaAtual = { data: text, descricao: '', valor: null, tipo: null };
+            }
+            // Captura o valor e define o tipo (entrada ou saída)
+            else if (linhaAtual && text.match(valueRegex)) {
+                const valorStr = text.replace(/\./g, '').replace(',', '.');
+                const valor = parseFloat(valorStr);
+                linhaAtual.valor = formatarValorFinanceiro(Math.abs(valor));
+                linhaAtual.tipo = valor < 0 ? 'saida' : 'entrada';
+            }
+            // Captura a descrição da transação
+            else if (linhaAtual) {
+                linhaAtual.descricao += ` ${text}`.trim();
+            }
+        }
+    }
+
+    if (linhaAtual && linhaAtual.valor !== null) {
+        extrato.push(linhaAtual);
+    }
+
+    return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
 
 //caixa
@@ -1758,6 +2274,11 @@ function fecharExtratoPopup() {
 }
 
 function salvarAlteracoes() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.querySelector('.body-insercao').classList.add('blur-background');
+    document.querySelector('.popup-insercao-container').classList.add('blur-background');
+
+
     const tabelaExtrato = document.getElementById('extratoTable').querySelector('tbody');
     const linhas = tabelaExtrato.querySelectorAll('tr');
     const entradas = [];
@@ -1813,6 +2334,7 @@ function salvarAlteracoes() {
         })
         .then(data => {
             alert('Dados inseridos com sucesso!');
+            location.reload();
             fecharExtratoPopup();
         })
         .catch(error => {
@@ -1827,28 +2349,47 @@ document.getElementById('processarExtratoBtn').addEventListener('click', process
 function mostrarOpcoesInsercao() {
     var metodo = document.getElementById('metodoInsercao').value;
     var opcoesAutomatizado = document.getElementById('opcoesAutomatizado');
-    var excelFileInput = document.getElementById('excelFile');
+    var uploadArquivosDiv = document.querySelector('.uploadArquivos');
+    var uploadForm = document.getElementById('uploadForm');
+    var opcoesManual = document.getElementById('opcoesManual');
 
     if (metodo === 'automatizado') {
         opcoesAutomatizado.style.display = 'block';
+        opcoesManual.style.display = 'none';  // Esconder o formulário manual
+    } else if (metodo === 'manual') {
+        opcoesManual.style.display = 'block';  // Mostrar o formulário manual
+        opcoesAutomatizado.style.display = 'none';  // Esconder as opções automatizadas
+        uploadArquivosDiv.style.display = 'none';  // Esconder o upload de arquivos
+        uploadForm.style.display = 'none';  // Esconder o formulário de upload
     } else {
+        opcoesManual.style.display = 'none';
         opcoesAutomatizado.style.display = 'none';
-        excelFileInput.style.display = 'none'; // Esconde o campo de arquivo se método não for automatizado
+        uploadArquivosDiv.style.display = 'none';
+        uploadForm.style.display = 'none';
     }
 }
 
 function executarMetodoAutomatizado() {
     var metodoAutomatizado = document.getElementById('metodoAutomatizado').value;
+    var uploadArquivosDiv = document.querySelector('.uploadArquivos');
     var uploadForm = document.getElementById('uploadForm');
-    var excelFileInput = document.getElementById('excelFile');
 
     if (metodoAutomatizado === 'insercaoExcel') {
-        uploadForm.style.display = 'block'; // Exibe o formulário para upload de Excel
-        excelFileInput.click(); // Abre automaticamente o seletor de arquivos
+        uploadArquivosDiv.style.display = 'block';  // Mostrar a div de upload
+        uploadForm.style.display = 'block';  // Mostrar o formulário de upload dentro da div
+        document.getElementById('excelFile').click();
+    } else if (metodoAutomatizado === 'leituraAutomatica') {
+        uploadArquivosDiv.style.display = 'none';
+        uploadForm.style.display = 'none';
+        processarExtrato();
     } else {
-        uploadForm.style.display = 'none'; // Esconde o formulário caso outro método seja selecionado
+        uploadArquivosDiv.style.display = 'none';
+        uploadForm.style.display = 'none';
     }
 }
+
+
+
 
 document.getElementById('excelFile').addEventListener('change', function() {
     var fileLabel = document.getElementById('fileLabel');
@@ -1856,8 +2397,8 @@ document.getElementById('excelFile').addEventListener('change', function() {
 
     if (this.files && this.files[0]) {
         fileLabel.style.display = 'inline-block';
-        fileLabel.textContent = this.files[0].name; // Exibe o nome do arquivo selecionado
-        uploadProcessButton.style.display = 'inline-block'; // Exibe o botão "Upload e Processar"
+        fileLabel.textContent = this.files[0].name;
+        uploadProcessButton.style.display = 'inline-block';
     }
 });
 
