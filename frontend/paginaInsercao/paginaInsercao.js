@@ -1265,48 +1265,49 @@ document.addEventListener('DOMContentLoaded', function() {
 function confirmarEdicao(buttonElement) {
     const row = buttonElement.closest('tr');
     const cells = row.querySelectorAll('td');
-    const idExtrato = row.dataset.idextrato;
 
     const formatarData = (dataString) => {
         const [dia, mes, ano] = dataString.split('/');
         return `${ano}-${mes}-${dia}`;
     };
 
-    // Captura dos valores de entrada e saída
-    const entradaCell = cells[6].querySelector('input');
-    const saidaCell = cells[7].querySelector('input');
+    // Verifique se o campo fornecedor é um select ou um input e pegue o valor correto
+    let fornecedor;
+    const fornecedorCell = cells[5];
 
-    const entrada = entradaCell ? parseFloat(entradaCell.value.replace(/\./g, '').replace(',', '.')) : null;
-    const saida = saidaCell ? parseFloat(saidaCell.value.replace(/\./g, '').replace(',', '.')) : null;
-
-    // Determina o tipo de transação baseado nos valores de entrada e saída
-    let tipoTransacao = null;
-    if (entrada && saida) {
-        alert('Não é permitido ter valores tanto em Entrada quanto em Saída. Verifique e tente novamente.');
-        return;
-    } else if (entrada) {
-        tipoTransacao = 'ENTRADA';
-    } else if (saida) {
-        tipoTransacao = 'SAIDA';
+    if (fornecedorCell.querySelector('input')) {
+        fornecedor = fornecedorCell.querySelector('input').value || null;
+    } else if (fornecedorCell.querySelector('select')) {
+        fornecedor = fornecedorCell.querySelector('select').value || null;
+    } else {
+        fornecedor = null;
     }
 
-    const categoriaInput = cells[2].querySelector('select'); // Referência ao select de categoria
-    const categoria = categoriaInput ? categoriaInput.value : null;
+    // Verifica o valor nas colunas 6 e 7 para determinar o tipo e o valor
+    let tipo = null;
+    let valor = null;
+
+    if (cells[6].querySelector('input').value) {
+        tipo = 'ENTRADA';
+        valor = cells[6].querySelector('input').value || null;
+    } else if (cells[7].querySelector('input').value) {
+        tipo = 'SAIDA';
+        valor = cells[7].querySelector('input').value || null;
+    }
 
     const dadosEditados = {
-        id: idExtrato,
+        id: row.dataset.idextrato,
         data: cells[1].querySelector('input').value
             ? formatarData(cells[1].querySelector('input').value)
             : null,
-        categoria: categoria || null,
+        categoria: cells[2].querySelector('select').value || null,
         nome_no_extrato: cells[3].querySelector('input').value || null,
         descricao: cells[4].querySelector('input').value || null,
-        fornecedor: cells[5].querySelector('input').value || null,
-        tipo: tipoTransacao, // Definido baseado nos valores de entrada e saída
-        valor: entrada || saida // Valor é o de entrada ou saída, dependendo de qual foi preenchido
+        fornecedor: fornecedor,
+        tipo: tipo,
+        valor: valor
     };
 
-    // Enviar os dados editados para o servidor
     fetch('consulta/editar/extrato', {
         method: 'POST',
         headers: {
@@ -1316,7 +1317,6 @@ function confirmarEdicao(buttonElement) {
     })
         .then(response => {
             if (!response.ok) {
-                // Se a resposta não for ok, joga um erro para ser tratado no catch
                 throw new Error(`Erro no servidor: ${response.statusText}`);
             }
             return response.json();
@@ -1368,7 +1368,7 @@ function editarLinha(buttonElement) {
     cells.forEach((cell, index) => {
         if (index === 2) { // Coluna de categoria (index 2)
             const categoriaAtual = cell.textContent.trim();
-            const select = document.createElement('select');
+            const selectCategoria = document.createElement('select');
 
             fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
@@ -1376,20 +1376,60 @@ function editarLinha(buttonElement) {
                     const optionDefault = document.createElement('option');
                     optionDefault.value = '';
                     optionDefault.textContent = 'Selecione uma Rubrica';
-                    select.appendChild(optionDefault);
+                    selectCategoria.appendChild(optionDefault);
 
                     // Construir a árvore de categorias e adicionar ao dropdown
                     const categoriasTree = construirArvoreDeCategorias(categorias);
-                    adicionarCategoriasAoSelect(select, categoriasTree);
+                    adicionarCategoriasAoSelect(selectCategoria, categoriasTree);
 
                     // Definir a categoria atual como selecionada
-                    select.value = Object.keys(select.options).find(key => select.options[key].text === categoriaAtual) || '';
+                    const categoriaSelecionada = Array.from(selectCategoria.options).find(option => option.text === categoriaAtual);
+                    if (categoriaSelecionada) {
+                        categoriaSelecionada.selected = true;
+                    }
 
                     cell.innerHTML = '';
-                    cell.appendChild(select);
+                    cell.appendChild(selectCategoria);
                 })
                 .catch(error => {
                     console.error('Erro ao buscar categorias:', error);
+                });
+        } else if (index === 5) { // Coluna de fornecedor (index 5)
+            const fornecedorAtual = cell.textContent.trim();
+            const selectFornecedor = document.createElement('select');
+
+            // Aplique a classe específica e ajuste o estilo
+            selectFornecedor.classList.add('fornecedor-select');
+            selectFornecedor.name = 'fornecedor'; // Nome específico para o select
+
+            fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
+                .then(response => response.json())
+                .then(fornecedores => {
+                    // Adiciona a opção padrão
+                    const optionDefault = document.createElement('option');
+                    optionDefault.value = '';
+                    optionDefault.textContent = 'Selecione um Fornecedor';
+                    selectFornecedor.appendChild(optionDefault);
+
+                    // Popula o select com os fornecedores retornados
+                    fornecedores.forEach(fornecedor => {
+                        const option = document.createElement('option');
+                        option.value = fornecedor.IDFORNECEDOR;
+                        option.textContent = fornecedor.NOME_TIPO;
+                        selectFornecedor.appendChild(option);
+                    });
+
+                    // Definir o fornecedor atual como selecionado
+                    const fornecedorSelecionado = Array.from(selectFornecedor.options).find(option => option.text === fornecedorAtual);
+                    if (fornecedorSelecionado) {
+                        fornecedorSelecionado.selected = true;
+                    }
+
+                    cell.innerHTML = '';
+                    cell.appendChild(selectFornecedor);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar fornecedores:', error);
                 });
         } else if (index > 0 && index < 8) { // Torna as outras células editáveis
             const cellText = cell.textContent.trim();

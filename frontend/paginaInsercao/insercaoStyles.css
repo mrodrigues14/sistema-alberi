@@ -517,8 +517,14 @@ iframe {
 
 @keyframes blink-red-animation {
     from { background-color: #ffcccc; }
-    to { background-color: #ffe6e6; }
+    to { background-color: transparent; }
 }
+
+select.fornecedor-select {
+    z-index: 1000;
+    position: relative;
+}
+
 
 .popup-insercao-container {
     display: none;

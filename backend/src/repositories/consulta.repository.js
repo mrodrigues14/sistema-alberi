@@ -63,9 +63,9 @@ function extratoAEditar(id, callback) {
         });
 }
 
-function editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, valor, callback) {
-    mysqlConn.query(`UPDATE EXTRATO SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, NOME_NO_EXTRATO = ?, TIPO_DE_TRANSACAO = ?, VALOR = ? WHERE IDEXTRATO = ?`,
-        [data, categoria, descricao, nome_no_extrato, tipo, valor, id],
+function editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, callback) {
+    mysqlConn.query(`UPDATE EXTRATO SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, NOME_NO_EXTRATO = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?, ID_FORNECEDOR = ? WHERE IDEXTRATO = ?`,
+        [data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, id],
         function (err, result, fields) {
             if (err) {
                 callback(err, null);
@@ -74,6 +74,7 @@ function editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, va
             }
         });
 }
+
 
 function buscarSaldoInicial(idCliente, idBanco, data, callback) {
     const mesAno = data.slice(0, 7); // Extrai o mês e o ano no formato YYYY-MM
