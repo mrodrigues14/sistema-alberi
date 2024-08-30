@@ -83,19 +83,28 @@ function carregarFornecedores(idcliente) {
 
                 if (fornecedorSelecionado) {
                     document.getElementById('novoNomeFornecedor').value = fornecedorSelecionado.NOME_TIPO.split(' - ')[0];
-                    document.getElementById('novoTipoProduto').value = fornecedorSelecionado.NOME_TIPO.split(' - ')[1];
+                    document.getElementById('novoTipoProduto').value = fornecedorSelecionado.NOME_TIPO.split(' - ')[1] || '';
 
                     const novoSeletorDocumento = document.getElementById('novoSeletorDocumento');
+                    const cpfField = document.getElementById('novoCpf');
+                    const cnpjField = document.getElementById('novoCnpj');
+
                     if (fornecedorSelecionado.CPF) {
                         novoSeletorDocumento.value = 'CPF';
-                        document.getElementById('novoCpf').value = fornecedorSelecionado.CPF;
-                        document.getElementById('novoCpf').style.display = 'block';
-                        document.getElementById('novoCnpj').style.display = 'none';
-                    } else {
+                        cpfField.value = fornecedorSelecionado.CPF || '';
+                        cpfField.style.display = 'block';
+                        cnpjField.style.display = 'none';
+                    } else if (fornecedorSelecionado.CNPJ) {
                         novoSeletorDocumento.value = 'CNPJ';
-                        document.getElementById('novoCnpj').value = fornecedorSelecionado.CNPJ;
-                        document.getElementById('novoCpf').style.display = 'none';
-                        document.getElementById('novoCnpj').style.display = 'block';
+                        cnpjField.value = fornecedorSelecionado.CNPJ || '';
+                        cpfField.style.display = 'none';
+                        cnpjField.style.display = 'block';
+                    } else {
+                        // Se CPF e CNPJ forem nulos ou undefined
+                        cpfField.value = '';
+                        cnpjField.value = '';
+                        cpfField.style.display = 'block';
+                        cnpjField.style.display = 'none';
                     }
                 }
             });
@@ -132,14 +141,9 @@ function adicionarFornecedor(event) {
     })
         .then(response => {
             if (response.ok) {
-                return response.text();
-            } else {
-                throw new Error('Erro ao adicionar fornecedor');
+                alert('Fornecedor adicionado com sucesso!');
+                location.reload();
             }
-        })
-        .then(successMsg => {
-            alert(successMsg);
-            location.reload();
         })
         .catch(error => {
             console.error('Erro:', error);
@@ -170,3 +174,80 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
+
+function editarFornecedor() {
+    const fornecedorId = document.getElementById('selectEditFornecedor').value;
+    const nomeFornecedor = document.getElementById('novoNomeFornecedor').value;
+    const tipoDocumento = document.getElementById('novoSeletorDocumento').value;
+    const cpf = document.getElementById('novoCpf').value || null;
+    const cnpj = document.getElementById('novoCnpj').value || null;
+    const tipoProduto = document.getElementById('novoTipoProduto').value || null;
+
+    const dados = {
+        idFornecedor: fornecedorId,
+        nomeFornecedor,
+        cpf,
+        cnpj,
+        tipoProduto
+    };
+
+    fetch('/fornecedor/editar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dados)
+    })
+        .then(response => {
+            if (response.ok) {
+                // A resposta será redirecionada, então não capturamos o texto de sucesso aqui
+                window.location.href = '/fornecedor?successMsg=Fornecedor%20' + encodeURIComponent(nomeFornecedor) + '%20editado%20com%20sucesso!';
+            } else {
+                throw new Error('Erro ao editar fornecedor');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Ocorreu um erro ao editar o fornecedor.');
+        });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const params = new URLSearchParams(window.location.search);
+    const successMsg = params.get('successMsg');
+    if (successMsg) {
+        alert(successMsg);
+        history.pushState(null, '', window.location.pathname);  // Remove o parâmetro da URL
+    }
+});
+
+function removerFornecedor() {
+    const selectElement = document.getElementById('selectBanco');
+    const fornecedorId = selectElement.value;  // Pegando o valor do ID do fornecedor
+    const fornecedorNome = selectElement.options[selectElement.selectedIndex].text;
+
+    if (confirm('Tem certeza que deseja remover o fornecedor: ' + fornecedorNome + '?')) {
+        fetch('/fornecedor/remover', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ selectNomeEmpresa: fornecedorId, idcliente2: idcliente }) // Enviando o ID do fornecedor e o ID do cliente
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Fornecedor removido com sucesso!');
+                    location.reload(); // Atualiza a página para refletir a remoção
+                } else {
+                    throw new Error('Erro ao remover fornecedor');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Ocorreu um erro ao remover o fornecedor.');
+            });
+    } else {
+        console.log('Remoção cancelada pelo usuário.');
+    }
+}
+

@@ -6,7 +6,8 @@ const bodyParser = require('body-parser');
 const { inserir, buscarUltimasInsercoes, buscarBanco, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo,
     inserirSubdivisao,
     buscarLancamentosMesAnterior,
-    buscarSaldoMesAnterior
+    buscarSaldoMesAnterior,
+    verificarSaldoInicial
 } = require('../repositories/insercao.repository');
 
 // Configurar multer para upload de arquivos
@@ -197,6 +198,18 @@ router.get('/saldo-anterior', (req, res) => {
     });
 });
 
+router.get('/verificarSaldoInicial', (req, res) => {
+    const { cliente, banco, data } = req.query;
+
+    verificarSaldoInicial(cliente, banco, data, (err, saldo) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao verificar saldo inicial");
+        }
+
+        res.json({ saldo });
+    });
+});
 
 
 module.exports = router;

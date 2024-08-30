@@ -44,7 +44,7 @@ body {
 }
 
 .menu-item:hover {
-    background-color: #8BACAF;
+    background-color: #0f6d70;
 }
 
 .dropdown-content a:hover {
@@ -201,7 +201,7 @@ body {
 
 .navbar-all .dropbtn:hover,
 .navbar-all .dropbtn:focus {
-    background-color: #8BACAF;
+    background-color: #0f6d70;
 }
 
 /* Estilo para o fundo embaçado */

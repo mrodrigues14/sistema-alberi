@@ -191,5 +191,26 @@ function buscarSaldoMesAnterior(clienteId, mesAno, callback) {
 }
 
 
+function verificarSaldoInicial(clienteId, bancoId, data, callback) {
+    const query = `
+        SELECT SALDO 
+        FROM SALDO_INICIAL 
+        WHERE ID_CLIENTE = ? AND ID_BANCO = ? AND MES_ANO = ? 
+        LIMIT 1
+    `;
 
-module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior};
+    mysqlConn.query(query, [clienteId, bancoId, data], function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            if (result.length > 0) {
+                callback(null, result[0].SALDO);
+            } else {
+                callback(null, 0); // Retorna 0 se não existir saldo definido
+            }
+        }
+    });
+}
+
+
+module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior, verificarSaldoInicial};

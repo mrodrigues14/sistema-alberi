@@ -861,7 +861,7 @@ $(function() {
 
 function definirSaldoInicialProximoMes(saldoFinal) {
     const mesAnoAtual = $('#mesSelectorValue').val();
-    console.log(mesAnoAtual)
+    console.log(mesAnoAtual);
 
     const [mes, ano] = mesAnoAtual.split('-');
     let novoMes = parseInt(mes) + 1;
@@ -873,33 +873,53 @@ function definirSaldoInicialProximoMes(saldoFinal) {
     }
     const dataProximoMes = `${novoAno}-${String(novoMes).padStart(2, '0')}-01`;
 
-    console.log("Definindo saldo inicial para o próximo mês", dataProximoMes, "com saldo:", saldoFinal);
+    console.log("Verificando se o saldo inicial já está definido para", dataProximoMes);
 
-    fetch('/consulta/definirSaldoInicial', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            cliente: idEmpresa,
-            banco: document.getElementById('seletorBanco').value,
-            data: dataProximoMes,
-            saldo: saldoFinal.toFixed(2)
-        })
-    })
+    fetch(`/consulta/verificarSaldoInicial?cliente=${idEmpresa}&banco=${document.getElementById('seletorBanco').value}&data=${dataProximoMes}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error(`Erro ao salvar saldo inicial para o próximo mês: ${response.statusText}`);
+                throw new Error(`Erro ao verificar saldo inicial: ${response.statusText}`);
             }
             return response.json();
         })
         .then(data => {
-            console.log('Saldo inicial do próximo mês definido com sucesso:', data);
+            if (data.saldo > 0) {
+                console.log('Saldo inicial já definido para o próximo mês com valor maior que 0, nenhuma ação necessária.');
+            } else {
+                console.log("Definindo saldo inicial para o próximo mês", dataProximoMes, "com saldo:", saldoFinal);
+
+                fetch('/consulta/definirSaldoInicial', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cliente: idEmpresa,
+                        banco: document.getElementById('seletorBanco').value,
+                        data: dataProximoMes,
+                        saldo: saldoFinal.toFixed(2)
+                    })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Erro ao salvar saldo inicial para o próximo mês: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Saldo inicial do próximo mês definido com sucesso:', data);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao definir saldo inicial do próximo mês:', error);
+                    });
+            }
         })
         .catch(error => {
-            console.error('Erro ao definir saldo inicial do próximo mês:', error);
+            console.error('Erro ao verificar saldo inicial do próximo mês:', error);
         });
 }
+
+let todasLinhasSelecionadas = false;
 
 function selecionarLinha(buttonElement) {
     const idExtrato = buttonElement.getAttribute('data-idextrato');
@@ -914,6 +934,32 @@ function selecionarLinha(buttonElement) {
         linha.classList.add('linha-selecionada');
     }
 }
+
+function selecionarTodasLinhas() {
+    const linhas = document.querySelectorAll('#consulta tbody tr');
+
+    if (todasLinhasSelecionadas) {
+        linhas.forEach(linha => {
+            const idExtrato = linha.querySelector('button[data-idextrato]').getAttribute('data-idextrato');
+            const index = linhasSelecionadas.indexOf(idExtrato);
+            if (index > -1) {
+                linhasSelecionadas.splice(index, 1);
+            }
+            linha.classList.remove('linha-selecionada');
+        });
+        todasLinhasSelecionadas = false;
+    } else {
+        linhas.forEach(linha => {
+            const idExtrato = linha.querySelector('button[data-idextrato]').getAttribute('data-idextrato');
+            if (!linhasSelecionadas.includes(idExtrato)) {
+                linhasSelecionadas.push(idExtrato);
+            }
+            linha.classList.add('linha-selecionada');
+        });
+        todasLinhasSelecionadas = true;
+    }
+}
+
 
 
 function deletarSelecionados() {

@@ -36,7 +36,7 @@
 
     <section id="Editar-Fornecedor">
         <h1>Editar Fornecedor</h1>
-        <form id="formEdit" action="/fornecedor/editar" method="post">
+        <form id="formEdit">
             <div class="form-group">
                 <label for="selectEditFornecedor">Selecione o Fornecedor:</label>
                 <select id="selectEditFornecedor" name="idFornecedor" required></select>
@@ -60,20 +60,19 @@
                 <label for="novoTipoProduto">Novo Tipo de Produto:</label>
                 <input type="text" id="novoTipoProduto" name="tipoProduto">
             </div>
-            <button type="submit" class="btn-primary btn">Editar</button>
+            <button type="button" class="btn-primary btn" onclick="editarFornecedor()">Editar</button>
         </form>
     </section>
 
     <section id="RemoverConta">
         <h1>Remover Fornecedor</h1>
-        <form id="formRemove" action="/fornecedor/remover" method="post">
-            <div class="form-group">
-                <label for="selectBanco">Nome do fornecedor a ser removido:</label>
-                <select id="selectBanco" name="selectNomeEmpresa"></select>
-            </div>
-            <button type="submit" class="btn-danger btn">Remover</button>
-        </form>
+        <div class="form-group">
+            <label for="selectBanco">Nome do fornecedor a ser removido:</label>
+            <select id="selectBanco" name="selectNomeEmpresa"></select>
+        </div>
+        <button type="button" class="btn-danger btn" onclick="removerFornecedor()">Remover</button>
     </section>
+
 </main>
 <script src="/paginaAdicionarFornecedor/adicionarFornecedor.js"></script>
 </body>
