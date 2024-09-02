@@ -31,17 +31,28 @@ router.post('/login', (req, res) => {
                         }
 
                         if (isMatch) {
-                            req.session.username = user.NOME_DO_USUARIO;
-                            req.session.role = user.ROLE;
-                            req.session.idusuario = user.IDUSUARIOS;
-                            res.status(200).send({
-                                message: 'Login successful',
-                                user: {
-                                    username: user.NOME_DO_USUARIO,
-                                    role: user.ROLE,
-                                    idusuario: user.IDUSUARIOS
+                            db.query(
+                                'UPDATE USUARIOS SET ULTIMO_ACESSO = NOW() WHERE IDUSUARIOS = ?',
+                                [user.IDUSUARIOS],
+                                (err) => {
+                                    if (err) {
+                                        console.error('Erro ao atualizar ULTIMO_ACESSO:', err);
+                                        return res.status(500).send('Server error');
+                                    }
+
+                                    req.session.username = user.NOME_DO_USUARIO;
+                                    req.session.role = user.ROLE;
+                                    req.session.idusuario = user.IDUSUARIOS;
+                                    res.status(200).send({
+                                        message: 'Login successful',
+                                        user: {
+                                            username: user.NOME_DO_USUARIO,
+                                            role: user.ROLE,
+                                            idusuario: user.IDUSUARIOS
+                                        }
+                                    });
                                 }
-                            });
+                            );
                         } else {
                             res.status(401).send({ message: 'Usuário ou senha incorretos. Por favor, verifique suas credenciais de acesso.' });
                         }
@@ -55,6 +66,7 @@ router.post('/login', (req, res) => {
         return res.status(400).send({ message: 'Por favor, forneça um username e uma senha.' });
     }
 });
+
 
 router.get('/usuario-logado', (req, res) => {
     if (req.session && req.session.username) {

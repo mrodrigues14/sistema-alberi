@@ -38,7 +38,7 @@
 }
 
 .subnavbar button:hover {
-    background-color: #0f6d70;
+    background-color: #275396;
 }
 
 .dropdown-content-consulta {
@@ -160,7 +160,7 @@
 }
 
 #consulta thead {
-    background-color: #0f6d70;
+    background-color: #275396;
     color: #000000;
     font-family: 'DM Sans', sans-serif;
     font-weight: lighter;
@@ -201,7 +201,7 @@
 }
 
 .ui-datepicker-buttonpane .ui-datepicker-close:hover {
-    background-color: #0f6d70;
+    background-color: #275396;
     color: #fff;
 }
 
@@ -299,7 +299,7 @@ iframe {
 }
 
 #saldoinicial table thead {
-    background-color: #0f6d70;
+    background-color: #275396;
     color: #000000;
     font-family: 'DM Sans', sans-serif;
     font-weight: lighter;

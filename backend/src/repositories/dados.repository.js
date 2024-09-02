@@ -88,9 +88,9 @@ function editar(idcliente, idbanco, novoNome, novoTipo, callback) {
 
 
 function definirSaldoInicial(idcliente, idbanco, mesAno, saldo, callback) {
-    mysqlConn.query(`INSERT INTO SALDO_INICIAL (ID_CLIENTE, ID_BANCO, MES_ANO, SALDO) 
-                     VALUES (?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE SALDO = ?`,
+    mysqlConn.query(`INSERT INTO SALDO_INICIAL (ID_CLIENTE, ID_BANCO, MES_ANO, SALDO, DEFINIDO_MANUALMENTE) 
+                     VALUES (?, ?, ?, ?, true)
+                     ON DUPLICATE KEY UPDATE SALDO = ?, DEFINIDO_MANUALMENTE = true`,
         [idcliente, idbanco, mesAno, saldo, saldo],
         function(err, result) {
             if (err) {
@@ -99,5 +99,6 @@ function definirSaldoInicial(idcliente, idbanco, mesAno, saldo, callback) {
             callback(null, result);
         });
 }
+
 
 module.exports = { adicionar, buscar, remover, editar, definirSaldoInicial };

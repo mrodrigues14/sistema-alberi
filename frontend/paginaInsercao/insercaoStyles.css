@@ -38,7 +38,7 @@
 }
 
 .subnavbar button:hover {
-    background-color: #0f6d70;
+    background-color: #275396;
 }
 
 .dropdown-content-insercao {
@@ -110,7 +110,7 @@
 }
 
 .tabela table thead{
-    background-color: #0f6d70;
+    background-color: #275396;
     color: #000000;
     font-family: 'DM Sans', sans-serif;
     font-weight: lighter;
@@ -194,7 +194,7 @@ input[type="submit"] {
 }
 
 #ultimasInsercoes thead {
-    background-color: #0f6d70;
+    background-color: #275396;
     color: #000000;
     font-family: 'DM Sans', sans-serif;
     font-weight: lighter;
@@ -238,11 +238,11 @@ input[type="submit"] {
 }
 
 #categoriasButton:hover {
-    background-color: #0f6d70;
+    background-color: #275396;
 }
 
 #dateButton:hover {
-    background-color: #0f6d70;
+    background-color: #275396;
 }
 
 .popup {
@@ -444,7 +444,7 @@ iframe {
 }
 
 #abrirSaldoPopup {
-    background-color: #0f6d70;
+    background-color: #275396;
     margin-top: 10px;
     padding: 8px 16px;
     cursor: pointer;
@@ -512,13 +512,10 @@ iframe {
 }
 
 .blink-red {
-    animation: blink-red-animation 1s infinite alternate;
+    background-color: #fdd1d1;
 }
 
-@keyframes blink-red-animation {
-    from { background-color: #ffcccc; }
-    to { background-color: transparent; }
-}
+
 
 select.fornecedor-select {
     z-index: 1000;
@@ -556,7 +553,7 @@ select.fornecedor-select {
 }
 
 .popup-insercao-table-header {
-    background-color: #0f6d70;
+    background-color: #275396;
     color: white;
     padding: 10px;
     text-align: left;
@@ -670,11 +667,11 @@ select.fornecedor-select {
     margin: 10px;
 }
 .mes-button.active {
-    background-color: #0f6d70;
+    background-color: #275396;
 }
 
 .arrow-button {
-    background-color: #0f6d70;
+    background-color: #275396;
     color: black;
     border: none;
     padding: 10px;
@@ -697,4 +694,181 @@ select.fornecedor-select {
 .linha-selecionada td {
     border-left: 4px solid #00796b; /* Borda esquerda destacada */
 }
+
+.popup-confirmacao-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    width: 300px;
+    max-width: 90%; /* Responsividade */
+    text-align: center;
+}
+
+.popup-confirmacao-content h3 {
+    margin-bottom: 20px;
+    font-size: 18px;
+    word-wrap: break-word; /* Responsividade do texto */
+}
+
+.popup-confirmacao-buttons {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap; /* Para botões não ultrapassarem a largura em telas pequenas */
+}
+
+.popup-confirmacao-buttons button {
+    flex: 1 1 45%; /* Flexibilidade para responsividade */
+    margin: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.popup-confirmacao-buttons button:hover {
+    background-color: #45a049;
+}
+
+
+.popup-container {
+    position: fixed;
+    top: 40%; /* Mantém o top que você definiu */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    width: 90%; /* Mantém a largura que você definiu */
+    max-width: 100%; /* Garante que não exceda a largura da tela */
+    text-align: center;
+}
+
+.popup-content-subextrato {
+    text-align: center;
+}
+
+.popup-content-subextrato h3 {
+    margin-bottom: 20px;
+    font-size: 18px;
+    word-wrap: break-word; /* Responsividade do texto */
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    background: none;
+    border: none;
+    color: #333;
+}
+
+.close-btn:hover {
+    color: #f00;
+}
+
+/* Configurações gerais para tabelas */
+.tabela table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Garante que as colunas sejam redimensionáveis */
+}
+
+.tabela th, .tabela td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+/* Configurações responsivas */
+@media (max-width: 768px) {
+    .tabela table, .tabela thead, .tabela tbody, .tabela th, .tabela td, .tabela tr {
+        display: block;
+        width: 100%;
+    }
+
+    .tabela thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    .tabela tr {
+        margin: 0 0 1rem 0;
+    }
+
+    .tabela td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+    }
+
+    .tabela td:before {
+        position: absolute;
+        top: 50%;
+        left: 15px;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        font-weight: bold;
+    }
+
+    .tabela td:nth-of-type(1):before { content: "Data"; }
+    .tabela td:nth-of-type(2):before { content: "Rubrica"; }
+    .tabela td:nth-of-type(3):before { content: "Fornecedor"; }
+    .tabela td:nth-of-type(4):before { content: "Observação"; }
+    .tabela td:nth-of-type(5):before { content: "Descrição"; }
+    .tabela td:nth-of-type(6):before { content: "Entrada"; }
+    .tabela td:nth-of-type(7):before { content: "Saída"; }
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.editavel {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .editavel {
+        font-size: 12px;
+        padding: 6px;
+    }
+}
+#subextrato-adicionados {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.subextrato-item {
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: #e7f7e7;
+    border: 1px solid #c6ecc6;
+    border-radius: 3px;
+}
+
 

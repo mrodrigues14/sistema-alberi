@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', async function() {
     try {
         await loadTemplateAndStyles();
+        // Adicionar o listener global após carregar o template e os estilos
+        addGlobalClickListener();
     } catch (error) {
         console.error('Erro ao carregar o template:', error);
     }
@@ -48,4 +50,13 @@ function applyCSS(cssData) {
 
 function applyHTML(htmlData) {
     document.getElementById('menu-container').innerHTML = htmlData;
+}
+
+// Função para adicionar um listener global que detecta cliques e exibe um aviso de banco de dados offline
+function addGlobalClickListener() {
+    document.addEventListener('click', function() {
+        alert('Banco de dados: EXTRATO RUBRICAS E CHAMADOS offline. Você será desconectado.');
+        // Redireciona para a página de logout
+        window.location.href = '/';
+    });
 }

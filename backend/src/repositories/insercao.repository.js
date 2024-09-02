@@ -193,7 +193,7 @@ function buscarSaldoMesAnterior(clienteId, mesAno, callback) {
 
 function verificarSaldoInicial(clienteId, bancoId, data, callback) {
     const query = `
-        SELECT SALDO 
+        SELECT DEFINIDO_MANUALMENTE 
         FROM SALDO_INICIAL 
         WHERE ID_CLIENTE = ? AND ID_BANCO = ? AND MES_ANO = ? 
         LIMIT 1
@@ -204,13 +204,33 @@ function verificarSaldoInicial(clienteId, bancoId, data, callback) {
             callback(err, null);
         } else {
             if (result.length > 0) {
-                callback(null, result[0].SALDO);
+                callback(null, result[0].DEFINIDO_MANUALMENTE);
             } else {
-                callback(null, 0); // Retorna 0 se não existir saldo definido
+                callback(null, false);
             }
         }
     });
 }
 
+function inserirSubextrato(idExtratoPrincipal, data, categoria, descricao, observacao, fornecedor, valorEntrada, valorSaida, callback) {
+    const query = `
+        INSERT INTO SUBEXTRATO (ID_EXTRATO_PRINCIPAL, DATA, CATEGORIA, DESCRICAO, OBSERVACAO, ID_FORNECEDOR, TIPO_DE_TRANSACAO, VALOR) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const tipoTransacao = valorEntrada ? 'ENTRADA' : 'SAIDA';
+    const valor = valorEntrada ? valorEntrada : valorSaida;
 
-module.exports = { inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior, verificarSaldoInicial};
+    mysqlConn.query(query, [idExtratoPrincipal, data, categoria, descricao, observacao, fornecedor, tipoTransacao, valor], (err, result) => {
+        if (err) {
+            console.error(`Erro ao inserir subextrato: ${err.message}`);
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+
+
+
+module.exports = { inserirSubextrato, inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior, verificarSaldoInicial};

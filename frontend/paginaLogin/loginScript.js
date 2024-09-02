@@ -1,6 +1,17 @@
 document.addEventListener('DOMContentLoaded', function () {
     clearLocalStorageOnFirstLoad();
     clearCacheOnFirstLoad();
+    fetch('/api/usuario-logado')
+        .then(response => {
+            if (response.sentotatus === 200) {
+                return response.json();
+            } else {
+                throw new Error('Usuário não logado');
+            }
+        })
+        .then(data => {
+            window.location.href = '/paginaInicial';
+        })
 
     const loginForm = document.getElementById('loginForm');
     const forgotPasswordLink = document.getElementById('forgotPasswordLink');
@@ -23,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
         let username = document.querySelector('input[name="username"]').value;
         const password = passwordField.value;
 
-        // Remover pontos, traços e barras do CPF/CNPJ
         username = username.replace(/[.\-\/]/g, '');
 
         fetch('/api/login', {
@@ -193,7 +203,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function clearCacheAndCookies() {
-        // Clear all cookies
         document.cookie.split(";").forEach(function (c) {
             document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
         });

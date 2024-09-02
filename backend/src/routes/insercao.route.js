@@ -7,7 +7,8 @@ const { inserir, buscarUltimasInsercoes, buscarBanco, buscarIDEmpresa, buscarCat
     inserirSubdivisao,
     buscarLancamentosMesAnterior,
     buscarSaldoMesAnterior,
-    verificarSaldoInicial
+    verificarSaldoInicial,
+    inserirSubextrato
 } = require('../repositories/insercao.repository');
 
 // Configurar multer para upload de arquivos
@@ -201,15 +202,35 @@ router.get('/saldo-anterior', (req, res) => {
 router.get('/verificarSaldoInicial', (req, res) => {
     const { cliente, banco, data } = req.query;
 
-    verificarSaldoInicial(cliente, banco, data, (err, saldo) => {
+    verificarSaldoInicial(cliente, banco, data, (err, definidoManual) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao verificar saldo inicial");
         }
 
-        res.json({ saldo });
+        res.json({ definidoManual });
     });
 });
+
+router.post('/inserir-subextrato', async (req, res) => {
+    try {
+        const { Data, categoria, descricao, observacao, valorEn, valorSa, id_extrato_principal, fornecedor } = req.body;
+
+        await inserirSubextrato(id_extrato_principal, Data, categoria, descricao, observacao, fornecedor, valorEn, valorSa, (err, result) => {
+            if (err) {
+                console.error("Erro ao inserir subextrato:", err);
+                return res.status(500).send("Erro ao inserir subextrato");
+            }
+            res.status(201).json({ message: "Subextrato inserido com sucesso", result });
+        });
+    } catch (error) {
+        console.error("Erro durante a inserção do subextrato:", error);
+        res.status(500).send("Erro ao inserir subextrato");
+    }
+});
+
+
+
 
 
 module.exports = router;

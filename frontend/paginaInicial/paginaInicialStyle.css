@@ -8,12 +8,12 @@ body, html {
 .container {
     display: flex;
     height: 100vh;
-    background-color: #0f6d70; /* cor de fundo */
+    background-color: #275396; /* cor de fundo */
 }
 
 .sidebar {
     width: 20%;
-    background-color: #0f6d70; /* cor de fundo da barra lateral */
+    background-color: #275396; /* cor de fundo da barra lateral */
     display: flex;
     align-items: center;
     justify-content: center;
