@@ -7,13 +7,13 @@ body, html {
 
 .container {
     display: flex;
-    height: 100vh;
-    background-color: #275396; /* cor de fundo */
+    height: 90vh;
+    background-color: #2d3692; /* cor de fundo */
 }
 
 .sidebar {
     width: 20%;
-    background-color: #275396; /* cor de fundo da barra lateral */
+    background-color: #2d3692; /* cor de fundo da barra lateral */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -53,9 +53,9 @@ body, html {
 }
 
 .logo img {
-    max-width: 200px; /* ajuste conforme necessário */
     display: block;
     margin: 0 auto;
+    width: 50%;
 }
 
 .news-section {
@@ -71,9 +71,8 @@ body, html {
 }
 
 .news-section h2 {
-    margin: 0;
     font-size: 24px;
-    margin-bottom: 20px;
+    margin: 0 0 20px;
 }
 
 .news-section img {
@@ -98,7 +97,7 @@ body, html {
     }
 
     .logo img {
-        max-width: 150px;
+        max-width: 50px;
     }
 
     .news-section {

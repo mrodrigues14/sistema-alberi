@@ -8,8 +8,12 @@
 </head>
 <body class="custom-interface">
 <div class="navbar-all">
+    <div class="navbar-left">
+        <a href="/paginaInicial">
+            <img src="/templateMenu/imagens/icone_imagem.png" alt="Ícone" style="height: 80px; margin-right: 10px;">
+        </a>
+    </div>
     <nav role="navigation">
-        <button class="hamburger-menu" onclick="toggleMenu()">☰</button>
         <ul id="menu" class="menu-inline">
             <li id="tarefas">
                 <a href="/tarefas"><button class="menu-item">Tarefas</button></a>
@@ -66,7 +70,7 @@
     <div>
         <ul class="menu-inline">
             <li>
-                <button onclick="toggleUserDropdown()" class="dropbtn usernameDisplay menu-item" style="border: 2px solid #ccc; padding: 15px; background-color: #275396;"></button>
+                <button onclick="toggleUserDropdown()" class="dropbtn usernameDisplay menu-item" style="border: 2px solid #ccc; padding: 15px; background-color: #2d3692;"></button>
                 <div id="userDropdown" class="dropdown-content">
                     <a href="#!" onclick="showCalendarModal()">Agenda</a>
                     <a href="#!" onclick="logout()">Sair</a>

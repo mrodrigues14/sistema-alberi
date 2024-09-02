@@ -8,7 +8,7 @@ body {
     justify-content: center;
     align-items: center;
     text-align: center;
-    background-color: #115C5E;
+    background-color:   #2d3692;
 ;
 }
 
@@ -19,7 +19,7 @@ body {
     align-items: center;
     width: 50%;
     height: 100%;
-    background-color: #115C5E;;
+    background-color:   #2d3692;;
     padding: 2rem;
     margin-top: -15rem;
     box-sizing: border-box;
@@ -95,14 +95,14 @@ body {
     align-items: center;
     width: 70%;
     height: 100%;
-    background-color: #115C5E;
+    background-color: #2d3692;
 }
 
 .login img {
-    max-width: 100%;
+    max-width: 85%;
     height: auto;
-    margin-bottom: 8%;
-    margin-top: 5%;
+    margin-bottom: -25%;
+    margin-top: -24%;
 }
 
 /* Media Query para dispositivos móveis */

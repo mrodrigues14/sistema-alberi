@@ -53,10 +53,10 @@ function applyHTML(htmlData) {
 }
 
 // Função para adicionar um listener global que detecta cliques e exibe um aviso de banco de dados offline
-function addGlobalClickListener() {
+/*function addGlobalClickListener() {
     document.addEventListener('click', function() {
         alert('Banco de dados: EXTRATO RUBRICAS E CHAMADOS offline. Você será desconectado.');
         // Redireciona para a página de logout
         window.location.href = '/';
     });
-}
+}*/
