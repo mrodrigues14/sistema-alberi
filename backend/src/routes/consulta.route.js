@@ -7,7 +7,7 @@ router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaConsulta/paginaConsulta.html'));
 });
 
-router.get('/editar/extrato', (req, res) => {
+router.get('/editar/extratoLink', (req, res) => {
     const { id } = req.query;
     extratoAEditar(id, (err, result) => {
         if (err) {

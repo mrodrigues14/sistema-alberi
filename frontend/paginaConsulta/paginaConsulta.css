@@ -38,7 +38,7 @@
 }
 
 .subnavbar button:hover {
-    background-color: #275396;
+    background-color: #2d3692;
 }
 
 .dropdown-content-consulta {
@@ -160,8 +160,8 @@
 }
 
 #consulta thead {
-    background-color: #275396;
-    color: #000000;
+    background-color: #2d3692;
+    color: #FFF;
     font-family: 'DM Sans', sans-serif;
     font-weight: lighter;
 }
@@ -201,7 +201,7 @@
 }
 
 .ui-datepicker-buttonpane .ui-datepicker-close:hover {
-    background-color: #275396;
+    background-color: #2d3692;
     color: #fff;
 }
 
@@ -294,13 +294,9 @@ iframe {
     box-sizing: border-box;
 }
 
-#saldoinicial table{
-
-}
-
 #saldoinicial table thead {
-    background-color: #275396;
-    color: #000000;
+    background-color: #2d3692;
+    color: #FFF;
     font-family: 'DM Sans', sans-serif;
     font-weight: lighter;
 }
@@ -322,9 +318,18 @@ iframe {
 }
 
 #saldoInicialTable{
+    border-collapse: separate; /* necessário para o border-radius funcionar em tabelas */
+    border-spacing: 0;
     border-radius: 5px;
+    overflow: hidden;
+    margin-right: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 #saldoFinalTable{
+    border-collapse: separate; /* necessário para o border-radius funcionar em tabelas */
+    border-spacing: 0;
     border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }

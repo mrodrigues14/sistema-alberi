@@ -38,7 +38,7 @@
 }
 
 .subnavbar button:hover {
-    background-color: #275396;
+    background-color: #2d3692;
 }
 
 .dropdown-content-insercao {
@@ -110,7 +110,7 @@
 }
 
 .tabela table thead{
-    background-color: #275396;
+    background-color: #2d3692;
     color: #000000;
     font-family: 'DM Sans', sans-serif;
     font-weight: lighter;
@@ -194,7 +194,7 @@ input[type="submit"] {
 }
 
 #ultimasInsercoes thead {
-    background-color: #275396;
+    background-color: #2d3692;
     color: #000000;
     font-family: 'DM Sans', sans-serif;
     font-weight: lighter;
@@ -238,11 +238,11 @@ input[type="submit"] {
 }
 
 #categoriasButton:hover {
-    background-color: #275396;
+    background-color: #2d3692;
 }
 
 #dateButton:hover {
-    background-color: #275396;
+    background-color: #2d3692;
 }
 
 .popup {
@@ -444,7 +444,7 @@ iframe {
 }
 
 #abrirSaldoPopup {
-    background-color: #275396;
+    background-color: #2d3692;
     margin-top: 10px;
     padding: 8px 16px;
     cursor: pointer;
@@ -553,7 +553,7 @@ select.fornecedor-select {
 }
 
 .popup-insercao-table-header {
-    background-color: #275396;
+    background-color: #2d3692;
     color: white;
     padding: 10px;
     text-align: left;
@@ -667,16 +667,19 @@ select.fornecedor-select {
     margin: 10px;
 }
 .mes-button.active {
-    background-color: #275396;
+    background-color: #2d3692;
+    color: white;
 }
 
 .arrow-button {
-    background-color: #275396;
+    background-color: #2d3692;
     color: black;
     border: none;
     padding: 10px;
     cursor: pointer;
     border-radius: 4px;
+    color: white;
+
 }
 
 .ui-datepicker {
@@ -871,4 +874,87 @@ select.fornecedor-select {
     border-radius: 3px;
 }
 
+.dropbtn-extrato-opcoes {
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
 
+.dropdown-extrato-opcoes {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content-extrato-opcoes {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 5px;
+    padding: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.dropdown-content-extrato-opcoes button {
+    background-color: transparent;
+    border: none;
+    color: black;
+    padding: 10px;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+}
+
+.dropdown-extrato-opcoes:hover .dropdown-content-extrato-opcoes {
+    display: block;
+}
+
+.dropdown-content-extrato-opcoes button:hover {
+    background-color: #f1f1f1;
+}
+
+.popup-overlay-resgate-investimento {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content-resgate-investimento {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+}
+
+.popup-content-resgate-investimento h2 {
+    margin-top: 0;
+}
+
+.popup-content-resgate-investimento button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.subextrato-row {
+    background-color: #f9f9f9; /* Cor de fundo diferenciada */
+    font-style: italic; /* Texto em itálico para subextratos */
+}

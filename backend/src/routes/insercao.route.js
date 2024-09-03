@@ -8,7 +8,8 @@ const { inserir, buscarUltimasInsercoes, buscarBanco, buscarIDEmpresa, buscarCat
     buscarLancamentosMesAnterior,
     buscarSaldoMesAnterior,
     verificarSaldoInicial,
-    inserirSubextrato
+    inserirSubextrato,
+    buscarSubextratos
 } = require('../repositories/insercao.repository');
 
 // Configurar multer para upload de arquivos
@@ -229,6 +230,18 @@ router.post('/inserir-subextrato', async (req, res) => {
     }
 });
 
+router.get('/subextratos', (req, res) => {
+    const { idExtrato } = req.query;
+
+    buscarSubextratos(idExtrato, (err, result) => {
+        if (err) {
+            console.error("Erro ao buscar subextratos:", err);
+            return res.status(500).send("Erro ao buscar subextratos");
+        }
+
+        res.json(result);
+    });
+});
 
 
 

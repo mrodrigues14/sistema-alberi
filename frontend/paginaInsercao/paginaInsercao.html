@@ -192,7 +192,6 @@
         </tr>
         </thead>
         <tbody>
-        <!-- As linhas do extrato serão inseridas aqui dinamicamente -->
         </tbody>
     </table>
     <div class="popup-insercao-buttons">
@@ -200,6 +199,22 @@
         <button class="popup-insercao-button" onclick="fecharExtratoPopup()">Fechar</button>
     </div>
 </div>
+
+<div id="popup-resgate-investimento" class="popup-overlay-resgate-investimento">
+    <div class="popup-content-resgate-investimento">
+        <h2>Detalhes da Transação</h2>
+        <p>Selecione o banco para onde será inserido o extrato:</p>
+
+        <select id="banco-select-resgate-investimento" style="width: 100%;">
+            <option value="">Selecione um Banco</option>
+        </select>
+
+        <button onclick="confirmarInsercaoBanco()">Confirmar</button>
+        <button onclick="fecharPopupResgateInvestimento()">Fechar</button>
+    </div>
+</div>
+
+
 
 
 <script src="/paginaInsercao/paginaInsercao.js"></script>

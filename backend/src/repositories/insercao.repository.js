@@ -99,23 +99,37 @@ function buscarCategorias(IDCLIENTE, callback) {
 }
 
 function deletarExtrato(idExtrato, callback) {
-    let query;
+    let queryDeleteSubextrato;
+    let queryDeleteExtrato;
     let params;
 
     if (Array.isArray(idExtrato) && idExtrato.length > 0) {
         const placeholders = idExtrato.map(() => '?').join(', ');
-        query = `DELETE FROM EXTRATO WHERE IDEXTRATO IN (${placeholders})`;
+
+        queryDeleteSubextrato = `DELETE FROM SUBEXTRATO WHERE ID_EXTRATO_PRINCIPAL IN (${placeholders})`;
+
+        queryDeleteExtrato = `DELETE FROM EXTRATO WHERE IDEXTRATO IN (${placeholders})`;
+
         params = idExtrato;
     } else {
-        query = `DELETE FROM EXTRATO WHERE IDEXTRATO = ?`;
+        queryDeleteSubextrato = `DELETE FROM SUBEXTRATO WHERE ID_EXTRATO_PRINCIPAL = ?`;
+
+        queryDeleteExtrato = `DELETE FROM EXTRATO WHERE IDEXTRATO = ?`;
+
         params = [idExtrato];
     }
 
-    mysqlConn.query(query, params, function(err, result) {
+    mysqlConn.query(queryDeleteSubextrato, params, function(err, result) {
         if (err) {
             callback(err, null);
         } else {
-            callback(null, result);
+            mysqlConn.query(queryDeleteExtrato, params, function(err, result) {
+                if (err) {
+                    callback(err, null);
+                } else {
+                    callback(null, result);
+                }
+            });
         }
     });
 }
@@ -230,7 +244,23 @@ function inserirSubextrato(idExtratoPrincipal, data, categoria, descricao, obser
     });
 }
 
+function buscarSubextratos(idExtratoPrincipal, callback) {
+    const query = `
+        SELECT ID_SUBEXTRATO, DATA, CATEGORIA, DESCRICAO, OBSERVACAO, TIPO_DE_TRANSACAO, VALOR 
+        FROM SUBEXTRATO 
+        WHERE ID_EXTRATO_PRINCIPAL = ?
+    `;
+
+    mysqlConn.query(query, [idExtratoPrincipal], function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
 
 
 
-module.exports = { inserirSubextrato, inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior, verificarSaldoInicial};
+
+module.exports = {buscarSubextratos, inserirSubextrato, inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior, verificarSaldoInicial};

@@ -26,7 +26,7 @@ body {
 
 .navbar-all .menu-inline li {
     position: relative;
-    margin: 0 15px;
+    margin: 0 12px;
 }
 
 .navbar-all .menu-item {
@@ -45,6 +45,7 @@ body {
 
 .menu-item:hover {
     background-color: #2d3692;
+    color: #fff;
 }
 
 .dropdown-content a:hover {

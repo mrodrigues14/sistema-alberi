@@ -37,6 +37,9 @@ body {
     font-size: 25px;
     margin-bottom: 10vh;
 }
+.login-container{
+    z-index: 9999;
+}
 
 .login-container form {
     width: 100%;
