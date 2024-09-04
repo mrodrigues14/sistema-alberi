@@ -2274,17 +2274,30 @@ function processarDadosDoExcelTemplate(jsonData) {
         if (isEmptyRow) {
             return null;
         }
-        const dataFormatada = row[0] ? excelDateToJSDate(row[0]) : '';
-        const valorEntrada = row[5] !== undefined && row[5] !== null && row[5] !== '' ? formatarValorFinanceiro(row[5]) : '';
-        const valorSaida = row[6] !== undefined && row[6] !== null && row[6] !== '' ? formatarValorFinanceiro(row[6]) : '';
+
+        // Formatar os campos conforme a estrutura do Excel
+        const dataFormatada = row[0] ? excelDateToJSDate(row[0]) : '';  // Data
+        const categoria = row[1] || '';  // Categoria
+        const fornecedor = row[2] || '';  // Fornecedor
+        const descricao = row[3] || '';  // Descrição
+        const nome = row[4] || '';  // Nome
+        const rubricaContabil = row[5] || '';  // Rubrica Contábil
+
+        // Verificar se o valor é de entrada ou saída
+        const valorEntrada = row[6] !== undefined && row[6] !== null && row[6] !== '' ? formatarValorFinanceiro(row[6]) : '';
+        const valorSaida = row[7] !== undefined && row[7] !== null && row[7] !== '' ? formatarValorFinanceiro(row[7]) : '';
+
+        // Determinar se a linha é de entrada ou saída
+        const tipo = valorEntrada ? 'entrada' : (valorSaida ? 'saida' : '');
 
         return {
             data: dataFormatada,
-            rubrica: row[1] || '',
-            descricao: row[2] || '',
-            nome: row[3] || '',
-            fornecedor: row[4] || '',
-            tipo: valorEntrada ? 'entrada' : (valorSaida ? 'saida' : ''),
+            categoria: categoria,
+            fornecedor: fornecedor,
+            descricao: descricao,
+            nome: nome,
+            rubricaContabil: rubricaContabil,
+            tipo: tipo,
             valor: valorEntrada || valorSaida || ''
         };
     }).filter(row => row !== null);
@@ -2304,6 +2317,26 @@ function mostrarExtratoPopup(extrato) {
         const row = document.createElement('tr');
         row.dataset.index = index;
 
+        // Função para remover acentos e normalizar letras maiúsculas/minúsculas
+        function normalizarTexto(texto) {
+            if (typeof texto !== 'string') return '';  // Verifica se o texto é string, senão retorna string vazia
+            return texto
+                .normalize("NFD") // Normaliza acentos
+                .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+                .toLowerCase(); // Converte para minúsculas
+        }
+
+        // Função para verificar se o valor está presente nas opções do select, ignorando acentos e maiúsculas/minúsculas
+        function verificarValorNoSelect(selectElement, valor) {
+            const valorNormalizado = normalizarTexto(valor);
+            return Array.from(selectElement.options).some(option => normalizarTexto(option.value) === valorNormalizado);
+        }
+
+        // Função para destacar o campo em vermelho e fazer piscar
+        function destacarCampo(campo) {
+            campo.classList.add('campo-vermelho-piscante');
+        }
+
         // Data
         const dataCell = document.createElement('td');
         const dataInput = document.createElement('input');
@@ -2312,11 +2345,24 @@ function mostrarExtratoPopup(extrato) {
         dataCell.appendChild(dataInput);
         row.appendChild(dataCell);
 
-        // Rubrica
+        // Rubrica (categoria)
         const rubricaCell = document.createElement('td');
         const rubricaSelect = document.createElement('select');
         preencherSelectComOpcoes(rubricaSelect, document.getElementById('seletorCategoria')); // Preenche com as opções de categoria
-        rubricaSelect.value = linha.rubrica || ''; // Define o valor atual
+
+        if (verificarValorNoSelect(rubricaSelect, linha.categoria)) {
+            // Se o valor existir, selecionar no select
+            rubricaSelect.value = linha.categoria;
+        } else {
+            // Se o valor não existir, exibir o valor vindo do Excel e destacar o campo
+            const opcaoCustom = document.createElement('option');
+            opcaoCustom.value = linha.categoria || '';
+            opcaoCustom.textContent = linha.categoria || 'Valor não informado';
+            rubricaSelect.appendChild(opcaoCustom);
+            rubricaSelect.value = linha.categoria || '';
+            destacarCampo(rubricaSelect);
+        }
+
         rubricaCell.appendChild(rubricaSelect);
         row.appendChild(rubricaCell);
 
@@ -2332,17 +2378,25 @@ function mostrarExtratoPopup(extrato) {
         const obsCell = document.createElement('td');
         const obsInput = document.createElement('input');
         obsInput.type = 'text';
-        obsInput.value = linha.observacao || ''; // Campo de observação, se houver
+        obsInput.value = linha.observacao || '';
         obsCell.appendChild(obsInput);
         row.appendChild(obsCell);
 
         // Fornecedor
         const fornecedorCell = document.createElement('td');
         const fornecedorSelect = document.createElement('select');
-        preencherSelectComOpcoes(fornecedorSelect, document.getElementById('seletorFornecedor')); // Preenche com as opções de fornecedor
-        fornecedorSelect.value = linha.fornecedor || ''; // Define o valor atual
+        preencherSelectComOpcoes(fornecedorSelect, document.getElementById('seletorFornecedor'));
+        fornecedorSelect.value = linha.fornecedor || '';
         fornecedorCell.appendChild(fornecedorSelect);
         row.appendChild(fornecedorCell);
+
+        // Rubrica Contábil
+        const rubricaContabilCell = document.createElement('td');
+        const rubricaContabilInput = document.createElement('input');
+        rubricaContabilInput.type = 'text';
+        rubricaContabilInput.value = linha.rubricaContabil || '';
+        rubricaContabilCell.appendChild(rubricaContabilInput);
+        row.appendChild(rubricaContabilCell);
 
         // Saída
         const saidaCell = document.createElement('td');
@@ -2363,12 +2417,10 @@ function mostrarExtratoPopup(extrato) {
         // Botão de Remover (Lixeira)
         const removerCell = document.createElement('td');
         const removerButton = document.createElement('button');
-        removerButton.innerHTML = '🗑️'; // Ícone de lixeira
+        removerButton.innerHTML = '🗑️';
         removerButton.classList.add('remover-linha');
         removerButton.addEventListener('click', () => {
-            // Remover a linha da tabela visualmente
             row.remove();
-            // Remover a linha do array de extrato
             extrato.splice(index, 1);
         });
         removerCell.appendChild(removerButton);
