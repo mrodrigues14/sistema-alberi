@@ -670,8 +670,13 @@ async function atualizarTabela(dados) {
             fornecedorCell.textContent = item.NOME_FORNECEDOR || 'Fornecedor não encontrado';
 
             const fornecedorNome = item.NOME_FORNECEDOR ? item.NOME_FORNECEDOR.toLowerCase() : '';
-            if (!fornecedorNome) {
-                fornecedorCell.classList.add('blink-red');
+
+            // Verificação se o fornecedor está na lista de fornecedores carregada
+            const selectFornecedor = document.getElementById('seletorFornecedor');
+            const fornecedoresDisponiveis = Array.from(selectFornecedor.options).map(option => option.text.toLowerCase());
+
+            if (!fornecedoresDisponiveis.includes(fornecedorNome)) {
+                fornecedorCell.classList.add('blink-red'); // Adiciona a classe de destaque se não encontrar o fornecedor
             }
 
             // Entrada e Saída
@@ -2356,11 +2361,11 @@ function mostrarExtratoPopup(extrato) {
         } else {
             // Se o valor não existir, exibir o valor vindo do Excel e destacar o campo
             const opcaoCustom = document.createElement('option');
-            opcaoCustom.value = linha.categoria || '';
-            opcaoCustom.textContent = linha.categoria || 'Valor não informado';
+            opcaoCustom.value = linha.categoria || ''; // Verifica se há valor, senão define vazio
+            opcaoCustom.textContent = linha.categoria || 'Valor não informado'; // Define uma string fallback
             rubricaSelect.appendChild(opcaoCustom);
             rubricaSelect.value = linha.categoria || '';
-            destacarCampo(rubricaSelect);
+            destacarCampo(rubricaSelect); // Destacar em vermelho piscante
         }
 
         rubricaCell.appendChild(rubricaSelect);
@@ -2378,15 +2383,28 @@ function mostrarExtratoPopup(extrato) {
         const obsCell = document.createElement('td');
         const obsInput = document.createElement('input');
         obsInput.type = 'text';
-        obsInput.value = linha.observacao || '';
+        obsInput.value = linha.observacao || ''; // Campo de observação, se houver
         obsCell.appendChild(obsInput);
         row.appendChild(obsCell);
 
-        // Fornecedor
+        // Fornecedor - Mesma lógica aplicada aqui
         const fornecedorCell = document.createElement('td');
         const fornecedorSelect = document.createElement('select');
         preencherSelectComOpcoes(fornecedorSelect, document.getElementById('seletorFornecedor'));
-        fornecedorSelect.value = linha.fornecedor || '';
+
+        if (verificarValorNoSelect(fornecedorSelect, linha.fornecedor)) {
+            // Se o valor existir, selecionar no select
+            fornecedorSelect.value = linha.fornecedor;
+        } else {
+            // Se o valor não existir, exibir o valor vindo do Excel e destacar o campo
+            const opcaoCustomFornecedor = document.createElement('option');
+            opcaoCustomFornecedor.value = linha.fornecedor || ''; // Verifica se há valor, senão define vazio
+            opcaoCustomFornecedor.textContent = linha.fornecedor || 'Valor não informado'; // Define uma string fallback
+            fornecedorSelect.appendChild(opcaoCustomFornecedor);
+            fornecedorSelect.value = linha.fornecedor || '';
+            destacarCampo(fornecedorSelect); // Destacar em vermelho piscante
+        }
+
         fornecedorCell.appendChild(fornecedorSelect);
         row.appendChild(fornecedorCell);
 
@@ -2417,11 +2435,11 @@ function mostrarExtratoPopup(extrato) {
         // Botão de Remover (Lixeira)
         const removerCell = document.createElement('td');
         const removerButton = document.createElement('button');
-        removerButton.innerHTML = '🗑️';
+        removerButton.innerHTML = '🗑️'; // Ícone de lixeira
         removerButton.classList.add('remover-linha');
         removerButton.addEventListener('click', () => {
-            row.remove();
-            extrato.splice(index, 1);
+            row.remove(); // Remover a linha da tabela visualmente
+            extrato.splice(index, 1); // Remover a linha do array de extrato
         });
         removerCell.appendChild(removerButton);
         row.appendChild(removerCell);
@@ -2453,7 +2471,6 @@ function salvarAlteracoes() {
     document.querySelector('.body-insercao').classList.add('blur-background');
     document.querySelector('.popup-insercao-container').classList.add('blur-background');
 
-
     const tabelaExtrato = document.getElementById('extratoTable').querySelector('tbody');
     const linhas = tabelaExtrato.querySelectorAll('tr');
     const entradas = [];
@@ -2463,7 +2480,11 @@ function salvarAlteracoes() {
         const categoria = linha.querySelector('td:nth-child(2) select').value || '';  // Se não selecionado, fica vazio
         const nome = linha.querySelector('td:nth-child(3) input').value || '';
         const descricao = linha.querySelector('td:nth-child(4) input').value || '';
-        const fornecedor = linha.querySelector('td:nth-child(5) select').value || '';  // Se não selecionado, fica vazio
+
+        // Aqui pegamos o texto do option selecionado (nome do fornecedor)
+        const fornecedorSelect = linha.querySelector('td:nth-child(5) select');
+        const fornecedor = fornecedorSelect.options[fornecedorSelect.selectedIndex].text || '';  // Nome do fornecedor
+
         const saida = linha.querySelector('td:nth-child(6) input').value || '0,00';
         const entrada = linha.querySelector('td:nth-child(7) input').value || '0,00';
 
@@ -2488,7 +2509,7 @@ function salvarAlteracoes() {
             VALOR: valor,
             IDBANCO: IDBANCO,
             IDCLIENTE: IDCLIENTE,
-            Fornecedor: fornecedor
+            Fornecedor: fornecedor  // Usamos o nome do fornecedor
         });
     });
 
