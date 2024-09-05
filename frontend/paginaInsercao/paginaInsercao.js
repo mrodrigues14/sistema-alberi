@@ -2447,17 +2447,21 @@ function salvarAlteracoes() {
     const entradas = [];
 
     linhas.forEach(linha => {
-        const data = linha.querySelector('td:nth-child(1) input').value;
-        const categoria = linha.querySelector('td:nth-child(2) select').value || '';  // Se não selecionado, fica vazio
-        const nome = linha.querySelector('td:nth-child(3) input').value || '';
-        const descricao = linha.querySelector('td:nth-child(4) input').value || '';
+        const data = linha.querySelector('td:nth-child(1) input').value || ''; // Data
+        const categoria = linha.querySelector('td:nth-child(2) select').value || '';  // Rubrica financeira
+        const nome = linha.querySelector('td:nth-child(3) input').value || ''; // Nome no extrato
+        const descricao = linha.querySelector('td:nth-child(4) input').value || ''; // Observação
 
-        // Aqui pegamos o texto do option selecionado (nome do fornecedor)
+        // Fornecedor (verifica o texto selecionado no select)
         const fornecedorSelect = linha.querySelector('td:nth-child(5) select');
         const fornecedor = fornecedorSelect.options[fornecedorSelect.selectedIndex].text || '';  // Nome do fornecedor
 
-        const saida = linha.querySelector('td:nth-child(6) input').value || '0,00';
-        const entrada = linha.querySelector('td:nth-child(7) input').value || '0,00';
+        // Rubrica Contábil (novo campo)
+        const rubricaContabil = linha.querySelector('td:nth-child(6) input').value || '';  // Rubrica contábil
+
+        // Saída e Entrada
+        const saida = linha.querySelector('td:nth-child(7) input').value || '0,00';  // Saída
+        const entrada = linha.querySelector('td:nth-child(8) input').value || '0,00';  // Entrada
 
         // Determina o tipo de transação
         let tipo = '';
@@ -2471,6 +2475,7 @@ function salvarAlteracoes() {
             valor = formatarValorParaInsercao(saida);
         }
 
+        // Monta o objeto da linha
         entradas.push({
             Data: data,
             Categoria: categoria,
@@ -2480,12 +2485,15 @@ function salvarAlteracoes() {
             VALOR: valor,
             IDBANCO: IDBANCO,
             IDCLIENTE: IDCLIENTE,
-            FORNECEDOR: fornecedor
+            FORNECEDOR: fornecedor,
+            RubricaContabil: rubricaContabil // Incluindo rubrica contábil
         });
     });
 
     const json_object = JSON.stringify(entradas);
-    console.log(json_object)
+    console.log(json_object);
+
+    // Enviar os dados via fetch
     fetch('/insercao/inserir-lote', {
         method: 'POST',
         headers: {
