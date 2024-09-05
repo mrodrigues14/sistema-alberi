@@ -67,7 +67,7 @@ function extratoAEditar(id, callback) {
 }
 
 function editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, callback) {
-    mysqlConn.query(`UPDATE EXTRATO SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, NOME_NO_EXTRATO = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?, ID_FORNECEDOR = ? WHERE IDEXTRATO = ?`,
+    mysqlConn.query(`UPDATE EXTRATO SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, NOME_NO_EXTRATO = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?, FORNECEDOR = ? WHERE IDEXTRATO = ?`,
         [data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, id],
         function (err, result, fields) {
             if (err) {

@@ -1310,8 +1310,9 @@ function confirmarEdicao(buttonElement) {
 
     if (fornecedorCell.querySelector('input')) {
         fornecedor = fornecedorCell.querySelector('input').value || null;
-    } else if (fornecedorCell.querySelector('select').value) {
-        fornecedor = fornecedorCell.querySelector('select').value || dadosOriginais[2]; // Mantém o valor original se não selecionado
+    } else if (fornecedorCell.querySelector('select')) {
+        const selectFornecedor = fornecedorCell.querySelector('select');
+        fornecedor = selectFornecedor.options[selectFornecedor.selectedIndex].textContent.trim(); // Obtém o nome do fornecedor
     } else {
         fornecedor = dadosOriginais[2]; // Valor original do fornecedor
     }
@@ -1333,7 +1334,7 @@ function confirmarEdicao(buttonElement) {
         id: row.dataset.idextrato,
         data: cells[0].querySelector('input').value, // Pegando o valor da data do input
         categoria: categoria, // Rubrica Financeira
-        fornecedor: fornecedor,
+        fornecedor: fornecedor, // Nome do fornecedor
         descricao: cells[3].querySelector('input').value || dadosOriginais[3], // Observação
         nome_no_extrato: cells[4].querySelector('input').value || dadosOriginais[4], // Nome no Extrato
         rubrica_contabil: cells[5].querySelector('input').value || dadosOriginais[5], // Rubrica Contábil
