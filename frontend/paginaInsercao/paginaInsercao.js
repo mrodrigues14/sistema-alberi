@@ -1302,15 +1302,18 @@ function confirmarEdicao(buttonElement) {
     const row = buttonElement.closest('tr');
     const cells = row.querySelectorAll('td');
 
+    // Recuperando os dados originais armazenados antes da edição
+    const dadosOriginais = JSON.parse(row.dataset.originalData);
+
     let fornecedor;
     const fornecedorCell = cells[2]; // Fornecedor (terceira coluna)
 
     if (fornecedorCell.querySelector('input')) {
         fornecedor = fornecedorCell.querySelector('input').value || null;
-    } else if (fornecedorCell.querySelector('select')) {
-        fornecedor = fornecedorCell.querySelector('select').value || null;
+    } else if (fornecedorCell.querySelector('select').value) {
+        fornecedor = fornecedorCell.querySelector('select').value || dadosOriginais[2]; // Mantém o valor original se não selecionado
     } else {
-        fornecedor = null;
+        fornecedor = dadosOriginais[2]; // Valor original do fornecedor
     }
 
     let tipo = null;
@@ -1324,16 +1327,16 @@ function confirmarEdicao(buttonElement) {
         valor = parseFloat(cells[7].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || null;
     }
 
-    const categoria = cells[1].querySelector('select').value || null;
+    const categoria = cells[1].querySelector('select').value || dadosOriginais[1]; // Mantém o valor original da categoria se não selecionado
 
     const dadosEditados = {
         id: row.dataset.idextrato,
         data: cells[0].querySelector('input').value, // Pegando o valor da data do input
         categoria: categoria, // Rubrica Financeira
         fornecedor: fornecedor,
-        descricao: cells[3].querySelector('input').value || null, // Observação
-        nome_no_extrato: cells[4].querySelector('input').value || null, // Nome no Extrato
-        rubrica_contabil: cells[5].querySelector('input').value || null, // Rubrica Contábil
+        descricao: cells[3].querySelector('input').value || dadosOriginais[3], // Observação
+        nome_no_extrato: cells[4].querySelector('input').value || dadosOriginais[4], // Nome no Extrato
+        rubrica_contabil: cells[5].querySelector('input').value || dadosOriginais[5], // Rubrica Contábil
         tipo: tipo,
         valor: valor
     };
@@ -2489,12 +2492,12 @@ function mostrarOpcoesInsercao() {
 
     if (metodo === 'automatizado') {
         opcoesAutomatizado.style.display = 'block';
-        opcoesManual.style.display = 'none';  // Esconder o formulário manual
+        opcoesManual.style.display = 'none';
     } else if (metodo === 'manual') {
-        opcoesManual.style.display = 'block';  // Mostrar o formulário manual
-        opcoesAutomatizado.style.display = 'none';  // Esconder as opções automatizadas
-        uploadArquivosDiv.style.display = 'none';  // Esconder o upload de arquivos
-        uploadForm.style.display = 'none';  // Esconder o formulário de upload
+        opcoesManual.style.display = 'block';
+        opcoesAutomatizado.style.display = 'none';
+        uploadArquivosDiv.style.display = 'none';
+        uploadForm.style.display = 'none';
     } else {
         opcoesManual.style.display = 'none';
         opcoesAutomatizado.style.display = 'none';
