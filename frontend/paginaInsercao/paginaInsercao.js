@@ -604,7 +604,7 @@ async function buscarDados() {
 
         const response = await fetch(`/consulta/dados?banco=${idBanco}&data=${dataFormatada}&empresa=${idEmpresa}`);
         const data = await response.json();
-
+        console.log(saldoInicial)
         atualizarTabela(data, saldoInicial);
         fetchSaldoFinal();
     } catch (error) {
@@ -612,11 +612,11 @@ async function buscarDados() {
     }
 }
 
-async function atualizarTabela(dados) {
+async function atualizarTabela(dados, saldoInicial) {
     const tbody = document.getElementById('extrato-body');
     tbody.innerHTML = '';
 
-    let saldo = 0;
+    let saldo = saldoInicial;
 
     for (const item of dados) {
         if (!item.ID_SUBEXTRATO) {
@@ -628,8 +628,26 @@ async function atualizarTabela(dados) {
 
             // Rubrica Financeira (Categoria)
             const categoriaCell = row.insertCell();
+            const categoriaSelect = document.getElementById('seletorCategoria');
             const categoriaText = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
             categoriaCell.textContent = categoriaText || 'Categoria não encontrada';
+
+            // Verifica se a categoria está no select de categorias
+            const categoriaSelectOptions = Array.from(categoriaSelect.options).map(option => option.text.trim().toLowerCase());
+
+            // Função para normalizar a categoria e remover acentos
+            function normalizarTexto(texto) {
+                return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            }
+
+            // Verifica se a categoria do extrato está presente no select
+            const categoriaNormalizada = normalizarTexto(categoriaText);
+            const categoriaEncontrada = categoriaSelectOptions.some(option => normalizarTexto(option) === categoriaNormalizada);
+
+            if (!categoriaEncontrada) {
+                categoriaCell.classList.add('blink-red'); // Adiciona a classe blink-red se não encontrar a categoria
+            }
+
 
 
             // Fornecedor
@@ -1307,64 +1325,6 @@ function confirmarEdicao(buttonElement) {
     }
 
     const categoria = cells[1].querySelector('select').value || null;
-    console.log(cells[0].querySelector('input').value)
-    const dadosEditados = {
-        id: row.dataset.idextrato,
-        data: cells[0].querySelector('input').value,
-        categoria: categoria, // Rubrica Financeira
-        fornecedor: fornecedor,
-        descricao: cells[3].querySelector('input').value || null, // Observação
-        nome_no_extrato: cells[4].querySelector('input').value || null, // Nome no Extrato
-        rubrica_contabil: cells[5].querySelector('input').value || null, // Rubrica Contábil
-        tipo: tipo,
-        valor: valor
-    };
-
-    if (categoria && (categoria.toLowerCase() === 'investimento' || categoria.toLowerCase() === 'resgate')) {
-        abrirPopupResgateInvestimento(
-            categoria,
-            tipo === 'ENTRADA' ? valor : 0,
-            tipo === 'SAIDA' ? valor : 0,
-            dadosEditados.data,
-            fornecedor,
-            dadosEditados.descricao,
-            dadosEditados.nome_no_extrato,
-            IDCLIENTE
-        );
-    } else {
-        // Envia a edição normal sem pop-up
-        enviarEdicaoExtrato(dadosEditados);
-    }
-}
-
-
-function confirmarEdicao(buttonElement) {
-    const row = buttonElement.closest('tr');
-    const cells = row.querySelectorAll('td');
-
-    let fornecedor;
-    const fornecedorCell = cells[2]; // Fornecedor (terceira coluna)
-
-    if (fornecedorCell.querySelector('input')) {
-        fornecedor = fornecedorCell.querySelector('input').value || null;
-    } else if (fornecedorCell.querySelector('select')) {
-        fornecedor = fornecedorCell.querySelector('select').value || null;
-    } else {
-        fornecedor = null;
-    }
-
-    let tipo = null;
-    let valor = null;
-
-    if (cells[6].querySelector('input').value) {
-        tipo = 'ENTRADA';
-        valor = parseFloat(cells[6].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || null;
-    } else if (cells[7].querySelector('input').value) {
-        tipo = 'SAIDA';
-        valor = parseFloat(cells[7].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || null;
-    }
-
-    const categoria = cells[1].querySelector('select').value || null;
 
     const dadosEditados = {
         id: row.dataset.idextrato,
@@ -1824,50 +1784,50 @@ function processarDadosDoExtratoMercadoPago1(data) {
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
 function processarDadosDoExtratoMercadoPago2(data) {
-        const extrato = [];
-        const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
-        const valueRegex = /-?\d+,\d{2}/;
-        const saldoRegex = /saldo/i;
+    const extrato = [];
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+    const valueRegex = /-?\d+,\d{2}/;
+    const saldoRegex = /saldo/i;
 
-        let linhaAtual = null;
-        let dentroDoIntervaloSaldo = false;
-        let encontrouPrimeiroSaldo = false;
+    let linhaAtual = null;
+    let dentroDoIntervaloSaldo = false;
+    let encontrouPrimeiroSaldo = false;
 
-        for (let i = 0; i < data.length; i++) {
-            const text = data[i];
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i];
 
-            if (text.match(saldoRegex)) {
-                if (encontrouPrimeiroSaldo) {
-                    dentroDoIntervaloSaldo = false;
-                    break;
-                } else {
-                    dentroDoIntervaloSaldo = true;
-                    encontrouPrimeiroSaldo = true;
-                }
-            }
-
-            if (dentroDoIntervaloSaldo) {
-                if (text.match(valueRegex)) {
-                    if (linhaAtual) {
-                        extrato.push(linhaAtual);
-                    }
-                    const valor = parseFloat(text.replace(/\./g, '').replace(',', '.'));
-                    const tipo = text.includes('(-)') ? 'saida' : 'entrada';
-                    linhaAtual = { valor: formatarValorFinanceiro(Math.abs(valor)), tipo, data: '', descricao: '' };
-                } else if (text.match(dateRegex) && linhaAtual) {
-                    linhaAtual.data = text;
-                } else if (linhaAtual) {
-                    linhaAtual.descricao += ` ${text}`.trim();
-                }
+        if (text.match(saldoRegex)) {
+            if (encontrouPrimeiroSaldo) {
+                dentroDoIntervaloSaldo = false;
+                break;
+            } else {
+                dentroDoIntervaloSaldo = true;
+                encontrouPrimeiroSaldo = true;
             }
         }
 
-        if (linhaAtual && dentroDoIntervaloSaldo) {
-            extrato.push(linhaAtual);
+        if (dentroDoIntervaloSaldo) {
+            if (text.match(valueRegex)) {
+                if (linhaAtual) {
+                    extrato.push(linhaAtual);
+                }
+                const valor = parseFloat(text.replace(/\./g, '').replace(',', '.'));
+                const tipo = text.includes('(-)') ? 'saida' : 'entrada';
+                linhaAtual = { valor: formatarValorFinanceiro(Math.abs(valor)), tipo, data: '', descricao: '' };
+            } else if (text.match(dateRegex) && linhaAtual) {
+                linhaAtual.data = text;
+            } else if (linhaAtual) {
+                linhaAtual.descricao += ` ${text}`.trim();
+            }
         }
-
-        return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
     }
+
+    if (linhaAtual && dentroDoIntervaloSaldo) {
+        extrato.push(linhaAtual);
+    }
+
+    return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+}
 
 
 //bradesco
