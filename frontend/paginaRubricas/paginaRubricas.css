@@ -65,6 +65,7 @@
 .adicionar-rubrica-container {
     text-align: center;
     margin-top: 20px;
+    margin-bottom: 30px;
 }
 
 .adicionar-rubrica-btn, .adicionar-subrubrica-btn {
@@ -191,4 +192,50 @@
     flex-direction: column;
     align-items: center;
     width: 100%; /* Garante que o form ocupe toda a largura disponível */
+}
+
+#rubrica-contabil-lista {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#rubrica-contabil-lista li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+#rubrica-contabil-lista li:last-child {
+    border-bottom: none;
+}
+
+#rubrica-contabil-lista li span {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+#rubrica-contabil-lista li .actions {
+    display: flex;
+    gap: 10px;
+}
+
+#rubrica-contabil-lista li .actions button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+#rubrica-contabil-lista li .actions button.edit {
+    color: #4CAF50;
+}
+
+#rubrica-contabil-lista li .actions button.delete {
+    color: #F44336;
+}
+
+#rubrica-contabil-lista li .sub-rubrica {
+    padding-left: 20px;
 }

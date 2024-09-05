@@ -113,12 +113,14 @@ function initializePage() {
             fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data)
                     const selectFornecedor = document.getElementById('seletorFornecedor');
                     data.forEach(fornecedor => {
                         const option = document.createElement('option');
                         option.value = fornecedor.IDFORNECEDOR;
                         option.textContent = fornecedor.NOME_TIPO;
                         selectFornecedor.appendChild(option);
+                        console.log(option)
                     });
                 })
         })
@@ -614,118 +616,61 @@ async function atualizarTabela(dados) {
     const tbody = document.getElementById('extrato-body');
     tbody.innerHTML = '';
 
-    const saldoInicialTable = document.getElementById('saldoInicialTable');
-    let saldoInicial = 0;
-
-    if (saldoInicialTable) {
-        const saldoInicialRow = saldoInicialTable.querySelector('tbody tr');
-        if (saldoInicialRow) {
-            const saldoInicialText = saldoInicialRow.cells[0].textContent;
-            saldoInicial = parseFloat(saldoInicialText.replace(/\./g, '').replace(',', '.')) || 0;
-        } else {
-            console.warn('Nenhum saldo inicial encontrado na tabela.');
-        }
-    } else {
-        console.warn('Elemento saldoInicialTable não encontrado.');
-    }
-
-    let saldo = saldoInicial;
+    let saldo = 0;
 
     for (const item of dados) {
         if (!item.ID_SUBEXTRATO) {
             const row = tbody.insertRow();
             row.dataset.idextrato = item.IDEXTRATO;
 
-            // Drag handle
-            const dragCell = row.insertCell();
-            const dragIcon = document.createElement('img');
-            dragIcon.src = '/paginaInsercao/imagens/dragItem.png';
-            dragIcon.classList.add('drag-handle');
-            dragCell.appendChild(dragIcon);
-
             // Data
             row.insertCell().textContent = formatDate(item.DATA);
 
-            // Categoria
+            // Rubrica Financeira (Categoria)
             const categoriaCell = row.insertCell();
             const categoriaText = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
             categoriaCell.textContent = categoriaText || 'Categoria não encontrada';
 
-            const categoriaNome = item.SUBCATEGORIA
-                ? item.SUBCATEGORIA.toLowerCase()
-                : item.CATEGORIA.toLowerCase();
 
-            if (!categoriaNome) {
-                categoriaCell.classList.add('blink-red');
+            // Fornecedor
+            const fornecedorCell = row.insertCell();
+            const fornecedorNome = item.NOME_FORNECEDOR ? item.NOME_FORNECEDOR.replace(/-+/g, '').trim().toLowerCase() : '';
+
+            fornecedorCell.textContent = item.NOME_FORNECEDOR || 'Fornecedor não encontrado';
+
+            const selectFornecedor = document.getElementById('seletorFornecedor');
+            const fornecedoresDisponiveis = Array.from(selectFornecedor.options).map(option => option.text.trim().toLowerCase());
+
+            if (!fornecedoresDisponiveis.includes(fornecedorNome)) {
+                fornecedorCell.classList.add('blink-red');
             }
+
+            // Observação
+            row.insertCell().textContent = item.DESCRICAO;
 
             // Nome no Extrato
             row.insertCell().textContent = item.NOME_NO_EXTRATO;
 
-            // Descrição
-            row.insertCell().textContent = item.DESCRICAO;
 
-            // Fornecedor
-            const fornecedorCell = row.insertCell();
-            fornecedorCell.textContent = item.NOME_FORNECEDOR || 'Fornecedor não encontrado';
-
-            const fornecedorNome = item.NOME_FORNECEDOR ? item.NOME_FORNECEDOR.toLowerCase() : '';
-
-            // Verificação se o fornecedor está na lista de fornecedores carregada
-            const selectFornecedor = document.getElementById('seletorFornecedor');
-            const fornecedoresDisponiveis = Array.from(selectFornecedor.options).map(option => option.text.toLowerCase());
-
-            if (!fornecedoresDisponiveis.includes(fornecedorNome)) {
-                fornecedorCell.classList.add('blink-red'); // Adiciona a classe de destaque se não encontrar o fornecedor
-            }
+            // Rubrica Contábil
+            const rubricaCell = row.insertCell();
+            rubricaCell.textContent = item.RUBRICA_CONTABIL || 'Rubrica não encontrada';
 
             // Entrada e Saída
             const entradaCell = row.insertCell();
             const saidaCell = row.insertCell();
+            entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
+            saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
 
-            if (categoriaNome.toLowerCase() === 'cartao de crédito' || categoriaNome.toLowerCase() === 'cartão de crédito') {
-                // Se for cartão de crédito, exibe o valor total, mas deixa o saldo em branco
-                entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
-                saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
-
-                // Deixe o espaço de saldo em branco
-                row.insertCell().textContent = "";
-
-                const subextratos = await fetch(`/insercao/subextratos?idExtrato=${item.IDEXTRATO}`).then(res => res.json());
-
-                for (const subextrato of subextratos) {
-                    const subRow = tbody.insertRow();
-                    subRow.classList.add('subextrato-row'); // Classe CSS para estilizar a linha de subextrato
-
-                    subRow.insertCell().textContent = ''; // Vazio para alinhar com o drag handle
-                    subRow.insertCell().textContent = formatDate(subextrato.DATA); // Data do subextrato
-                    subRow.insertCell().textContent = subextrato.CATEGORIA; // Categoria do subextrato
-                    subRow.insertCell().textContent = subextrato.DESCRICAO; // Descrição do subextrato
-                    subRow.insertCell().textContent = subextrato.OBSERVACAO; // Observação do subextrato
-                    subRow.insertCell().textContent = ''; // Vazio para alinhar com a coluna de Fornecedor
-                    subRow.insertCell().textContent = subextrato.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(subextrato.VALOR) : ""; // Entrada
-                    subRow.insertCell().textContent = subextrato.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(subextrato.VALOR) : ""; // Saída
-
-                    saldo += (parseFloat(subextrato.VALOR) || 0) * (subextrato.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
-                    subRow.insertCell().textContent = formatarValorParaExibicao(saldo); // Saldo após subextrato
-
-                    subRow.insertCell().textContent = ''; // Vazio para a coluna de anexos
-                    subRow.insertCell().textContent = ''; // Vazio para a coluna de ações
-                }
-            } else {
-                // Se não for cartão de crédito, considera o valor principal no saldo
-                entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
-                saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
-
-                saldo += (parseFloat(item.VALOR) || 0) * (item.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
-                row.insertCell().textContent = formatarValorParaExibicao(saldo); // Saldo
-            }
+            // Saldo
+            saldo += (parseFloat(item.VALOR) || 0) * (item.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
+            row.insertCell().textContent = formatarValorParaExibicao(saldo);
 
             // Anexos
             const anexosCell = row.insertCell();
             anexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${item.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
 
-            // Ações (Editar, Selecionar, Deletar)
+            // Ferramentas (Editar, Selecionar, Deletar)
             const deleteCell = row.insertCell();
             deleteCell.innerHTML = `
                 <div class="dropdown-extrato-opcoes">
@@ -742,13 +687,6 @@ async function atualizarTabela(dados) {
             `;
         }
     }
-
-    fetchSaldoInicial(saldo);
-    const saldoFinalTable = document.getElementById('saldoFinalTable').querySelector('tbody');
-    saldoFinalTable.innerHTML = '';
-
-    const rowFinal = saldoFinalTable.insertRow();
-    rowFinal.insertCell().textContent = formatarValorParaExibicao(saldo);
 }
 
 async function fetchSaldoInicial() {
@@ -804,10 +742,11 @@ function fetchSaldoFinal() {
         Array.from(rows).forEach(row => {
             const entradaCell = row.cells[6].textContent.trim();
             const saidaCell = row.cells[7].textContent.trim();
-
+            console.log(entradaCell, saidaCell)
             const entrada = parseFloat(entradaCell.replace(/\./g, '').replace(',', '.')) || 0;
             const saida = parseFloat(saidaCell.replace(/\./g, '').replace(',', '.')) || 0;
 
+            console.log(saldoFinal)
             saldoFinal += entrada - saida;
         });
     }
@@ -815,6 +754,7 @@ function fetchSaldoFinal() {
     saldoFinalTable.innerHTML = '';
     const rowFinal = saldoFinalTable.insertRow();
     rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
+    console.log(rowFinal)
     definirSaldoInicialProximoMes(saldoFinal);
 }
 
@@ -855,8 +795,9 @@ function definirSaldoInicialProximoMes(saldoFinal) {
             return response.json();
         })
         .then(data => {
-            console.log(data)
-            if (data.definidoManual === 0) {
+            console.log(data);
+            // Só define o saldo se definidoManual for false
+            if (data.definidoManual === false || data.definidoManual === 0) {
                 fetch('/consulta/definirSaldoInicial', {
                     method: 'POST',
                     headers: {
@@ -878,29 +819,8 @@ function definirSaldoInicialProximoMes(saldoFinal) {
                     .catch(error => {
                         console.error('Erro ao definir saldo inicial do próximo mês:', error);
                     });
-            } else if (data.definidoManual === 0) {
-                // Se o saldo não foi definido manualmente, define o saldo inicial
-                fetch('/consulta/definirSaldoInicial', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        cliente: idEmpresa,
-                        banco: document.getElementById('seletorBanco').value,
-                        data: dataProximoMes,
-                        saldo: saldoFinal.toFixed(2)
-                    })
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Erro ao salvar saldo inicial para o próximo mês: ${response.statusText}`);
-                        }
-                        return response.json();
-                    })
-                    .catch(error => {
-                        console.error('Erro ao definir saldo inicial do próximo mês:', error);
-                    });
+            } else {
+                console.log('Saldo definido manualmente, não será atualizado.');
             }
         })
         .catch(error => {
@@ -1203,61 +1123,169 @@ function salvarOrdem(ordem) {
         });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const saldoInicialInput = document.getElementById('saldoInicialInput');
-    const editarSaldoInicial = document.getElementById('editarSaldoInicial');
-    const salvarSaldoInicialBtn = document.getElementById('salvarSaldoInicialBtn');
 
-    editarSaldoInicial.addEventListener('click', function() {
-        saldoInicialInput.removeAttribute('readonly');
-        saldoInicialInput.focus();
-        editarSaldoInicial.style.display = 'none';
-        salvarSaldoInicialBtn.style.display = 'inline';
+function editarLinha(buttonElement) {
+    const row = buttonElement.closest('tr');
+    const idExtrato = row.dataset.idextrato;
+    const cells = row.querySelectorAll('td');
+    row.dataset.originalData = JSON.stringify(
+        Array.from(cells).map(cell => cell.textContent.trim())
+    );
+
+    cells.forEach((cell, index) => {
+        if (index === 0) { // Data (primeira coluna)
+            const dataAtual = cell.textContent.trim();
+
+            // Verifica se a data está no formato esperado DD/MM/YYYY
+            let dataFormatada = '';
+            if (dataAtual.includes('/')) {
+                const [dia, mes, ano] = dataAtual.split('/');
+                // Verifica se dia, mes e ano são válidos
+                if (dia && mes && ano) {
+                    dataFormatada = `${ano}-${mes}-${dia}`;
+                }
+            } else {
+                // Caso já esteja no formato correto, usa a data atual
+                dataFormatada = dataAtual;
+            }
+
+            const inputData = document.createElement('input');
+            inputData.type = 'date';
+            inputData.value = dataFormatada;
+            inputData.classList.add('editavel');
+            inputData.style.width = '100%';
+
+            cell.innerHTML = '';
+            cell.appendChild(inputData);
+            console.log("Data original:", dataAtual, "Data formatada:", dataFormatada, inputData);
+
+        } else if (index === 1) {
+            const categoriaAtual = cell.textContent.trim();
+            const selectCategoria = document.createElement('select');
+            selectCategoria.style.width = '100%';
+
+            fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
+                .then(response => response.json())
+                .then(categorias => {
+                    const optionDefault = document.createElement('option');
+                    optionDefault.value = '';
+                    optionDefault.textContent = 'Selecione uma Rubrica';
+                    selectCategoria.appendChild(optionDefault);
+
+                    const categoriasTree = construirArvoreDeCategorias(categorias);
+                    adicionarCategoriasAoSelect(selectCategoria, categoriasTree);
+
+                    // Seleciona a rubrica financeira que já está por padrão, se existir na lista
+                    const categoriaSelecionada = Array.from(selectCategoria.options).find(option => option.text.trim() === categoriaAtual);
+                    if (categoriaSelecionada) {
+                        categoriaSelecionada.selected = true;
+                    }
+
+                    cell.innerHTML = '';
+                    cell.appendChild(selectCategoria);
+
+                    selectCategoria.addEventListener('change', function() {
+                        const categoriaSelecionada = this.options[this.selectedIndex].text.toLowerCase();
+                        if (categoriaSelecionada === 'cartão de crédito' || categoriaSelecionada === 'cartao de credito' || categoriaSelecionada === 'cartao de crédito') {
+                            abrirPopupConfirmacaoDetalhamento(() => {
+                                abrirPopupInsercaoSubextrato(idExtrato);
+                            });
+                        } else if (categoriaSelecionada === 'investimento' || categoriaSelecionada === 'resgate') {
+                            abrirPopupResgateInvestimento(
+                                categoriaSelecionada,
+                                parseFloat(row.querySelector('.entrada-cell input').value.replace(/\./g, '').replace(',', '.')),
+                                parseFloat(row.querySelector('.saida-cell input').value.replace(/\./g, '').replace(',', '.')),
+                                row.querySelector('.data-cell input').value,
+                                row.querySelector('.fornecedor-select').value,
+                                row.querySelector('.descricao-cell input').value,
+                                row.querySelector('.nome-extrato-cell input').value,
+                                IDCLIENTE
+                            );
+                        }
+                    });
+
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar categorias:', error);
+                });
+
+        } else if (index === 2) { // Fornecedor (terceira coluna)
+            const fornecedorAtual = cell.textContent.trim();
+            const selectFornecedor = document.createElement('select');
+            selectFornecedor.style.width = '100%';
+
+            selectFornecedor.classList.add('fornecedor-select');
+            selectFornecedor.name = 'fornecedor';
+
+            fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
+                .then(response => response.json())
+                .then(fornecedores => {
+                    const optionDefault = document.createElement('option');
+                    optionDefault.value = '';
+                    optionDefault.textContent = 'Selecione um Fornecedor';
+                    selectFornecedor.appendChild(optionDefault);
+
+                    fornecedores.forEach(fornecedor => {
+                        const option = document.createElement('option');
+                        option.value = fornecedor.IDFORNECEDOR;
+                        option.textContent = fornecedor.NOME_TIPO;
+                        selectFornecedor.appendChild(option);
+                    });
+
+                    // Seleciona o fornecedor que já está por padrão, se existir na lista
+                    const fornecedorSelecionado = Array.from(selectFornecedor.options).find(option => option.text.trim() === fornecedorAtual);
+                    if (fornecedorSelecionado) {
+                        fornecedorSelecionado.selected = true;
+                    }
+
+                    cell.innerHTML = '';
+                    cell.appendChild(selectFornecedor);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar fornecedores:', error);
+                });
+
+        } else if (index === 5) { // Rubrica Contábil (sexta coluna)
+            const rubricaContabilAtual = cell.textContent.trim();
+
+            const inputRubrica = document.createElement('input');
+            inputRubrica.type = 'text';
+            inputRubrica.value = rubricaContabilAtual;
+            inputRubrica.classList.add('editavel');
+            inputRubrica.style.width = '100%';
+
+            cell.innerHTML = '';
+            cell.appendChild(inputRubrica);
+
+        } else if (index > 0 && index < 8) {
+            const cellText = cell.textContent.trim();
+            cell.innerHTML = `<input type="text" value="${cellText}" class="editavel">`;
+
+            const input = cell.querySelector('input');
+            input.style.width = '100%';
+
+            if (index === 6 || index === 7) { // Entrada e Saída
+                input.addEventListener('input', function () {
+                    this.value = formatarValorFinanceiroInput(this.value);
+                });
+            }
+        }
     });
 
-    salvarSaldoInicialBtn.addEventListener('click', function() {
-        const novoSaldo = parseFloat(saldoInicialInput.value.replace('.', '').replace(',', '.')).toFixed(2);
-        const cliente = idEmpresa;
-        const banco = IDBANCO;
-        const data = formatDateToFirstOfMonth($('#mesSelectorValue').val());
-
-        fetch('/consulta/definirSaldoInicial', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ cliente, banco, data, saldo: novoSaldo })
-        })
-            .then(response => response.text())
-            .then(data => {
-                alert('Saldo inicial atualizado com sucesso!');
-                saldoInicialInput.setAttribute('readonly', 'true');
-                editarSaldoInicial.style.display = 'inline';
-                salvarSaldoInicialBtn.style.display = 'none';
-                buscarDados();
-            })
-            .catch(error => {
-                console.error('Erro ao atualizar saldo inicial:', error);
-                alert('Erro ao atualizar saldo inicial');
-            });
-    });
-
-    saldoInicialInput.addEventListener('input', function() {
-        this.value = formatarValorFinanceiroInput(this.value);
-    });
-});
+    const ferramentasCell = cells[cells.length - 1];
+    row.dataset.originalButtons = ferramentasCell.innerHTML;
+    ferramentasCell.innerHTML = `
+        <button onclick="confirmarEdicao(this, ${idExtrato})" class="confirmar-btn">✔️</button>
+        <button onclick="cancelarEdicao(this)" class="cancelar-btn">❌</button>
+    `;
+}
 
 function confirmarEdicao(buttonElement) {
     const row = buttonElement.closest('tr');
     const cells = row.querySelectorAll('td');
 
-    const formatarData = (dataString) => {
-        const [dia, mes, ano] = dataString.split('/');
-        return `${ano}-${mes}-${dia}`;
-    };
-
     let fornecedor;
-    const fornecedorCell = cells[5];
+    const fornecedorCell = cells[2]; // Fornecedor (terceira coluna)
 
     if (fornecedorCell.querySelector('input')) {
         fornecedor = fornecedorCell.querySelector('input').value || null;
@@ -1278,21 +1306,20 @@ function confirmarEdicao(buttonElement) {
         valor = parseFloat(cells[7].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || null;
     }
 
-    const categoria = cells[2].querySelector('select').value || null;
-
+    const categoria = cells[1].querySelector('select').value || null;
+    console.log(cells[0].querySelector('input').value)
     const dadosEditados = {
         id: row.dataset.idextrato,
-        data: cells[1].querySelector('input').value
-            ? formatarData(cells[1].querySelector('input').value)
-            : null,
-        categoria: categoria,
-        nome_no_extrato: cells[3].querySelector('input').value || null,
-        descricao: cells[4].querySelector('input').value || null,
+        data: cells[0].querySelector('input').value,
+        categoria: categoria, // Rubrica Financeira
         fornecedor: fornecedor,
+        descricao: cells[3].querySelector('input').value || null, // Observação
+        nome_no_extrato: cells[4].querySelector('input').value || null, // Nome no Extrato
+        rubrica_contabil: cells[5].querySelector('input').value || null, // Rubrica Contábil
         tipo: tipo,
         valor: valor
     };
-    console.log(categoria)
+
     if (categoria && (categoria.toLowerCase() === 'investimento' || categoria.toLowerCase() === 'resgate')) {
         abrirPopupResgateInvestimento(
             categoria,
@@ -1310,7 +1337,65 @@ function confirmarEdicao(buttonElement) {
     }
 }
 
+
+function confirmarEdicao(buttonElement) {
+    const row = buttonElement.closest('tr');
+    const cells = row.querySelectorAll('td');
+
+    let fornecedor;
+    const fornecedorCell = cells[2]; // Fornecedor (terceira coluna)
+
+    if (fornecedorCell.querySelector('input')) {
+        fornecedor = fornecedorCell.querySelector('input').value || null;
+    } else if (fornecedorCell.querySelector('select')) {
+        fornecedor = fornecedorCell.querySelector('select').value || null;
+    } else {
+        fornecedor = null;
+    }
+
+    let tipo = null;
+    let valor = null;
+
+    if (cells[6].querySelector('input').value) {
+        tipo = 'ENTRADA';
+        valor = parseFloat(cells[6].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || null;
+    } else if (cells[7].querySelector('input').value) {
+        tipo = 'SAIDA';
+        valor = parseFloat(cells[7].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || null;
+    }
+
+    const categoria = cells[1].querySelector('select').value || null;
+
+    const dadosEditados = {
+        id: row.dataset.idextrato,
+        data: cells[0].querySelector('input').value, // Pegando o valor da data do input
+        categoria: categoria, // Rubrica Financeira
+        fornecedor: fornecedor,
+        descricao: cells[3].querySelector('input').value || null, // Observação
+        nome_no_extrato: cells[4].querySelector('input').value || null, // Nome no Extrato
+        rubrica_contabil: cells[5].querySelector('input').value || null, // Rubrica Contábil
+        tipo: tipo,
+        valor: valor
+    };
+
+    if (categoria && (categoria.toLowerCase() === 'investimento' || categoria.toLowerCase() === 'resgate')) {
+        abrirPopupResgateInvestimento(
+            categoria,
+            tipo === 'ENTRADA' ? valor : 0,
+            tipo === 'SAIDA' ? valor : 0,
+            dadosEditados.data,
+            fornecedor,
+            dadosEditados.descricao,
+            dadosEditados.nome_no_extrato,
+            IDCLIENTE
+        );
+    } else {
+        // Envia a edição normal sem pop-up
+        enviarEdicaoExtrato(dadosEditados);
+    }
+}
 function enviarEdicaoExtrato(dadosEditados) {
+    console.log(dadosEditados)
     fetch('consulta/editar/extrato', {
         method: 'POST',
         headers: {
@@ -1358,120 +1443,6 @@ function cancelarEdicao(buttonElement) {
     // Restaura os botões originais (incluindo o botão de lixeira)
     const ferramentasCell = cells[cells.length - 1];
     ferramentasCell.innerHTML = row.dataset.originalButtons;
-}
-
-function editarLinha(buttonElement) {
-    const row = buttonElement.closest('tr');
-    const idExtrato = row.dataset.idextrato;
-    const cells = row.querySelectorAll('td');
-    row.dataset.originalData = JSON.stringify(
-        Array.from(cells).map(cell => cell.textContent.trim())
-    );
-
-    cells.forEach((cell, index) => {
-        if (index === 2) {
-            const categoriaAtual = cell.textContent.trim();
-            const selectCategoria = document.createElement('select');
-            selectCategoria.style.width = '100%';
-
-            fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
-                .then(response => response.json())
-                .then(categorias => {
-                    const optionDefault = document.createElement('option');
-                    optionDefault.value = '';
-                    optionDefault.textContent = 'Selecione uma Rubrica';
-                    selectCategoria.appendChild(optionDefault);
-
-                    const categoriasTree = construirArvoreDeCategorias(categorias);
-                    adicionarCategoriasAoSelect(selectCategoria, categoriasTree);
-
-                    const categoriaSelecionada = Array.from(selectCategoria.options).find(option => option.text === categoriaAtual);
-                    if (categoriaSelecionada) {
-                        categoriaSelecionada.selected = true;
-                    }
-
-                    cell.innerHTML = '';
-                    cell.appendChild(selectCategoria);
-
-                    selectCategoria.addEventListener('change', function() {
-                        const categoriaSelecionada = this.options[this.selectedIndex].text.toLowerCase();
-                        if (categoriaSelecionada === 'cartão de crédito' || categoriaSelecionada === 'cartao de credito' || categoriaSelecionada === 'cartao de crédito') {
-                            abrirPopupConfirmacaoDetalhamento(() => {
-                                abrirPopupInsercaoSubextrato(idExtrato);
-                            });
-                        } else if (categoriaSelecionada === 'investimento' || categoriaSelecionada === 'resgate') {
-                            abrirPopupResgateInvestimento(
-                                categoriaSelecionada,
-                                parseFloat(row.querySelector('.entrada-cell input').value.replace(/\./g, '').replace(',', '.')),
-                                parseFloat(row.querySelector('.saida-cell input').value.replace(/\./g, '').replace(',', '.')),
-                                row.querySelector('.data-cell input').value,
-                                row.querySelector('.fornecedor-select').value,
-                                row.querySelector('.descricao-cell input').value,
-                                row.querySelector('.nome-extrato-cell input').value,
-                                IDCLIENTE
-                            );
-                        }
-                    });
-
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar categorias:', error);
-                });
-        } else if (index === 5) {
-            const fornecedorAtual = cell.textContent.trim();
-            const selectFornecedor = document.createElement('select');
-            selectFornecedor.style.width = '100%';
-
-            selectFornecedor.classList.add('fornecedor-select');
-            selectFornecedor.name = 'fornecedor';
-
-            fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
-                .then(response => response.json())
-                .then(fornecedores => {
-                    const optionDefault = document.createElement('option');
-                    optionDefault.value = '';
-                    optionDefault.textContent = 'Selecione um Fornecedor';
-                    selectFornecedor.appendChild(optionDefault);
-
-                    fornecedores.forEach(fornecedor => {
-                        const option = document.createElement('option');
-                        option.value = fornecedor.IDFORNECEDOR;
-                        option.textContent = fornecedor.NOME_TIPO;
-                        selectFornecedor.appendChild(option);
-                    });
-
-                    const fornecedorSelecionado = Array.from(selectFornecedor.options).find(option => option.text === fornecedorAtual);
-                    if (fornecedorSelecionado) {
-                        fornecedorSelecionado.selected = true;
-                    }
-
-                    cell.innerHTML = '';
-                    cell.appendChild(selectFornecedor);
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar fornecedores:', error);
-                });
-        } else if (index > 0 && index < 8) {
-            const cellText = cell.textContent.trim();
-            cell.innerHTML = `<input type="text" value="${cellText}" class="editavel">`;
-
-            const input = cell.querySelector('input');
-            input.style.width = '100%';
-
-            if (index === 6 || index === 7) {
-                input.addEventListener('input', function () {
-                    this.value = formatarValorFinanceiroInput(this.value);
-                });
-            }
-        }
-    });
-
-    const ferramentasCell = cells[cells.length - 1];
-    row.dataset.originalButtons = ferramentasCell.innerHTML;
-    ferramentasCell.innerHTML = `
-        <button onclick="confirmarEdicao(this, ${idExtrato})" class="confirmar-btn">✔️</button>
-        <button onclick="cancelarEdicao(this)" class="cancelar-btn">❌</button>
-    `;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -2509,7 +2480,7 @@ function salvarAlteracoes() {
             VALOR: valor,
             IDBANCO: IDBANCO,
             IDCLIENTE: IDCLIENTE,
-            Fornecedor: fornecedor  // Usamos o nome do fornecedor
+            FORNECEDOR: fornecedor
         });
     });
 

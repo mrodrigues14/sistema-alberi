@@ -8,21 +8,23 @@
 <body>
 <div id="menu-container"></div>
 
+<!-- Rubricas e Sub-Rubricas Financeiras -->
 <div class="lista-rubricas">
-    <h2>Rubricas e Sub-Rubricas</h2>
+    <h2>Rubricas e Sub-Rubricas Financeiras</h2>
     <ul id="rubrica-lista">
     </ul>
 </div>
 
 <div class="adicionar-rubrica-container">
-    <button id="adicionar-rubrica-btn" class="adicionar-rubrica-btn">Adicionar Nova Rubrica</button>
-    <button id="adicionar-subrubrica-btn" class="adicionar-subrubrica-btn">Adicionar Nova Subrubrica</button>
+    <button id="adicionar-rubrica-btn" class="adicionar-rubrica-btn">Adicionar Nova Rubrica Financeira</button>
+    <button id="adicionar-subrubrica-btn" class="adicionar-subrubrica-btn">Adicionar Nova Subrubrica Financeira</button>
 </div>
 
+<!-- Popup para Adicionar Rubrica Financeira -->
 <div id="popup-adicionar-rubrica" class="popup">
     <div class="popup-content">
         <span class="close" onclick="fecharPopup('popup-adicionar-rubrica')">&times;</span>
-        <h2>Adicionar Nova Rubrica</h2>
+        <h2>Adicionar Nova Rubrica Financeira</h2>
         <form id="form-adicionar-rubrica" method="post" action="/categoria/">
             <input type="text" name="CATEGORIA" placeholder="Nome da Rubrica" required>
             <input type="hidden" name="idcliente" value="">
@@ -31,10 +33,11 @@
     </div>
 </div>
 
+<!-- Popup para Adicionar Sub-Rubrica Financeira -->
 <div id="popup-adicionar-subrubrica" class="popup">
     <div class="popup-content">
         <span class="close" onclick="fecharPopup('popup-adicionar-subrubrica')">&times;</span>
-        <h2>Adicionar Nova Sub-Rubrica</h2>
+        <h2>Adicionar Nova Sub-Rubrica Financeira</h2>
         <form id="form-adicionar-subrubrica" method="post" action="/categoria/subcategoria">
             <select name="categoriaPai" required>
                 <option value="" disabled selected>Selecione a Rubrica-Pai</option>
@@ -46,10 +49,11 @@
     </div>
 </div>
 
+<!-- Popup para Editar Rubrica Financeira -->
 <div id="popup-editar-rubrica" class="popup">
     <div class="popup-content">
         <span class="close" onclick="fecharPopup('popup-editar-rubrica')">&times;</span>
-        <h2>Editar Rubrica</h2>
+        <h2>Editar Rubrica Financeira</h2>
         <form id="form-editar-rubrica" method="post" action="/categoria/editar">
             <input type="hidden" name="idcliente" value="">
             <input type="hidden" name="categoriaAntiga" value="">
@@ -59,6 +63,43 @@
     </div>
 </div>
 
+<!-- Rubricas Contábeis -->
+<div class="lista-rubricas">
+    <h2>Rubricas Contábeis</h2>
+    <ul id="rubrica-contabil-lista">
+    </ul>
+</div>
+
+<div class="adicionar-rubrica-container">
+    <button id="adicionar-rubrica-contabil-btn" class="adicionar-rubrica-btn">Adicionar Nova Rubrica Contábil</button>
+</div>
+
+<!-- Popup para Adicionar Rubrica Contábil -->
+<div id="popup-adicionar-rubrica-contabil" class="popup">
+    <div class="popup-content">
+        <span class="close" onclick="fecharPopup('popup-adicionar-rubrica-contabil')">&times;</span>
+        <h2>Adicionar Nova Rubrica Contábil</h2>
+        <form id="form-adicionar-rubrica-contabil" method="post" action="/categoria/addContabil">
+            <input type="text" name="RUBRICA_CONTABIL" placeholder="Nome da Rubrica Contábil" required>
+            <input type="hidden" name="idcliente" value="">
+            <button type="submit">Adicionar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Popup para Editar Rubrica Contábil -->
+<div id="popup-editar-rubrica-contabil" class="popup">
+    <div class="popup-content">
+        <span class="close" onclick="fecharPopup('popup-editar-rubrica-contabil')">&times;</span>
+        <h2>Editar Rubrica Contábil</h2>
+        <form id="form-editar-rubrica-contabil" method="post" action="/categoria/contabil/editar">
+            <input type="hidden" name="idcliente" value="">
+            <input type="hidden" name="rubricaContabilAntiga" value="">
+            <input type="text" name="rubricaContabilNova" placeholder="Novo nome da Rubrica Contábil" required>
+            <button type="submit">Salvar</button>
+        </form>
+    </div>
+</div>
 
 <script src="/paginaRubricas/paginaRubricas.js"></script>
 </body>

@@ -28,11 +28,13 @@ function buscar(banco, data, cliente, callback) {
                     VALOR, 
                     CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, 
                     C.NOME AS NOME_CLIENTE, 
-                    IFNULL(F.NOME, EXTRATO.ID_FORNECEDOR) AS NOME_FORNECEDOR
+                    EXTRATO.ID_FORNECEDOR, -- ID_FORNECEDOR diretamente da tabela EXTRATO
+                    IFNULL(F.NOME, EXTRATO.FORNECEDOR) AS NOME_FORNECEDOR, -- Coluna FORNECEDOR
+                    EXTRATO.RUBRICA_CONTABIL -- Recuperando diretamente da tabela EXTRATO
                     FROM EXTRATO
                     INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
                     INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
-                    LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR
+                    LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR -- Junção para pegar o nome do fornecedor, se existir
                     LEFT JOIN CATEGORIA CAT ON EXTRATO.CATEGORIA = CAT.IDCATEGORIA
                     LEFT JOIN CATEGORIA SUBCAT ON CAT.ID_CATEGORIA_PAI = SUBCAT.IDCATEGORIA
                     WHERE ID_BANCO = ? AND DATA >= ? AND DATA < ? AND ID_CLIENTE = ?
@@ -45,6 +47,7 @@ function buscar(banco, data, cliente, callback) {
             }
         });
 }
+
 
 function extratoAEditar(id, callback) {
     mysqlConn.query(`SELECT IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR,

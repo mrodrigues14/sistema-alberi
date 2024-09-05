@@ -120,4 +120,47 @@ function buscarCategoriaPorId(idCategoria, callback) {
     );
 }
 
-module.exports = {buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria, editarCategoria, buscarCategoriaPorId};
+function buscarRubricasContabeis(callback) {
+    mysqlConn.query(
+        `SELECT ID_RUBRICA_CONTABIL, NOME FROM RUBRICA_CONTABIL ORDER BY ID_RUBRICA_CONTABIL`,
+        function(err, result) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
+
+function adicionarRubricaContabil(nome, callback) {
+    mysqlConn.query(`INSERT INTO RUBRICA_CONTABIL (NOME) VALUES (?)`, [nome], function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+function editarRubricaContabil(idRubrica, nomeNovo, callback) {
+    mysqlConn.query(`UPDATE RUBRICA_CONTABIL SET NOME = ? WHERE ID_RUBRICA_CONTABIL = ?`, [nomeNovo, idRubrica], function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+function deletarRubricaContabil(idRubrica, callback) {
+    mysqlConn.query(`DELETE FROM RUBRICA_CONTABIL WHERE ID_RUBRICA_CONTABIL = ?`, [idRubrica], function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+module.exports = {buscarRubricasContabeis, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil, buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria, editarCategoria, buscarCategoriaPorId};

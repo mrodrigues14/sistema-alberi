@@ -116,12 +116,12 @@ router.post('/inserir-lote', async (req, res) => {
 
     try {
         for (const entrada of entradas) {
-            let { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, Fornecedor } = entrada;
+            let { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR } = entrada;
 
             Data = formatarDataParaBanco(Data);
 
             await new Promise((resolve, reject) => {
-                inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, Fornecedor, (err, result) => {
+                inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, (err, result) => {
                     if (err) {
                         return reject(err);
                     }

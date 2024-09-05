@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const {buscar, buscarCategoriaPorId} = require('../repositories/categoria.repository');
+const {buscar, buscarCategoriaPorId, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil,
+    buscarRubricasContabeis
+} = require('../repositories/categoria.repository');
 const {adicionarOuAssociarCategoria} = require('../repositories/categoria.repository');
 const {deletar} = require('../repositories/categoria.repository');
 const {adicionarSubcategoria} = require('../repositories/categoria.repository');
@@ -77,6 +79,50 @@ router.get('/editar/:id', (req, res) => {
             return res.status(500).send("Erro ao buscar categoria para edição");
         }
         res.json(result);
+    });
+});
+
+router.get('/dadosContabil', (req, res) => {
+    buscarRubricasContabeis((err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao buscar rubricas contábeis");
+        }
+        res.json(result);
+    });
+});
+
+router.post('/addContabil', (req, res) => {
+    const { RUBRICA_CONTABIL } = req.body;
+    adicionarRubricaContabil(RUBRICA_CONTABIL, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao adicionar rubrica contábil");
+        }
+        res.redirect(`/rubricas?successMsg=Rubrica contábil ${RUBRICA_CONTABIL} adicionada com sucesso!`);
+    });
+});
+
+router.post('/editarContabil', (req, res) => {
+    const { idRubricaContabil, rubricaContabilNova } = req.body;
+    editarRubricaContabil(idRubricaContabil, rubricaContabilNova, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao editar rubrica contábil");
+        }
+        res.redirect(`/rubricas?successMsg=Rubrica contábil editada com sucesso!`);
+    });
+});
+
+router.post('/deleteContabil', (req, res) => {
+    const { idRubricaContabil } = req.body;
+    deletarRubricaContabil(idRubricaContabil, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro ao deletar rubrica contábil");
+        }
+        const currentUrl = req.headers.referer;
+        res.redirect(currentUrl);
     });
 });
 
