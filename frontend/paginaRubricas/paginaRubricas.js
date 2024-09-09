@@ -178,6 +178,18 @@ function editarCategoria(idCategoria) {
         });
 }
 
+function abrirPopupEdicao(categoria) {
+    const popup = document.getElementById('popup-editar-rubrica');
+    const form = document.getElementById('form-editar-rubrica');
+
+    // Preencha o formulário com os dados da categoria selecionada
+    form.elements['categoriaAntiga'].value = categoria.IDCATEGORIA;
+    form.elements['categoriaNova'].value = categoria.NOME;
+
+    // Abre o popup de edição
+    popup.style.display = 'flex';
+}
+
 // Funções para rubricas contábeis
 function editarRubricaContabil(idRubricaContabil) {
     fetch(`/categoria/editarContabil/${idRubricaContabil}`)
