@@ -9,7 +9,9 @@ const { inserir, buscarUltimasInsercoes, buscarBanco, buscarIDEmpresa, buscarCat
     buscarSaldoMesAnterior,
     verificarSaldoInicial,
     inserirSubextrato,
-    buscarSubextratos
+    buscarSubextratos,
+    adicionarRubricaContabil,
+    listarRubricasContabeis
 } = require('../repositories/insercao.repository');
 
 // Configurar multer para upload de arquivos
@@ -74,11 +76,12 @@ router.get('/dados-categoria', (req, res) => {
     });
 });
 
-router.post('/', async (req, res) => {
+router.post('/inserir-individual', async (req, res) => {
     try {
-        const { Data, categoria, descricao, nomeExtrato, valorEn, valorSa, id_bancoPost, id_empresa, fornecedor } = req.body;
+        const { Data, categoria, descricao, nomeExtrato, valorEn, valorSa, id_bancoPost, id_empresa, fornecedor, rubrica_contabil } = req.body;
         console.log("Dados recebidos no body:", req.body);
 
+        // Determina se é uma entrada ou saída
         let tipo;
         let valor = 0;
         if (valorEn) {
@@ -89,7 +92,8 @@ router.post('/', async (req, res) => {
             valor = valorSa;
         }
 
-        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa, fornecedor, (err, result) => {
+        // Insere os dados no banco
+        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa, fornecedor, rubrica_contabil, (err, result) => {
             if (err) {
                 console.error("Erro durante a inserção:", err);
                 return res.status(500).send("Erro ao inserir dados");
@@ -116,12 +120,12 @@ router.post('/inserir-lote', async (req, res) => {
 
     try {
         for (const entrada of entradas) {
-            let { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR } = entrada;
+            let { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil } = entrada;
 
             Data = formatarDataParaBanco(Data);
 
             await new Promise((resolve, reject) => {
-                inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, (err, result) => {
+                inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil, (err, result) => {
                     if (err) {
                         return reject(err);
                     }
@@ -135,6 +139,7 @@ router.post('/inserir-lote', async (req, res) => {
         res.status(500).send("Erro ao inserir dados");
     }
 });
+
 
 
 
@@ -243,7 +248,52 @@ router.get('/subextratos', (req, res) => {
     });
 });
 
+router.get('/listar-rubricas-contabeis', (req, res) => {
+    listarRubricasContabeis((err, result) => {
+        if (err) {
+            console.error("Erro ao listar rubricas contábeis:", err);
+            return res.status(500).send("Erro ao listar rubricas contábeis");
+        }
+        res.json(result);
+    });
+});
 
+router.post('/adicionar-rubrica-contabil', (req, res) => {
+    const { nome } = req.body;
+
+    adicionarRubricaContabil(nome, (err, result) => {
+        if (err) {
+            console.error("Erro ao adicionar rubrica contábil:", err);
+            return res.status(500).send("Erro ao adicionar rubrica contábil");
+        }
+        res.status(201).json({ message: "Rubrica contábil adicionada com sucesso", result });
+    });
+});
+
+router.put('/editar-rubrica-contabil/:id', (req, res) => {
+    const { id } = req.params;
+    const { nome } = req.body;
+
+    editarRubricaContabil(id, nome, (err, result) => {
+        if (err) {
+            console.error("Erro ao editar rubrica contábil:", err);
+            return res.status(500).send("Erro ao editar rubrica contábil");
+        }
+        res.json({ message: "Rubrica contábil editada com sucesso", result });
+    });
+});
+
+router.delete('/deletar-rubrica-contabil/:id', (req, res) => {
+    const { id } = req.params;
+
+    deletarRubricaContabil(id, (err, result) => {
+        if (err) {
+            console.error("Erro ao deletar rubrica contábil:", err);
+            return res.status(500).send("Erro ao deletar rubrica contábil");
+        }
+        res.json({ message: "Rubrica contábil deletada com sucesso", result });
+    });
+});
 
 
 module.exports = router;

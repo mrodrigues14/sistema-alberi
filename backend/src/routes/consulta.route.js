@@ -19,8 +19,8 @@ router.get('/editar/extratoLink', (req, res) => {
 });
 
 router.post('/editar/extrato', (req, res) => {
-    const { id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor } = req.body;
-    editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, (err, result) => {
+    const { id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil } = req.body;
+    editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil, (err, result) => {
         if (err) {
             res.status(500).json(err);
         } else {
@@ -28,6 +28,7 @@ router.post('/editar/extrato', (req, res) => {
         }
     });
 });
+
 
 
 router.get('/dados', (req, res) => {

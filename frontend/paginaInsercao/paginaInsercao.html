@@ -60,10 +60,11 @@
                     <thead>
                     <tr>
                         <th>Data</th>
-                        <th>Rubrica</th>
+                        <th>Rubrica Financeira</th>
                         <th>Fornecedor</th>
                         <th>Observação</th>
                         <th>Nome no Extrato</th>
+                        <th>Rubrica Contábil</th> <!-- Novo campo -->
                         <th>Entrada</th>
                         <th>Saída</th>
                     </tr>
@@ -73,18 +74,24 @@
                         <td><input type="date" name="Data" id="datepicker"></td>
                         <td>
                             <label>
-                                <select name="categoria" id="seletorCategoria"></select>
+                                <select name="categoria" id="seletorCategoria"></select> <!-- Já existente -->
                             </label>
                         </td>
                         <td>
                             <label>
-                                <select name="fornecedor" id="seletorFornecedor"></select>
+                                <select name="fornecedor" id="seletorFornecedor"></select> <!-- Já existente -->
                             </label>
                         </td>
                         <td class="textosBox" style="padding: 0"><input type="text" name="descricao" class="valor"></td>
                         <td class="textosBox" style="padding: 0"><input type="text" name="nomeExtrato" class="valor"></td>
+                        <td>
+                            <label>
+                                <select name="rubricaContabil" id="seletorRubricaContabil"></select> <!-- Novo select -->
+                            </label>
+                        </td>
                         <td><input type="text" name="valorEn" id="valorEn" class="valor"></td>
                         <td><input type="text" name="valorSa" id="valorSa" class="valor"></td>
+
                     </tr>
                     </tbody>
                 </table>
@@ -94,6 +101,7 @@
             <input type="submit" value="Enviar">
         </form>
     </div>
+
 
     <div id="downloadButtons">
         <button onclick="gerarPDF()">Gerar PDF</button>
@@ -126,6 +134,7 @@
     <div id="botão-deletar">
         <button onclick="deletarSelecionados()">Deletar Selecionados</button>
         <button onclick="selecionarTodasLinhas()">Selecionar Todos</button>
+        <button id="botaoEditarTodas">Editar Todas as Linhas</button>
 
     </div>
 
@@ -214,8 +223,6 @@
         <button onclick="fecharPopupResgateInvestimento()">Fechar</button>
     </div>
 </div>
-
-
 
 
 <script src="/paginaInsercao/paginaInsercao.js"></script>

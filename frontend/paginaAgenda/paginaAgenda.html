@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Agenda</title>
+
+    <!-- Inclua os estilos do FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.7/main.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.7/main.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/paginaAgenda/paginaAgendaStyle.css">
+
+</head>
+<body>
+<div id="menu-container"></div>
+
+<div id="loadingSpinner" class="loading-spinner" style="display: none;">
+    <div class="spinner"></div>
+</div>
+
+<button id="google-login-btn" style="display: none">Login com Google</button>
+
+<div id="calendar-container"></div>
+
+<div id="eventModal" style="display:none; position: fixed; z-index: 1000; left: 50%; top: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+    <form id="eventForm">
+        <input type="hidden" id="eventId">
+
+        <div>
+            <label for="eventTitle">Título:</label>
+            <input type="text" id="eventTitle" required>
+        </div>
+
+        <div>
+            <label for="eventAllDay">Dia Inteiro:</label>
+            <input type="checkbox" id="eventAllDay" onchange="toggleTimeFields()">
+        </div>
+
+        <div>
+            <label for="eventStartDate">Data:</label>
+            <input type="date" id="eventStartDate" required>
+        </div>
+
+        <!-- Contêineres para data final e horário (somente visíveis se não for "Dia Inteiro") -->
+        <div id="endDateContainer">
+            <label for="eventEndDate">Data Final:</label>
+            <input type="date" id="eventEndDate">
+        </div>
+
+        <div id="startTimeContainer">
+            <label for="eventStartTime">Hora de Início:</label>
+            <input type="time" id="eventStartTime">
+        </div>
+
+        <div id="endTimeContainer">
+            <label for="eventEndTime">Hora de Fim:</label>
+            <input type="time" id="eventEndTime">
+        </div>
+
+        <div>
+            <label for="eventDescription">Descrição:</label>
+            <textarea id="eventDescription"></textarea>
+        </div>
+
+        <div>
+            <label for="eventParticipants">Participantes:</label>
+            <input type="text" id="eventParticipants" placeholder="Emails separados por vírgula">
+        </div>
+
+        <div>
+            <label for="eventCalendar">Agenda:</label>
+            <select id="eventCalendar"></select>
+        </div>
+
+        <div>
+            <button type="submit">Salvar</button>
+            <button type="button" onclick="closeModal()">Cancelar</button>
+        </div>
+    </form>
+</div>
+
+<div id="viewEventModal" style="display:none; position: fixed; z-index: 1000; left: 50%; top: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+    <div>
+        <h3 id="viewEventTitle"></h3>
+        <p><strong>Início:</strong> <span id="viewEventStart"></span></p>
+        <p><strong>Fim:</strong> <span id="viewEventEnd"></span></p>
+        <p><strong>Descrição:</strong> <span id="viewEventDescription"></span></p>
+        <p><strong>Participantes:</strong> <span id="viewEventParticipants"></span></p>
+        <p><strong>Agenda:</strong> <span id="viewEventCalendar"></span></p>
+        <button id="editEventButton">Editar</button>
+        <button id="deleteEventButton">Deletar</button>
+        <button onclick="closeViewModal()">Fechar</button>
+    </div>
+</div>
+
+<div id="calendarSelectModal" style="display: none">
+    <div class="modal-content">
+        <h3>Selecionar Agendas</h3>
+        <div id="calendarSelect"></div>
+        <button onclick="applySelectedCalendars()">Aplicar</button>
+        <button onclick="closeCalendarSelectModal()">Fechar</button>
+    </div>
+</div>
+
+<div id="modalOverlay" style="display: none;"></div>
+
+
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+<script src="/paginaAgenda/paginaAgendaScript.js"></script>
+</body>
+</html>

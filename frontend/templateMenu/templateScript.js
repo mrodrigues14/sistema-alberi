@@ -216,18 +216,6 @@ function updateNomeEmpresa(nomeEmpresa, idEmpresa) {
     }
 }
 
-function showCalendarModal() {
-    fetch('templateMenu/calendar.html')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('calendarModalContent').innerHTML = html;
-            document.getElementById('calendarModal').style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Error loading the calendar:', error);
-        });
-}
-
 function handleEmpresa() {
     var nomeEmpresa = getStoredEmpresaName();
     var idEmpresa = localStorage.getItem('idEmpresaSelecionada');

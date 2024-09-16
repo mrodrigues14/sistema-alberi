@@ -1,13 +1,13 @@
 const mysqlConn = require("../base/database");
 
-function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, FORNECEDOR, callback) {
+function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, FORNECEDOR, rubrica_contabil, callback) {
 
-    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, FORNECEDOR];
+    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, FORNECEDOR, rubrica_contabil];
     console.log(parameters);
 
     mysqlConn.query(
-        `INSERT INTO EXTRATO (DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE, FORNECEDOR)
-         VALUES (?,?,?,?,?,?,?,?,?)`,
+        `INSERT INTO EXTRATO (DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE, FORNECEDOR, RUBRICA_CONTABIL)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`,
         parameters,
         function(err, result, fields) {
             if (err) {
@@ -19,6 +19,7 @@ function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_ba
         }
     );
 }
+
 
 
 
@@ -257,7 +258,68 @@ function buscarSubextratos(idExtratoPrincipal, callback) {
     });
 }
 
+// Listar rubricas contábeis
+function listarRubricasContabeis(callback) {
+    mysqlConn.query(
+        `SELECT * FROM RUBRICA_CONTABIL`,
+        function (err, result, fields) {
+            if (err) {
+                console.error(`Erro ao listar rubricas contábeis: ${err.message}`);
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
+
+// Adicionar rubrica contábil
+function adicionarRubricaContabil(nome, callback) {
+    mysqlConn.query(
+        `INSERT INTO RUBRICA_CONTABIL (NOME) VALUES (?)`,
+        [nome],
+        function (err, result, fields) {
+            if (err) {
+                console.error(`Erro ao adicionar rubrica contábil: ${err.message}`);
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
+
+// Editar rubrica contábil
+function editarRubricaContabil(id, novoNome, callback) {
+    mysqlConn.query(
+        `UPDATE RUBRICA_CONTABIL SET NOME = ? WHERE ID = ?`,
+        [novoNome, id],
+        function (err, result, fields) {
+            if (err) {
+                console.error(`Erro ao editar rubrica contábil: ${err.message}`);
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
+
+// Deletar rubrica contábil
+function deletarRubricaContabil(id, callback) {
+    mysqlConn.query(
+        `DELETE FROM RUBRICA_CONTABIL WHERE ID = ?`,
+        [id],
+        function (err, result, fields) {
+            if (err) {
+                console.error(`Erro ao deletar rubrica contábil: ${err.message}`);
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
 
 
-
-module.exports = {buscarSubextratos, inserirSubextrato, inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior, verificarSaldoInicial};
+module.exports = {listarRubricasContabeis, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil, buscarSubextratos, inserirSubextrato, inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior, verificarSaldoInicial};

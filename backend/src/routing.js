@@ -15,7 +15,7 @@ const templateMenu = require('./routes/templateMenu.route')
 const report = require('./routes/report.route')
 const usuario = require('./routes/usuario.route')
 const paginaInicial = require('./routes/paginaInicial.route')
-
+const agenda = require(`./routes/agenda.route`);
 
 
 function routing(app){
@@ -36,9 +36,7 @@ function routing(app){
     app.use('/report', report)
     app.use('/usuario', usuario)
     app.use('/paginaInicial', paginaInicial)
-
-
-
+    app.use('/agenda', agenda)
 }
 
 module.exports = routing;

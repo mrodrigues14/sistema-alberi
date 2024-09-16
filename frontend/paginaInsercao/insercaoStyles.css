@@ -958,3 +958,23 @@ select.fornecedor-select {
     background-color: #f9f9f9; /* Cor de fundo diferenciada */
     font-style: italic; /* Texto em itálico para subextratos */
 }
+
+.styled-select {
+    background-color: #f8f8f8;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px;
+    font-size: 14px;
+    color: #333;
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.styled-select:focus {
+    border-color: #66afe9;
+    outline: none;
+    box-shadow: 0 0 8px rgba(102, 175, 233, 0.6);
+}

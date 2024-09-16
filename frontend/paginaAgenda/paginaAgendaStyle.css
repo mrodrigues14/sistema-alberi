@@ -1,0 +1,166 @@
+#calendar-container {
+    width: 100%;
+    margin: 20px auto;
+    max-width: 1000px;
+}
+
+#calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#calendar-table th, #calendar-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    height: 100px;
+}
+
+#calendar-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.event {
+    display: block;
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+}
+
+.event-important {
+    background-color: #ffcccb;
+}
+
+#eventModal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+#calendar-container {
+    max-width: 90%;  /* Ajuste a largura conforme necessário */
+    margin: 0 auto;  /* Centraliza o calendário na tela */
+    padding: 10px;
+}
+
+/* Reduza a fonte e o espaçamento */
+.fc-toolbar-title {
+    font-size: 1.5em;  /* Tamanho menor para o título */
+}
+
+.fc-daygrid-day-number {
+    font-size: 0.8em;  /* Tamanho menor para os números dos dias */
+}
+
+.fc-event {
+    font-size: 0.75em;  /* Tamanho menor para os eventos */
+    padding: 2px;  /* Ajuste o padding dos eventos */
+}
+
+/* Tornar o calendário responsivo para telas menores */
+@media screen and (max-width: 768px) {
+    #calendar-container {
+        max-width: 100%;  /* Use a largura total da tela em dispositivos móveis */
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.2em;  /* Título menor em telas pequenas */
+    }
+
+    .fc-daygrid-day-number, .fc-event {
+        font-size: 0.7em;  /* Ajusta os números dos dias e eventos para serem menores */
+    }
+}
+
+/* Ajustes adicionais para telas ainda menores */
+@media screen and (max-width: 480px) {
+    .fc-toolbar-title {
+        font-size: 1em;  /* Reduz ainda mais o título em telas muito pequenas */
+    }
+
+    .fc-daygrid-day-number, .fc-event {
+        font-size: 0.6em;  /* Ajusta para um tamanho de fonte ainda menor */
+    }
+
+    /* Esconde os botões de navegação em telas muito pequenas */
+    .fc-toolbar-chunk:first-child {
+        display: none;
+    }
+}
+
+#calendarSelectModal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background-color: white;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para dar destaque */
+    padding: 20px; /* Espaçamento interno */
+    border-radius: 8px; /* Bordas arredondadas */
+    width: 300px; /* Largura do modal */
+}
+
+#calendarSelectModal .modal-content {
+    text-align: center; /* Centraliza o texto dentro do modal */
+}
+
+#calendarSelectModal h3 {
+    margin-bottom: 15px; /* Espaço abaixo do título */
+}
+
+#calendarSelectModal button {
+    margin: 5px; /* Espaçamento entre os botões */
+}
+
+#modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Escurece o fundo */
+    z-index: 999; /* Abaixo do modal, mas acima de outros elementos */
+}
+
+/* CSS para o spinner */
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #000;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.blur-background {
+    filter: blur(5px);
+    pointer-events: none;
+}
