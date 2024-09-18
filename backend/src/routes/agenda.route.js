@@ -165,8 +165,8 @@ router.put('/edit-event/:eventId', ensureValidToken, async (req, res) => {
     };
 
     if (req.body.allDay) {
-        updatedEvent.start = { date: req.body.start };
-        updatedEvent.end = { date: req.body.start };
+        updatedEvent.start = { date: req.body.start.date };
+        updatedEvent.end = { date: req.body.start.date };
     } else {
         updatedEvent.start = { dateTime: req.body.start, timeZone: 'America/Sao_Paulo' };
         updatedEvent.end = { dateTime: req.body.end, timeZone: 'America/Sao_Paulo' };

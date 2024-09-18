@@ -109,7 +109,7 @@ function initializePage() {
                 .then(data => {
                     const defaultOption = document.createElement('option');
                     defaultOption.value = '';
-                    defaultOption.textContent = 'Selecione uma Rubrica Contábil';
+                    defaultOption.textContent = '';
                     selectRubricaContabil.appendChild(defaultOption);
 
                     data.forEach(rubrica => {
@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializando o select2 para Rubrica Contábil
     $('#seletorRubricaContabil').select2({
-        placeholder: "Selecione uma rúbrica contábil", // Novo seletor adicionado
+        placeholder: "", // Novo seletor adicionado
         allowClear: true,
         sorter: data => data.sort((a, b) => a.text.localeCompare(b.text))
     });
@@ -1471,7 +1471,7 @@ function editarLinha(buttonElement) {
                 .then(rubricasContabeis => {
                     const optionDefault = document.createElement('option');
                     optionDefault.value = '';
-                    optionDefault.textContent = 'Selecione uma Rubrica Contábil';
+                    optionDefault.textContent = '';
                     selectRubricaContabil.appendChild(optionDefault);
 
                     rubricasContabeis.forEach(rubrica => {
@@ -2829,7 +2829,7 @@ function abrirPopupInsercaoSubextrato(idExtratoPrincipal) {
             const selectCategoria = document.getElementById('seletorSubextratoCategoria');
             const optionDefault = document.createElement('option');
             optionDefault.value = '';
-            optionDefault.textContent = 'Selecione uma Rubrica';
+            optionDefault.textContent = '';
             selectCategoria.appendChild(optionDefault);
 
             const categoriasTree = construirArvoreDeCategorias(categorias);

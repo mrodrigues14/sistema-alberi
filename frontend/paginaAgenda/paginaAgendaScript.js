@@ -89,7 +89,6 @@ async function loadGoogleCalendarEvents() {
         const events = await response.json();
         console.log(events);
         return events.map(event => {
-            // Verifica se o evento é de dia inteiro (se o campo date está presente ao invés de dateTime)
             const isAllDay = !!event.start.date && !!event.end.date;
             return {
                 id: event.id,
@@ -120,7 +119,7 @@ function initializeFullCalendar(events) {
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         events: events,
-        locale: 'pt-br', // Define o idioma como português brasileiro
+        locale: 'pt-br',
         editable: true,
         selectable: true,
         select: function(info) {
@@ -144,7 +143,7 @@ function initializeFullCalendar(events) {
             day: "Dia"
         },
         eventClick: function(info) {
-            const isAllDay = info.event.allDay; // Verifica se é dia inteiro
+            const isAllDay = info.event.allDay;
 
             const event = {
                 id: info.event.id,
@@ -155,25 +154,24 @@ function initializeFullCalendar(events) {
                 participants: info.event.extendedProps.participants,
                 calendarId: info.event.extendedProps.calendarId,
                 calendarName: info.event.extendedProps.calendarName,
-                allDay: isAllDay // Adiciona a flag de "dia inteiro"
+                allDay: isAllDay
             };
-            openViewModal(event); // Abre o modal de visualização
+            openViewModal(event);
         },
         eventDrop: function(info) {
-            const isAllDay = info.event.allDay; // Verifica se o evento é de dia inteiro
+            const isAllDay = info.event.allDay;
 
             const event = {
                 id: info.event.id,
                 title: info.event.title,
-                start: info.event.startStr, // Usa startStr para o novo horário
-                end: info.event.endStr, // Usa endStr para o novo horário
-                description: info.event.extendedProps.description || '',  // Adiciona a descrição se existir
-                participants: info.event.extendedProps.participants || [],  // Adiciona os participantes se existirem
-                calendarId: info.event.extendedProps.calendarId || 'primary',  // Adiciona o calendarId correto
-                allDay: isAllDay // Inclui a flag `allDay` para garantir que o valor seja enviado
+                start: info.event.startStr,
+                end: info.event.endStr,
+                description: info.event.extendedProps.description || '',
+                participants: info.event.extendedProps.participants || [],
+                calendarId: info.event.extendedProps.calendarId || 'primary',
+                allDay: isAllDay
             };
 
-            // Atualiza o evento após ser arrastado
             updateGoogleCalendarEvent(event);
         }
     });
@@ -219,26 +217,23 @@ function closeViewModal() {
     document.getElementById('viewEventModal').style.display = 'none';
 }
 
-function openModal(event = {}) {
+async function openModal(event = {}) {
     const modal = document.getElementById('eventModal');
     modal.style.display = 'block';
 
     document.getElementById('eventId').value = event.id || '';
     document.getElementById('eventTitle').value = event.title || '';
 
-    // Verifica se o evento é de dia inteiro
     const isAllDay = event.allDay !== undefined ? event.allDay : false;
     document.getElementById('eventAllDay').checked = isAllDay;
-    toggleTimeFields(); // Atualiza os campos de hora com base no valor de dia inteiro
+    toggleTimeFields();
 
-    // Define a data de início e fim
     const startDate = event.start ? new Date(event.start).toISOString().split('T')[0] : '';
     const endDate = event.end ? new Date(event.end).toISOString().split('T')[0] : '';
     document.getElementById('eventStartDate').value = startDate;
     document.getElementById('eventEndDate').value = endDate;
 
     if (!isAllDay) {
-        // Formata o horário local corretamente para o campo de horas
         const startTime = event.start ? new Date(event.start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
         const endTime = event.end ? new Date(event.end).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
         document.getElementById('eventStartTime').value = startTime;
@@ -251,9 +246,31 @@ function openModal(event = {}) {
     document.getElementById('eventDescription').value = event.description || '';
     document.getElementById('eventParticipants').value = (event.participants || []).join(', ');
 
-    const calendarDropdown = document.getElementById('eventCalendar');
-    calendarDropdown.value = event.calendarId || 'primary';
+    await loadCalendarsIntoDropdown(event.calendarId || 'primary');
 }
+
+async function loadCalendarsIntoDropdown(selectedCalendarId) {
+    try {
+        const response = await fetch('/agenda/list-calendars');
+        const calendars = await response.json();
+        const calendarDropdown = document.getElementById('eventCalendar');
+
+        calendarDropdown.innerHTML = '';
+
+        calendars.forEach(calendar => {
+            const option = document.createElement('option');
+            option.value = calendar.id;
+            option.textContent = calendar.summary;
+            if (calendar.id === selectedCalendarId) {
+                option.selected = true;
+            }
+            calendarDropdown.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar as agendas no dropdown:', error);
+    }
+}
+
 
 function closeModal() {
     document.getElementById('eventModal').style.display = 'none';
@@ -316,7 +333,7 @@ async function addNewEventToGoogleCalendar(event) {
     console.log(event);
     try {
         const validParticipants = event.participants
-            .filter(email => validateEmail(email)) // Filtra apenas e-mails válidos
+            .filter(email => validateEmail(email))
             .map(email => ({ email }));
 
         const eventData = {
@@ -343,7 +360,7 @@ async function addNewEventToGoogleCalendar(event) {
 
         if (response.ok) {
             console.log('Evento adicionado com sucesso');
-            await refreshCalendar(); // Atualiza o calendário após adicionar evento
+            await refreshCalendar();
         } else {
             console.error('Erro ao adicionar evento.');
         }
