@@ -2,7 +2,7 @@ const express = require('express');
 const { iniciarRecuperacaoSenha, redefinirSenha } = require("../repositories/login.repository");
 const NodeCache = require('node-cache');
 const bcrypt = require('bcrypt');
-const cache = new NodeCache({ stdTTL: 3600 }); // Tokens expiram em 1 hora
+const cache = new NodeCache({ stdTTL: 3600 });
 const router = express.Router();
 const db = require('../base/database');
 
@@ -39,17 +39,25 @@ router.post('/login', (req, res) => {
                                         console.error('Erro ao atualizar ULTIMO_ACESSO:', err);
                                         return res.status(500).send('Server error');
                                     }
+                                    console.log("aaa", user.NOME_DO_USUARIO, user.IDUSUARIOS);
 
                                     req.session.username = user.NOME_DO_USUARIO;
                                     req.session.role = user.ROLE;
                                     req.session.idusuario = user.IDUSUARIOS;
-                                    res.status(200).send({
-                                        message: 'Login successful',
-                                        user: {
-                                            username: user.NOME_DO_USUARIO,
-                                            role: user.ROLE,
-                                            idusuario: user.IDUSUARIOS
+
+                                    req.session.save(err => {
+                                        if (err) {
+                                            console.error('Erro ao salvar sessão:', err);
+                                            return res.status(500).send('Erro ao salvar sessão');
                                         }
+                                        res.status(200).send({
+                                            message: 'Login successful',
+                                            user: {
+                                                username: user.NOME_DO_USUARIO,
+                                                role: user.ROLE,
+                                                idusuario: user.IDUSUARIOS
+                                            }
+                                        });
                                     });
                                 }
                             );
@@ -66,6 +74,7 @@ router.post('/login', (req, res) => {
         return res.status(400).send({ message: 'Por favor, forneça um username e uma senha.' });
     }
 });
+
 
 
 router.get('/usuario-logado', (req, res) => {

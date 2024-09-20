@@ -29,10 +29,10 @@ router.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
     try {
         const { tokens } = await oauth2Client.getToken(code);
-
-        if (!req.session || !req.session.idusuario) {
-            return res.status(401).send('Usuário não autenticado para salvar tokens');
-        }
+        console.log(req.session,req.session.idusuario,req.session)
+        // if (!req.session || !req.session.idusuario) {
+        //     return res.status(401).send('Usuário não autenticado para salvar tokens');
+        // }
 
         req.session.tokens = tokens;
         await saveGoogleTokens(req.session.idusuario, tokens);
