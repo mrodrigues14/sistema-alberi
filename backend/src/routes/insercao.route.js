@@ -169,9 +169,10 @@ router.get('/anexos', (req, res) => {
 
 // Rota para upload de anexos
 router.post('/upload-anexo', upload.single('anexo'), (req, res) => {
-    const { idExtrato } = req.body;
+    const { idExtrato, tipoExtratoAnexo } = req.body;
     const { filename } = req.file;
-    uploadAnexo(idExtrato, filename, (err, result) => {
+
+    uploadAnexo(idExtrato, filename, tipoExtratoAnexo, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao fazer upload de anexo");
@@ -179,6 +180,7 @@ router.post('/upload-anexo', upload.single('anexo'), (req, res) => {
         res.json({ success: true });
     });
 });
+
 
 router.post('/salvar-subdivisao', (req, res) => {
     const { idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, valorEntrada, valorSaida } = req.body;

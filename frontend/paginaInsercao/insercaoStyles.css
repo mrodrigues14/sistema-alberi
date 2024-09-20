@@ -874,48 +874,45 @@ select.fornecedor-select {
     border-radius: 3px;
 }
 
-.dropbtn-extrato-opcoes {
-    background-color: transparent;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-}
-
 .dropdown-extrato-opcoes {
     position: relative;
     display: inline-block;
 }
 
 .dropdown-content-extrato-opcoes {
-    display: none;
-    position: absolute;
-    background-color: white;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
+    display: flex;
     border-radius: 5px;
     padding: 5px;
-    left: 50%;
-    transform: translateX(-50%);
+    z-index: 1;
+    gap: 10px;
 }
 
 .dropdown-content-extrato-opcoes button {
     background-color: transparent;
     border: none;
     color: black;
-    padding: 10px;
-    text-align: left;
-    width: 100%;
+    padding: 5px;
     cursor: pointer;
+    font-size: 20px;
 }
 
-.dropdown-extrato-opcoes:hover .dropdown-content-extrato-opcoes {
-    display: block;
+
+
+/* Cores específicas para os ícones */
+.edit-btn-extrato-opcoes i {
+    color: #2196F3;
 }
 
-.dropdown-content-extrato-opcoes button:hover {
-    background-color: #f1f1f1;
+.select-btn-extrato-opcoes i {
+    color: #4CAF50;
 }
+
+
+.delete-btn-extrato-opcoes i {
+    color: #f44336;
+}
+
+
 
 .popup-overlay-resgate-investimento {
     display: none;
@@ -978,3 +975,149 @@ select.fornecedor-select {
     outline: none;
     box-shadow: 0 0 8px rgba(102, 175, 233, 0.6);
 }
+
+.confirmar-btn, .cancelar-btn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 10px;
+}
+
+.confirmar-btn i {
+    color: #4CAF50; /* Verde para confirmar */
+}
+
+.cancelar-btn i {
+    color: #f44336; /* Vermelho para cancelar */
+}
+
+.confirmar-btn:hover i {
+    color: #388E3C; /* Tom de verde mais escuro no hover */
+}
+
+.cancelar-btn:hover i {
+    color: #D32F2F; /* Tom de vermelho mais escuro no hover */
+}
+/* Estilo geral do popup de anexos */
+/* Overlay de fundo */
+/* Overlay de fundo */
+#anexo-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9998;
+}
+
+/* Estilo geral do popup de anexos */
+#anexo-popup {
+    display: none;
+    background-color: #fff;
+    padding: 30px 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 90%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    text-align: center; /* Centraliza o conteúdo */
+    flex-direction: column;
+}
+
+/* Título do popup */
+#anexo-popup h2 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #333;
+    text-align: center; /* Centraliza o título */
+}
+
+/* Estilo para a área de conteúdo de anexos */
+#anexo-content {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#anexo-content p {
+    font-size: 1rem;
+    color: #777;
+}
+
+/* Formulário de anexo */
+.anexo-popup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Input de arquivo */
+.anexo-popup-input {
+    font-size: 1rem;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+.anexo-popup-input:hover {
+    background-color: #eee;
+}
+
+/* Estilo do botão de enviar */
+.anexo-popup-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.anexo-popup-button:hover {
+    background-color: #45a049;
+}
+
+/* Estilo do botão de fechar */
+.anexo-popup-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.anexo-popup-close:hover {
+    color: #000;
+}
+
+/* Select para o tipo de anexo */
+.anexo-popup-select {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+

@@ -676,6 +676,10 @@ function alternarModoEdicao() {
                 Array.from(cells).map(cell => cell.textContent.trim()) // Armazenando os valores originais das células
             );
 
+            // Armazena o conteúdo HTML da célula de anexos
+            const anexosCell = cells[cells.length - 2]; // Supondo que a penúltima célula seja a dos anexos
+            linha.dataset.originalAnexos = anexosCell.innerHTML;
+
             cells.forEach((cell, index) => {
                 if (index === 0) { // Data (primeira coluna)
                     const dataAtual = cell.textContent.trim();
@@ -811,8 +815,8 @@ function alternarModoEdicao() {
             const ferramentasCell = cells[cells.length - 1];
             linha.dataset.originalButtons = ferramentasCell.innerHTML;
             ferramentasCell.innerHTML = `
-                <button onclick="confirmarEdicao(this, ${linha.dataset.idextrato})" class="confirmar-btn">✔️</button>
-                <button onclick="cancelarEdicao(this)" class="cancelar-btn">❌</button>
+                <button onclick="confirmarEdicao(this, ${linha.dataset.idextrato})" class="confirmar-btn"><i class="fas fa-check"></i></button>
+                <button onclick="cancelarEdicao(this)" class="cancelar-btn"><i class="fas fa-times"></i></button>
             `;
         });
 
@@ -826,6 +830,10 @@ function alternarModoEdicao() {
             cells.forEach((cell, index) => {
                 cell.textContent = dadosOriginais[index]; // Restaura o conteúdo original da célula
             });
+
+            // Restaurar anexos
+            const anexosCell = cells[cells.length - 2]; // Supondo que a penúltima célula seja a dos anexos
+            anexosCell.innerHTML = linha.dataset.originalAnexos;
 
             const ferramentasCell = cells[cells.length - 1];
             ferramentasCell.innerHTML = linha.dataset.originalButtons; // Restaura os botões originais
@@ -918,16 +926,23 @@ async function atualizarTabela(dados, saldoInicial) {
             const deleteCell = row.insertCell();
             deleteCell.innerHTML = `
                 <div class="dropdown-extrato-opcoes">
-                    <button class="dropbtn-extrato-opcoes">⋮</button>
                     <div class="dropdown-content-extrato-opcoes">
-                        <button onclick="editarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="edit-btn-extrato-opcoes">Editar</button>
-                        <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="select-btn-extrato-opcoes">Selecionar</button>
+                        <button onclick="editarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="edit-btn-extrato-opcoes">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="select-btn-extrato-opcoes">
+                            <i class="fas fa-hand-pointer"></i>
+                        </button>
                         <form action="insercao/deletar-extrato" method="post" onsubmit="return confirm('Tem certeza que deseja deletar este extrato?');">
                             <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
-                            <button type="submit" class="delete-btn-extrato-opcoes">Deletar</button>
+                            <button type="submit" class="delete-btn-extrato-opcoes">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </form>
                     </div>
                 </div>
+
+
             `;
         }
     }
@@ -1250,9 +1265,12 @@ function editarExtrato(idExtrato) {
 function abrirPopupAnexos(idExtrato) {
     document.getElementById('idExtratoAnexo').value = idExtrato;
     const popup = document.getElementById('anexo-popup');
+    const overlay = document.getElementById('anexo-overlay');
     const anexoContent = document.getElementById('anexo-content');
-    anexoContent.innerHTML = '';
+    anexoContent.innerHTML = ''; // Limpa conteúdo anterior
+    console.log(idExtrato)
 
+    // Chama os anexos via fetch e abre o popup
     fetch(`/insercao/anexos?idExtrato=${idExtrato}`)
         .then(response => response.json())
         .then(data => {
@@ -1260,6 +1278,9 @@ function abrirPopupAnexos(idExtrato) {
                 anexoContent.innerHTML = '<p>Sem anexos</p>';
             } else {
                 data.forEach(anexo => {
+                    const container = document.createElement('div');
+                    container.classList.add('anexo-container');
+
                     const link = document.createElement('a');
                     link.href = `/consulta/download-anexo/${anexo.NOME_ARQUIVO}`;
                     link.target = '_blank';
@@ -1273,40 +1294,65 @@ function abrirPopupAnexos(idExtrato) {
                         img.src = '/paginaInsercao/imagens/wordIcon.jpeg';
                     } else if (anexo.NOME_ARQUIVO.toLowerCase().endsWith('.png') || anexo.NOME_ARQUIVO.toLowerCase().endsWith('.jpg') || anexo.NOME_ARQUIVO.toLowerCase().endsWith('.jpeg')) {
                         img.src = `/paginaInsercao/imagens/imagesIcon.png`;
+                        img.classList.add('preview-image');
                     } else {
                         img.src = '/paginaInsercao/imagens/unknownFile.png';
                     }
 
                     link.appendChild(img);
 
+                    const infoContainer = document.createElement('div');
+                    infoContainer.classList.add('anexo-info');
+
                     const text = document.createElement('span');
-                    text.textContent = anexo.NOME_ARQUIVO;
+
+                    // Limita o nome do arquivo a 6 caracteres mais a extensão
+                    const nomeArquivo = anexo.NOME_ARQUIVO;
+                    const limite = 6;
+                    const ext = nomeArquivo.slice(nomeArquivo.lastIndexOf('.')); // Pega a extensão
+                    const nomeCortado = nomeArquivo.length > limite + ext.length ? nomeArquivo.slice(0, limite) + '...' + ext : nomeArquivo;
+
+                    text.textContent = nomeCortado; // Nome cortado exibido
                     text.classList.add('anexo-text');
 
-                    link.appendChild(text);
-                    anexoContent.appendChild(link);
+                    const tipoText = document.createElement('span');
+                    tipoText.textContent = anexo.TIPO_EXTRATO_ANEXO;
+                    tipoText.classList.add('anexo-tipo');
+
+                    infoContainer.appendChild(text);
+                    infoContainer.appendChild(tipoText);
+                    container.appendChild(link);
+                    container.appendChild(infoContainer);
+
+                    anexoContent.appendChild(container);
                 });
             }
-            popup.style.display = 'flex';
+            popup.style.display = 'flex'; // Mostra o popup
+            overlay.style.display = 'block'; // Mostra o fundo escuro
         })
         .catch(error => {
             console.error('Erro ao carregar anexos:', error);
             anexoContent.innerHTML = '<p>Erro ao carregar anexos</p>';
             popup.style.display = 'flex';
+            overlay.style.display = 'block';
         });
 }
 
 function fecharPopup() {
     document.getElementById('anexo-popup').style.display = 'none';
+    document.getElementById('anexo-overlay').style.display = 'none';
 }
+
 
 function uploadAnexo() {
     const formData = new FormData();
     const anexoFile = document.getElementById('anexoFile').files[0];
     const idExtrato = document.getElementById('idExtratoAnexo').value;
-
+    const tipoExtratoAnexo = document.getElementById('tipoExtratoAnexo').value; // Novo campo de dropdown
+    console.log(idExtrato)
     formData.append('anexo', anexoFile);
     formData.append('idExtrato', idExtrato);
+    formData.append('tipoExtratoAnexo', tipoExtratoAnexo); // Inclui o tipo de anexo no formData
 
     fetch('/insercao/upload-anexo', {
         method: 'POST',
@@ -1510,8 +1556,13 @@ function editarLinha(buttonElement) {
     const ferramentasCell = cells[cells.length - 1];
     row.dataset.originalButtons = ferramentasCell.innerHTML;
     ferramentasCell.innerHTML = `
-        <button onclick="confirmarEdicao(this, ${idExtrato})" class="confirmar-btn">✔️</button>
-        <button onclick="cancelarEdicao(this)" class="cancelar-btn">❌</button>
+        <button onclick="confirmarEdicao(this, ${idExtrato})" class="confirmar-btn">
+            <i class="fas fa-check"></i>
+        </button>
+        <button onclick="cancelarEdicao(this)" class="cancelar-btn">
+            <i class="fas fa-times"></i>
+        </button>
+
     `;
 }
 

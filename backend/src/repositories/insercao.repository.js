@@ -135,7 +135,7 @@ function deletarExtrato(idExtrato, callback) {
 // Listar anexos de um extrato
 function listarAnexos(idExtrato, callback) {
     mysqlConn.query(
-        `SELECT NOME_ARQUIVO FROM EXTRATO_ANEXOS WHERE ID_EXTRATO = ?`,
+        `SELECT NOME_ARQUIVO, TIPO_EXTRATO_ANEXO FROM EXTRATO_ANEXOS WHERE ID_EXTRATO = ?`,
         [idExtrato],
         function(err, result, fields) {
             if (err) {
@@ -147,11 +147,12 @@ function listarAnexos(idExtrato, callback) {
     );
 }
 
+
 // Upload de anexo
-function uploadAnexo(idExtrato, nomeArquivo, callback) {
+function uploadAnexo(idExtrato, nomeArquivo, tipoExtratoAnexo, callback) {
     mysqlConn.query(
-        `INSERT INTO EXTRATO_ANEXOS (ID_EXTRATO, NOME_ARQUIVO) VALUES (?, ?)`,
-        [idExtrato, nomeArquivo],
+        `INSERT INTO EXTRATO_ANEXOS (ID_EXTRATO, NOME_ARQUIVO, TIPO_EXTRATO_ANEXO) VALUES (?, ?, ?)`,
+        [idExtrato, nomeArquivo, tipoExtratoAnexo],
         function(err, result, fields) {
             if (err) {
                 callback(err, null);
@@ -161,6 +162,7 @@ function uploadAnexo(idExtrato, nomeArquivo, callback) {
         }
     );
 }
+
 
 function inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, valorEntrada, valorSaida, callback) {
     const query = `INSERT INTO EXTRATO (ID_SUBEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, ID_FORNECEDOR, TIPO_DE_TRANSACAO, VALOR) 
