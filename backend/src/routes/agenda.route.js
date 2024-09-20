@@ -3,11 +3,13 @@ const router = express.Router();
 const path = require('path');
 const { google } = require('googleapis');
 const { saveGoogleTokens, getUserGoogleTokens } = require("../repositories/agenda.repository");
+require('dotenv').config();
+
 
 const oauth2Client = new google.auth.OAuth2(
-    '505163055532-3ss6fiin8fs41he3pen1kprh460srt6g.apps.googleusercontent.com',
-    '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',
-    'http://localhost:8080/agenda/oauth2callback'
+    process.env.OAUTH_CLIENT_ID,
+    process.env.OAUTH_CLIENT_SECRET,
+    process.env.OAUTH_REDIRECT_URI
 );
 
 router.get('/', (req, res) => {

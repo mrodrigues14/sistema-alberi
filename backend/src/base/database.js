@@ -1,12 +1,15 @@
+// Carregar variáveis de ambiente do arquivo .env
+require('dotenv').config();
+
 const mysql = require('mysql2');
 
 const poolConfig = {
-    host: '82.180.153.103',
-    user: 'u624627699_admin',
-    password: 'Alberi1234',
-    database: 'u624627699_albericonsult',
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: process.env.DB_CONNECTION_LIMIT || 10,
     queueLimit: 0
 };
 
