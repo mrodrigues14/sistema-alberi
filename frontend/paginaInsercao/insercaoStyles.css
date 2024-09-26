@@ -142,9 +142,6 @@
     flex: 1;
 }
 
-.tabela th, .tabela td {
-    padding: 8px;
-}
 
 .seletores {
     display: flex;
@@ -793,6 +790,7 @@ select.fornecedor-select {
     padding: 10px;
     text-align: left;
     border: 1px solid #ddd;
+    color: white;
 }
 
 /* Configurações responsivas */

@@ -228,13 +228,14 @@ function resetForm() {
     document.getElementById('meuFormulario').reset();
 }
 
+let datasRecorrentesGlobais = []; // Variável global para armazenar as datas recorrentes geradas
+
 document.getElementById('meuFormulario').addEventListener('submit', async function(event) {
     event.preventDefault(); // Previne o envio padrão do formulário
 
     // Captura os valores do formulário
     const formData = new FormData(this);
-
-    const Data = formData.get('Data');
+    const Data = formData.get('Data'); // Data inicial
     const categoria = formData.get('categoria'); // ID da categoria
     const descricao = formData.get('descricao');
     const nomeExtrato = formData.get('nomeExtrato');
@@ -246,51 +247,54 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
     const rubricaContabilSelecionada = document.getElementById('seletorRubricaContabil');
     const rubricaContabil = rubricaContabilSelecionada.options[rubricaContabilSelecionada.selectedIndex].textContent.trim();
 
-    // Obtém o nome da categoria a partir do select
-    const categoriaSelecionada = document.getElementById('seletorCategoria');
-    const nomeCategoria = categoriaSelecionada.options[categoriaSelecionada.selectedIndex].getAttribute('data-nome');
-
-    // Captura o nome do fornecedor em vez do ID
+    // Captura o nome do fornecedor
     const fornecedorSelecionado = document.getElementById('seletorFornecedor');
     const fornecedor = fornecedorSelecionado.options[fornecedorSelecionado.selectedIndex].textContent.trim();
 
-    let bancoSelecionado = null;
-
-    if (nomeCategoria === 'investimento' || nomeCategoria === 'aplicação' || nomeCategoria === 'resgate') {
-        bancoSelecionado = await abrirPopupResgateInvestimento(nomeCategoria, valorEn, valorSa, Data, fornecedor, descricao, nomeExtrato, id_empresa);
-        if (bancoSelecionado === null) {
-            // O usuário cancelou o pop-up, então não prosseguimos
-            return;
-        }
+    // Se houver datas recorrentes, use-as, caso contrário, use apenas a data inicial
+    let datasRecorrentes = [Data]; // Inicializa com a data inicial
+    if (datasRecorrentesGlobais.length > 0) {
+        datasRecorrentes = datasRecorrentesGlobais; // Substitui pela recorrência se houver
     }
-
     const idBancoElement = document.getElementById('seletorBanco');
     const idBanco = IDBANCO || (idBancoElement ? idBancoElement.value : null);
-
-    // Continua com a inserção manual normal
-    const dados = {
-        Data,
-        categoria, // ID da categoria
-        descricao,
-        nomeExtrato,
-        valorEn,
-        valorSa,
-        id_bancoPost: idBanco, // Usa o banco selecionado no popup ou o original
-        id_empresa,
-        fornecedor, // Nome do fornecedor capturado
+    // Monta o objeto de dados para cada data (incluindo datas de recorrência)
+    const dadosParaInserir = datasRecorrentes.map(data => ({
+        Data: data,
+        Categoria: categoria, // ID da categoria
+        Descricao: descricao,
+        Nome: nomeExtrato,
+        TIPO: valorEn ? 'Entrada' : 'Saída', // Determina se é entrada ou saída
+        VALOR: valorEn || valorSa,
+        IDBANCO: idBanco,
+        IDCLIENTE: id_empresa, // Ajuste conforme a necessidade
+        FORNECEDOR: fornecedor, // Nome do fornecedor
         rubrica_contabil: rubricaContabil // Inclui a Rubrica Contábil no objeto de dados
-    };
+    }));
 
-    console.log(dados);
+    console.log(dadosParaInserir); // Verifique os dados no console antes de enviar
 
     try {
-        const response = await fetch('/insercao/inserir-individual', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dados)
-        });
+        let response;
+        if (datasRecorrentesGlobais.length > 1) {
+            // Se for recorrente, usa a rota de inserir-lote
+            response = await fetch('/insercao/inserir-lote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dadosParaInserir) // Envia um array com todas as transações recorrentes
+            });
+        } else {
+            // Se for inserção normal, usa a rota de inserção individual
+            response = await fetch('/insercao/inserir-individual', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dadosParaInserir[0]) // Envia apenas a transação principal
+            });
+        }
 
         if (response.ok) {
             window.location.href = '/insercao';
@@ -302,6 +306,76 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
         alert('Ocorreu um erro ao inserir os dados. Por favor, tente novamente.');
     }
 });
+
+// Ao clicar no seletor de categoria, abre o pop-up para perguntar sobre a recorrência
+document.getElementById('seletorCategoria').addEventListener('click', function() {
+    abrirPopupRecorrencia();
+});
+
+function abrirPopupRecorrencia() {
+    var popup = document.getElementById("popupRecorrencia");
+    popup.style.display = "block";
+}
+
+function fecharPopupA() {
+    var popup = document.getElementById("popupRecorrencia");
+    popup.style.display = "none";
+}
+
+function mostrarFrequencia() {
+    document.getElementById("frequenciaRecorrencia").style.display = "block";
+}
+
+function mostrarQuantidade() {
+    document.getElementById("quantidadeRecorrencia").style.display = "block";
+}
+
+// Confirma a recorrência e armazena as datas recorrentes, fechando o pop-up
+function confirmarRecorrencia() {
+    var recorrente = document.querySelector('input[name="recorrente"]:checked').value;
+    if (recorrente === 'sim') {
+        var frequencia = document.getElementById("frequencia").value;
+        var quantidade = document.getElementById("quantidade").value;
+
+        if (!frequencia || !quantidade) {
+            alert("Por favor, selecione a frequência e insira a quantidade.");
+            return;
+        }
+
+        // Gera as datas recorrentes
+        datasRecorrentesGlobais = gerarDatasRecorrentes(document.getElementById('datepicker').value, frequencia, quantidade);
+    } else {
+        // Se não for recorrente, limpa a variável global para não gerar datas adicionais
+        datasRecorrentesGlobais = [];
+    }
+
+    fecharPopupA(); // Fecha o pop-up após confirmar
+}
+
+// Gera as datas recorrentes com base na frequência e quantidade
+function gerarDatasRecorrentes(dataInicial, frequencia, quantidade) {
+    var datas = [];
+    var dataBase = new Date(dataInicial);
+
+    for (var i = 1; i <= quantidade; i++) {
+        var novaData = new Date(dataBase);
+
+        if (frequencia === 'diaria') {
+            novaData.setDate(novaData.getDate() + i);
+        } else if (frequencia === 'semanal') {
+            novaData.setDate(novaData.getDate() + (7 * i));
+        } else if (frequencia === 'quinzenal') {
+            novaData.setDate(novaData.getDate() + (14 * i));
+        } else if (frequencia === 'mensal') {
+            novaData.setMonth(novaData.getMonth() + i);
+        }
+
+        datas.push(novaData.toISOString().split('T')[0]); // Armazena a data formatada em AAAA-MM-DD
+    }
+
+    return datas;
+}
+
 
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
     categorias.forEach(categoria => {
@@ -645,6 +719,7 @@ async function buscarDados() {
 
         const response = await fetch(`/consulta/dados?banco=${idBanco}&data=${dataFormatada}&empresa=${idEmpresa}`);
         const data = await response.json();
+        console.log(data)
         console.log(saldoInicial)
         atualizarTabela(data, saldoInicial);
         fetchSaldoFinal();
@@ -1350,9 +1425,11 @@ function uploadAnexo() {
     const idExtrato = document.getElementById('idExtratoAnexo').value;
     const tipoExtratoAnexo = document.getElementById('tipoExtratoAnexo').value; // Novo campo de dropdown
     console.log(idExtrato)
+    console.log(anexoFile)
+    console.log(tipoExtratoAnexo)
     formData.append('anexo', anexoFile);
     formData.append('idExtrato', idExtrato);
-    formData.append('tipoExtratoAnexo', tipoExtratoAnexo); // Inclui o tipo de anexo no formData
+    formData.append('tipoExtratoAnexo', tipoExtratoAnexo);
 
     fetch('/insercao/upload-anexo', {
         method: 'POST',
@@ -1618,6 +1695,8 @@ function confirmarEdicao(buttonElement) {
         tipo: tipo,
         valor: valor // Apenas o valor, seja de entrada ou saída
     };
+
+    console.log(dadosEditados)
 
     if (categoria && (categoria.toLowerCase() === 'investimento' || categoria.toLowerCase() === 'resgate')) {
         abrirPopupResgateInvestimento(
@@ -2566,7 +2645,7 @@ function mostrarExtratoPopup(extrato) {
         // Rubrica (categoria)
         const rubricaCell = document.createElement('td');
         const rubricaSelect = document.createElement('select');
-        preencherSelectComOpcoes(rubricaSelect, document.getElementById('seletorCategoria')); // Preenche com as opções de categoria
+        preencherSelectComOpcoesContabil(rubricaSelect, document.getElementById('seletorCategoria')); // Preenche com as opções de categoria
 
         if (verificarValorNoSelect(rubricaSelect, linha.categoria)) {
             rubricaSelect.value = linha.categoria;
@@ -2601,7 +2680,7 @@ function mostrarExtratoPopup(extrato) {
         // Fornecedor
         const fornecedorCell = document.createElement('td');
         const fornecedorSelect = document.createElement('select');
-        preencherSelectComOpcoes(fornecedorSelect, document.getElementById('seletorFornecedor'));
+        preencherSelectComOpcoesContabil(fornecedorSelect, document.getElementById('seletorFornecedor'));
 
         if (verificarValorNoSelect(fornecedorSelect, linha.fornecedor)) {
             fornecedorSelect.value = linha.fornecedor;
@@ -2620,7 +2699,7 @@ function mostrarExtratoPopup(extrato) {
         // Rubrica Contábil - Aplicar a mesma lógica do fornecedor e rubrica financeira
         const rubricaContabilCell = document.createElement('td');
         const rubricaContabilSelect = document.createElement('select');
-        preencherSelectComOpcoes(rubricaContabilSelect, document.getElementById('seletorRubricaContabil'));
+        preencherSelectComOpcoesContabil(rubricaContabilSelect, document.getElementById('seletorRubricaContabil'));
 
         if (verificarValorNoSelect(rubricaContabilSelect, linha.rubricaContabil)) {
             rubricaContabilSelect.value = linha.rubricaContabil;
@@ -2670,10 +2749,11 @@ function mostrarExtratoPopup(extrato) {
     document.getElementById('extratoPopup').style.display = 'block';
 }
 
-function preencherSelectComOpcoes(selectElement, modelSelectElement) {
+function preencherSelectComOpcoesContabil(selectElement, modelSelectElement) {
     Array.from(modelSelectElement.options).forEach(option => {
         const newOption = document.createElement('option');
-        newOption.value = option.value;
+        console.log(option)
+        newOption.value = option.textContent;
         newOption.textContent = option.textContent;
         newOption.disabled = option.disabled; // Mantém a propriedade disabled
         selectElement.appendChild(newOption);
@@ -2703,12 +2783,15 @@ function salvarAlteracoes() {
 
         // Fornecedor (verifica o texto selecionado no select)
         const fornecedorSelect = linha.querySelector('td:nth-child(5) select');
-        const fornecedor = fornecedorSelect.options[fornecedorSelect.selectedIndex].text || '';  // Nome do fornecedor
+        const rubricaContabilInput = linha.querySelector('td:nth-child(6) input');
 
-        // Rubrica Contábil (novo campo)
-        const rubricaContabil = linha.querySelector('td:nth-child(6) input').value || '';  // Rubrica contábil
+        // Verifica se o select de fornecedor existe e se tem opções
+        const fornecedor = fornecedorSelect && fornecedorSelect.selectedIndex >= 0 ? fornecedorSelect.options[fornecedorSelect.selectedIndex].text : '';  // Nome do fornecedor, se não existir, usa uma string vazia
 
-        // Saída e Entrada
+        // Verifica se a rubrica contábil foi preenchida
+        const rubricaContabil = rubricaContabilInput ? rubricaContabilInput.value : '';  // Rubrica contábil, se não existir, usa uma string vazia
+
+        // Verifica os valores de entrada e saída
         const saida = linha.querySelector('td:nth-child(7) input').value || '0,00';  // Saída
         const entrada = linha.querySelector('td:nth-child(8) input').value || '0,00';  // Entrada
 
@@ -2724,7 +2807,8 @@ function salvarAlteracoes() {
             valor = formatarValorParaInsercao(saida);
         }
 
-        // Monta o objeto da linha
+        const idBancoElement = document.getElementById('seletorBanco');
+        const idBanco = IDBANCO || (idBancoElement ? idBancoElement.value : null);
         entradas.push({
             Data: data,
             Categoria: categoria,
@@ -2732,7 +2816,7 @@ function salvarAlteracoes() {
             Nome: nome,
             TIPO: tipo,
             VALOR: valor,
-            IDBANCO: IDBANCO,
+            IDBANCO: idBanco,
             IDCLIENTE: IDCLIENTE,
             FORNECEDOR: fornecedor,
             RubricaContabil: rubricaContabil // Incluindo rubrica contábil

@@ -13,16 +13,30 @@ const { inserir, buscarUltimasInsercoes, buscarBanco, buscarIDEmpresa, buscarCat
     adicionarRubricaContabil,
     listarRubricasContabeis
 } = require('../repositories/insercao.repository');
+const fs = require('fs');
 
-// Configurar multer para upload de arquivos
+
+// Função para garantir que o diretório de uploads existe
+const ensureUploadDirectoryExists = () => {
+    const uploadPath = path.join(__dirname, '../../../uploads');
+    if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+        console.log('Diretório de uploads criado:', uploadPath);
+    }
+};
+
+// Configuração do multer para o upload
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/');
+        ensureUploadDirectoryExists();  // Garante que o diretório exista
+        cb(null, path.join(__dirname, '../../../uploads'));
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
     }
 });
+
 const upload = multer({ storage: storage });
 
 router.get('/', (req, res) => {
@@ -170,16 +184,26 @@ router.get('/anexos', (req, res) => {
 // Rota para upload de anexos
 router.post('/upload-anexo', upload.single('anexo'), (req, res) => {
     const { idExtrato, tipoExtratoAnexo } = req.body;
+
+    // Verifica se o arquivo foi enviado
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'Nenhum arquivo enviado' });
+    }
+
     const { filename } = req.file;
 
+    console.log('Arquivo recebido:', filename);  // Log do arquivo recebido
+
+    // Função para processar o anexo (exemplo de callback)
     uploadAnexo(idExtrato, filename, tipoExtratoAnexo, (err, result) => {
         if (err) {
             console.error(err);
-            return res.status(500).send("Erro ao fazer upload de anexo");
+            return res.status(500).json({ success: false, message: 'Erro ao fazer upload de anexo' });
         }
         res.json({ success: true });
     });
 });
+
 
 
 router.post('/salvar-subdivisao', (req, res) => {

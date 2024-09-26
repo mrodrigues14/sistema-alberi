@@ -102,6 +102,36 @@
         </form>
     </div>
 
+    <!-- Pop-up de recorrência -->
+    <div id="popupRecorrencia" style="display: none; position: fixed; top: 20%; left: 30%; background-color: #fff; padding: 20px; border: 1px solid #000; z-index: 1000;">
+        <h3>A transação é recorrente?</h3>
+        <label>
+            <input type="radio" name="recorrente" value="sim" onclick="mostrarFrequencia()"> Sim
+        </label>
+        <label>
+            <input type="radio" name="recorrente" value="nao" onclick="fecharPopup()"> Não
+        </label>
+
+        <div id="frequenciaRecorrencia" style="display: none;">
+            <h4>Frequência da recorrência</h4>
+            <select id="frequencia" name="frequencia" onchange="mostrarQuantidade()">
+                <option value="" disabled selected>Selecione a frequência</option>
+                <option value="diaria">Diária</option>
+                <option value="semanal">Semanal</option>
+                <option value="quinzenal">Quinzenal</option>
+                <option value="mensal">Mensal</option>
+            </select>
+
+            <div id="quantidadeRecorrencia" style="display: none;">
+                <label>Quantas vezes?
+                    <input type="number" id="quantidade" min="1" />
+                </label>
+            </div>
+        </div>
+
+        <button onclick="confirmarRecorrencia()">Confirmar</button>
+    </div>
+
 
     <div id="downloadButtons">
         <button onclick="gerarPDF()">Gerar PDF</button>

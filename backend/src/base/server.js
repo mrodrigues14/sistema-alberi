@@ -14,10 +14,10 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: true,
-        httpOnly: true,
+        secure: false,
+        httpOnly: false,
         maxAge: 4 * 60 * 60 * 1000,
-        sameSite: 'None'
+        //: 'None'
     }
 }));
 
