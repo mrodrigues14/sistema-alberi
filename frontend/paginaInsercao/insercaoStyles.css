@@ -334,6 +334,8 @@ iframe {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    width: 76%;
+
 }
 
 .textos{
@@ -354,16 +356,29 @@ iframe {
     appearance: none;
 }
 
+/* Responsividade para o select2 */
 .select2-container--default .select2-selection--single {
-    width: 120%;
+    width: 128%; /* Ocupa 100% da largura do contêiner pai */
+    box-sizing: border-box; /* Inclui padding e border no cálculo da largura */
+    padding-right: 30px; /* Garante espaço para a seta dentro do campo */
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
-    font-size: 12px;
+    width: 100% !important;
+    font-size: 12px; /* Ajusta o tamanho da fonte */
+    padding-right: 30px; /* Espaço para evitar que o texto sobreponha a seta */
+    white-space: nowrap; /* Evita que o texto quebre em várias linhas */
+    overflow: hidden; /* Evita que o texto extrapole a largura */
+    text-overflow: ellipsis; /* Adiciona reticências se o texto for muito longo */
 }
 
-.select2-selection__arrow{
-    right: -29px !important;
+.select2-selection__arrow {
+    position: absolute;
+    top: 50% !important;
+    right: -20px !important;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
 }
 .popup-overlay {
     display: none;

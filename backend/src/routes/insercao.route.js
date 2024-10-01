@@ -11,7 +11,9 @@ const { inserir, buscarUltimasInsercoes, buscarBanco, buscarIDEmpresa, buscarCat
     inserirSubextrato,
     buscarSubextratos,
     adicionarRubricaContabil,
-    listarRubricasContabeis
+    listarRubricasContabeis,
+    deletarSubextrato,
+    editarSubextrato,
 } = require('../repositories/insercao.repository');
 const fs = require('fs');
 
@@ -92,22 +94,11 @@ router.get('/dados-categoria', (req, res) => {
 
 router.post('/inserir-individual', async (req, res) => {
     try {
-        const { Data, categoria, descricao, nomeExtrato, valorEn, valorSa, id_bancoPost, id_empresa, fornecedor, rubrica_contabil } = req.body;
+        const { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil } = req.body;
         console.log("Dados recebidos no body:", req.body);
 
-        // Determina se é uma entrada ou saída
-        let tipo;
-        let valor = 0;
-        if (valorEn) {
-            tipo = "Entrada";
-            valor = valorEn;
-        } else {
-            tipo = "Saída";
-            valor = valorSa;
-        }
-
         // Insere os dados no banco
-        await inserir(Data, categoria, descricao, nomeExtrato, tipo, valor, id_bancoPost, id_empresa, fornecedor, rubrica_contabil, (err, result) => {
+        await inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil,(err, result) => {
             if (err) {
                 console.error("Erro durante a inserção:", err);
                 return res.status(500).send("Erro ao inserir dados");
@@ -273,6 +264,31 @@ router.get('/subextratos', (req, res) => {
         res.json(result);
     });
 });
+
+router.post('/editar-subextrato', async (req, res) => {
+    const { idSubextrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida } = req.body;
+
+    try {
+        await editarSubextrato(idSubextrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida);
+        res.status(200).json({ message: 'Subextrato editado com sucesso' });
+    } catch (error) {
+        console.error('Erro ao editar subextrato:', error);
+        res.status(500).json({ message: 'Erro ao editar subextrato' });
+    }
+});
+
+router.delete('/deletar-subextrato', async (req, res) => {
+    const { idSubextrato } = req.query;
+
+    try {
+        await deletarSubextrato(idSubextrato);
+        res.status(200).json({ message: 'Subextrato deletado com sucesso' });
+    } catch (error) {
+        console.error('Erro ao deletar subextrato:', error);
+        res.status(500).json({ message: 'Erro ao deletar subextrato' });
+    }
+});
+
 
 router.get('/listar-rubricas-contabeis', (req, res) => {
     listarRubricasContabeis((err, result) => {

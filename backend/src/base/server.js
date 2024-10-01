@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
 const app = express();
-const port = 8080;
+const port = 3000;
 const routing = require('../routing');
 require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 

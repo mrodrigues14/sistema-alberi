@@ -179,6 +179,37 @@ function inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeE
     });
 }
 
+function editarSubextrato(idSubextrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida, callback) {
+    const query = `
+        UPDATE SUBEXTRATO 
+        SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, FORNECEDOR = ?, RUBRICA_CONTABIL = ?, ENTRADA = ?, SAIDA = ?
+        WHERE ID_SUBEXTRATO = ?
+    `;
+    const values = [data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida, idSubextrato];
+
+    mysqlConn.query(query, values, function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+
+function deletarSubextrato(idSubextrato, callback) {
+    const query = 'DELETE FROM SUBEXTRATO WHERE ID_SUBEXTRATO = ?';
+
+    mysqlConn.query(query, [idSubextrato], function(err, result) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
+
 function buscarSaldoMesAnterior(clienteId, mesAno, callback) {
     const [ano, mes] = mesAno.split('-');
     const dataAtual = new Date(ano, mes - 1, 1);
@@ -324,4 +355,4 @@ function deletarRubricaContabil(id, callback) {
 }
 
 
-module.exports = {listarRubricasContabeis, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil, buscarSubextratos, inserirSubextrato, inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior, verificarSaldoInicial};
+module.exports = {editarSubextrato, deletarSubextrato, listarRubricasContabeis, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil, buscarSubextratos, inserirSubextrato, inserir, buscarBanco, buscarUltimasInsercoes, buscarIDEmpresa, buscarCategorias, deletarExtrato, listarAnexos, uploadAnexo, inserirSubdivisao, buscarSaldoMesAnterior, verificarSaldoInicial};
