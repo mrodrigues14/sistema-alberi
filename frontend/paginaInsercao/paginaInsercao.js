@@ -997,6 +997,7 @@ async function atualizarTabela(dados, saldoInicial) {
             subextratos.forEach(subextrato => {
                 const subRow = tbody.insertRow();
                 subRow.dataset.subextrato = subextrato.IDSUBEXTRATO;
+                subRow.classList.add('subextrato-row'); // Adiciona a classe para cor de fundo
 
                 // Adiciona os dados do subextrato nas células
                 subRow.innerHTML = `
@@ -1006,14 +1007,19 @@ async function atualizarTabela(dados, saldoInicial) {
                     <td>${subextrato.OBSERVACAO || ''}</td>
                     <td>${subextrato.DESCRICAO || ''}</td>
                     <td>${subextrato.RUBRICA_CONTABIL || ''}</td>
-                    <td>${formatarValorParaExibicao(subextrato.ENTRADA || '')}</td>
-                    <td>${formatarValorParaExibicao(subextrato.SAIDA || '')}</td>
-                    <td>teste</td>
+                    <td>${subextrato.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(subextrato.VALOR) : ''}</td>
+                    <td>${subextrato.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(subextrato.VALOR) : ''}</td>
+                    <td></td>
                     <td>
-                        <button onclick="editarSubextrato(${subextrato.IDSUBEXTRATO}, this)" class="edit-btn-extrato-opcoes">
+                        <button onclick="abrirPopupAnexos(${subextrato.ID_SUBEXTRATO})">
+                            <i class="fa fa-paperclip"></i>
+                        </button>
+                    </td>   
+                    <td>
+                        <button onclick="editarSubextrato(${subextrato.ID_SUBEXTRATO}, this)" class="edit-btn-extrato-opcoes">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="deletarSubextrato(${subextrato.IDSUBEXTRATO}, this)" class="delete-btn-extrato-opcoes">
+                        <button onclick="deletarSubextrato(${subextrato.ID_SUBEXTRATO}, this)" class="delete-btn-extrato-opcoes">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
@@ -1022,6 +1028,35 @@ async function atualizarTabela(dados, saldoInicial) {
         }
     }
 }
+function deletarSubextrato(idSubextrato, buttonElement) {
+    console.log(idSubextrato);
+    if (confirm('Tem certeza que deseja deletar este subextrato?')) {
+        // Envia a requisição DELETE para deletar o subextrato com o ID no caminho da URL
+        fetch(`/insercao/deletar-subextrato/${idSubextrato}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao deletar subextrato');
+                }
+                return response.json();
+            })
+            .then(result => {
+                alert(result.message);
+                // Remove a linha do subextrato da tabela
+                const row = buttonElement.closest('tr');
+                row.remove();
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Erro ao deletar subextrato');
+            });
+    }
+}
+
 function editarLinha(buttonElement) {
     const row = buttonElement.closest('tr');
     const idExtrato = row.dataset.idextrato;
@@ -1299,7 +1334,6 @@ function cancelarEdicao(buttonElement) {
     ferramentasCell.innerHTML = row.dataset.originalButtons;
 }
 
-// Função para buscar subextratos no servidor
 async function buscarSubextratos(idExtratoPrincipal) {
     try {
         const response = await fetch(`/insercao/subextratos?idExtrato=${idExtratoPrincipal}`);
@@ -1314,27 +1348,28 @@ async function buscarSubextratos(idExtratoPrincipal) {
 }
 
 function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
-    // Verifica se já existe uma linha de subextrato inserida
-    const existingRow = document.querySelector(`[data-subextrato="${idExtratoPrincipal}"]`);
-    if (existingRow) {
-        return; // Se já existir, não insere outra
-    }
-
-    // Cria uma nova linha logo abaixo da linha do extrato principal
     const tbody = row.parentElement;
+    const extratoData = row.querySelector('td').textContent.trim(); // Obtém a data da linha principal (primeira célula)
+
     const newRow = document.createElement('tr');
     newRow.dataset.subextrato = idExtratoPrincipal;
+    newRow.classList.add('subextrato-row'); // Adiciona a classe de estilo para subextratos
 
-    // Define as células da linha do subextrato
     newRow.innerHTML = `
-        <td><input type="date" name="Data" id="subextratoData"></td>
-        <td><select name="categoria" id="subextratoCategoria"></select></td>
-        <td><select name="fornecedor" id="subextratoFornecedor"></select></td>
-        <td><input type="text" name="descricao" placeholder="Observação"></td>
-        <td><input type="text" name="observacao" placeholder="Observação"></td>
-        <td><select name="rubricaContabil" id="subextratoRubricaContabil"></select></td> <!-- Rubrica Contábil adicionada aqui -->
-        <td><input type="text" name="valorEn" placeholder="Entrada"></td>
-        <td><input type="text" name="valorSa" placeholder="Saída"></td>
+        <td><input type="date" name="Data" class="editavel" value="${extratoData.split('/').reverse().join('-')}" style="width: 100%;"></td>
+        <td>
+            <select name="categoria" class="styled-select" style="width: 100%;" id="subextratoCategoria"></select>
+        </td>
+        <td>
+            <select name="fornecedor" class="styled-select" style="width: 100%;" id="subextratoFornecedor"></select>
+        </td>
+        <td><input type="text" name="descricao" class="editavel" placeholder="Descrição" style="width: 100%;"></td>
+        <td><input type="text" name="observacao" class="editavel" placeholder="Observação" style="width: 100%;"></td>
+        <td>
+            <select name="rubricaContabil" class="styled-select" style="width: 100%;" id="subextratoRubricaContabil"></select>
+        </td>
+        <td><input type="text" name="valorEn" class="editavel" placeholder="Entrada" style="width: 100%;"></td>
+        <td><input type="text" name="valorSa" class="editavel" placeholder="Saída" style="width: 100%;"></td>
         <td colspan="2">
             <button onclick="confirmarSubextrato(${idExtratoPrincipal}, this)" class="confirmar-btn">
                 <i class="fas fa-check"></i>
@@ -1345,37 +1380,48 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
         </td>
     `;
 
-    // Adiciona a linha logo após o extrato principal
     row.insertAdjacentElement('afterend', newRow);
 
-    // Popula os selects de categorias, fornecedores e rubricas
+    // Popula os campos de categoria, fornecedor e rubrica contábil
     popularSelectCategoria(document.getElementById('subextratoCategoria'));
     popularSelectFornecedor(document.getElementById('subextratoFornecedor'));
-    popularSelectRubricaContabil(document.getElementById('subextratoRubricaContabil')); // Popula a Rubrica Contábil
+    popularSelectRubricaContabil(document.getElementById('subextratoRubricaContabil'));
+
+    // Adiciona formatação ao campo de entrada e saída
+    const inputEntrada = newRow.querySelector('input[name="valorEn"]');
+    const inputSaida = newRow.querySelector('input[name="valorSa"]');
+
+    inputEntrada.addEventListener('input', function () {
+        this.value = formatarValorFinanceiroInput(this.value);
+    });
+
+    inputSaida.addEventListener('input', function () {
+        this.value = formatarValorFinanceiroInput(this.value);
+    });
 }
 
-// Função ao clicar no botão circle plus
-function abrirLinhaSubextrato(buttonElement) {
-    const row = buttonElement.closest('tr');
-    const idExtratoPrincipal = row.dataset.idextrato;
-
-    // Chama a função que adiciona a linha de subextrato
-    adicionarLinhaSubextrato(idExtratoPrincipal, row);
-}
-
-// Função para confirmar a adição do subextrato
 function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
     const row = buttonElement.closest('tr');
 
+    // Pega os elementos <select> de categoria e rubrica contábil
+    const categoriaSelect = row.querySelector('[name="categoria"]');
+    const fornecedorSelect = row.querySelector('[name="fornecedor"]');
+    const rubricaContabilSelect = row.querySelector('[name="rubricaContabil"]');
+
+    // Pega o texto (nome) das opções selecionadas
+    const categoriaNome = categoriaSelect.options[categoriaSelect.selectedIndex].text;
+    const fornecedorNome = fornecedorSelect.options[fornecedorSelect.selectedIndex].text;
+    const rubricaContabilNome = rubricaContabilSelect.options[rubricaContabilSelect.selectedIndex].text;
+
     const data = {
         Data: row.querySelector('[name="Data"]').value,
-        categoria: row.querySelector('[name="categoria"]').text,
+        categoria: categoriaNome, // Nome da categoria
+        fornecedor: fornecedorNome, // Nome do fornecedor
         descricao: row.querySelector('[name="descricao"]').value,
         observacao: row.querySelector('[name="observacao"]').value,
         valorEn: row.querySelector('[name="valorEn"]').value,
         valorSa: row.querySelector('[name="valorSa"]').value,
-        fornecedor: row.querySelector('[name="fornecedor"]').value,
-        rubricaContabil: row.querySelector('[name="rubricaContabil"]').value, // Adicionando rubrica contábil
+        rubricaContabil: rubricaContabilNome, // Nome da rubrica contábil
         id_extrato_principal: idExtratoPrincipal
     };
 
@@ -1404,10 +1450,57 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
         });
 }
 
-// Função para cancelar a inserção do subextrato
+function atualizarTabelaComSubextrato(idExtratoPrincipal) {
+    // Exemplo de implementação para recarregar a tabela com subextratos
+    fetch(`/insercao/buscar-subextratos/${idExtratoPrincipal}`)
+        .then(response => response.json())
+        .then(data => {
+            // Aqui você pode atualizar a tabela de subextratos com os dados recebidos
+            const tabelaSubextratos = document.getElementById('subextratos-tabela'); // Exemplo de ID da tabela
+
+            // Limpar a tabela antes de atualizar
+            tabelaSubextratos.innerHTML = '';
+
+            // Adicionar linhas de subextratos à tabela
+            data.forEach(subextrato => {
+                const row = tabelaSubextratos.insertRow();
+
+                row.innerHTML = `
+                    <td>${subextrato.Data}</td>
+                    <td>${subextrato.Categoria}</td>
+                    <td>${subextrato.Fornecedor}</td>
+                    <td>${subextrato.Descricao}</td>
+                    <td>${subextrato.Observacao}</td>
+                    <td>${subextrato.TipoTransacao}</td>
+                    <td>${subextrato.Valor}</td>
+                `;
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao buscar subextratos:', error);
+        });
+}
+
 function cancelarSubextrato(buttonElement) {
     const row = buttonElement.closest('tr');
-    row.remove(); // Remove a linha de inserção de subextrato
+    const originalData = JSON.parse(row.dataset.originalData);
+    const cells = row.querySelectorAll('td');
+
+    // Restaurar dados originais
+    cells.forEach((cell, index) => {
+        cell.textContent = originalData[index];
+    });
+
+    // Restaurar os botões de edição e exclusão
+    const ferramentasCell = cells[cells.length - 1];
+    ferramentasCell.innerHTML = row.dataset.originalButtons;
+}
+
+function abrirLinhaSubextrato(buttonElement) {
+    const row = buttonElement.closest('tr');
+    const idExtratoPrincipal = row.dataset.idextrato;
+
+    adicionarLinhaSubextrato(idExtratoPrincipal, row);
 }
 
 function editarSubextrato(idSubextrato, buttonElement) {
@@ -1429,21 +1522,115 @@ function editarSubextrato(idSubextrato, buttonElement) {
             const categoriaAtual = cell.textContent.trim();
             const selectCategoria = document.createElement('select');
             selectCategoria.classList.add('styled-select');
-            popularSelectCategoria(selectCategoria);
-            cell.innerHTML = '';
-            cell.appendChild(selectCategoria);
-        } else if (index === 2) { // Descrição
+            selectCategoria.style.width = '100%';
+
+            // Buscar categorias
+            fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
+                .then(response => response.json())
+                .then(categorias => {
+                    const optionDefault = document.createElement('option');
+                    optionDefault.value = '';
+                    optionDefault.textContent = 'Selecione uma Rubrica';
+                    selectCategoria.appendChild(optionDefault);
+
+                    const categoriasTree = construirArvoreDeCategorias(categorias);
+                    adicionarCategoriasAoSelect(selectCategoria, categoriasTree);
+
+                    const categoriaSelecionada = Array.from(selectCategoria.options).find(option => option.text.trim() === categoriaAtual);
+                    if (categoriaSelecionada) {
+                        categoriaSelecionada.selected = true;
+                    }
+
+                    cell.innerHTML = '';
+                    cell.appendChild(selectCategoria);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar categorias:', error);
+                });
+        } else if (index === 2) { // Fornecedor
+            const fornecedorAtual = cell.textContent.trim();
+            const selectFornecedor = document.createElement('select');
+            selectFornecedor.classList.add('styled-select');
+            selectFornecedor.style.width = '100%';
+
+            // Buscar fornecedores
+            fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
+                .then(response => response.json())
+                .then(fornecedores => {
+                    const optionDefault = document.createElement('option');
+                    optionDefault.value = '';
+                    optionDefault.textContent = 'Selecione um Fornecedor';
+                    selectFornecedor.appendChild(optionDefault);
+
+                    fornecedores.forEach(fornecedor => {
+                        const option = document.createElement('option');
+                        option.value = fornecedor.IDFORNECEDOR;
+                        option.textContent = fornecedor.NOME_TIPO;
+                        selectFornecedor.appendChild(option);
+                    });
+
+                    const fornecedorSelecionado = Array.from(selectFornecedor.options).find(option => option.text.trim() === fornecedorAtual);
+                    if (fornecedorSelecionado) {
+                        fornecedorSelecionado.selected = true;
+                    }
+
+                    cell.innerHTML = '';
+                    cell.appendChild(selectFornecedor);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar fornecedores:', error);
+                });
+        } else if (index === 3) { // Observação
+            const observacaoAtual = cell.textContent.trim();
+            cell.innerHTML = `<input type="text" value="${observacaoAtual}" class="editavel" style="width: 100%;">`;
+        } else if (index === 4) { // Descrição
             const descricaoAtual = cell.textContent.trim();
-            cell.innerHTML = `<input type="text" value="${descricaoAtual}">`;
+            cell.innerHTML = `<input type="text" value="${descricaoAtual}" class="editavel" style="width: 100%;">`;
         } else if (index === 5) { // Rubrica Contábil
             const rubricaContabilAtual = cell.textContent.trim();
             const selectRubricaContabil = document.createElement('select');
-            popularSelectRubricaContabil(selectRubricaContabil);
-            cell.innerHTML = '';
-            cell.appendChild(selectRubricaContabil);
+            selectRubricaContabil.classList.add('styled-select');
+            selectRubricaContabil.style.width = '100%';
+
+            // Buscar rubricas contábeis
+            fetch(`/insercao/listar-rubricas-contabeis`)
+                .then(response => response.json())
+                .then(rubricasContabeis => {
+                    const optionDefault = document.createElement('option');
+                    optionDefault.value = '';
+                    optionDefault.textContent = 'Selecione uma Rubrica Contábil';
+                    selectRubricaContabil.appendChild(optionDefault);
+
+                    rubricasContabeis.forEach(rubrica => {
+                        const option = document.createElement('option');
+                        option.value = rubrica.IDRUBRICA;
+                        option.textContent = rubrica.NOME;
+                        selectRubricaContabil.appendChild(option);
+                    });
+
+                    const rubricaSelecionada = Array.from(selectRubricaContabil.options).find(option => option.text.trim() === rubricaContabilAtual);
+                    if (rubricaSelecionada) {
+                        rubricaSelecionada.selected = true;
+                    }
+
+                    cell.innerHTML = '';
+                    cell.appendChild(selectRubricaContabil);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar rubricas contábeis:', error);
+                });
         } else if (index > 5 && index < 8) { // Entrada ou Saída
             const valorAtual = cell.textContent.trim();
-            cell.innerHTML = `<input type="text" value="${valorAtual}">`;
+            cell.innerHTML = `<input type="text" value="${valorAtual}" class="editavel">`;
+
+            const input = cell.querySelector('input');
+            input.style.width = '100%';
+
+            if (index === 6 || index === 7) { // Formatar entrada e saída
+                input.addEventListener('input', function () {
+                    this.value = formatarValorFinanceiroInput(this.value);
+                });
+            }
         }
     });
 
@@ -1502,7 +1689,6 @@ function cancelarEdicaoSubextrato(buttonElement) {
     });
 }
 
-// Funções auxiliares para popular os selects
 function popularSelectCategoria(selectElement) {
     fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
         .then(response => response.json())

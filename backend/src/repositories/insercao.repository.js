@@ -202,12 +202,14 @@ function deletarSubextrato(idSubextrato, callback) {
 
     mysqlConn.query(query, [idSubextrato], function(err, result) {
         if (err) {
+            console.error(`Erro ao deletar subextrato: ${err.message}`);
             callback(err, null);
         } else {
             callback(null, result);
         }
     });
 }
+
 
 
 function buscarSaldoMesAnterior(clienteId, mesAno, callback) {
@@ -257,14 +259,39 @@ function verificarSaldoInicial(clienteId, bancoId, data, callback) {
     });
 }
 
-function inserirSubextrato(idExtratoPrincipal, data, categoria, descricao, observacao, fornecedor, valorEntrada, valorSaida, callback) {
+function inserirSubextrato(idExtratoPrincipal, data, categoria, descricao, observacao, fornecedor, valorEn, valorSa, callback) {
     const query = `
         INSERT INTO SUBEXTRATO (ID_EXTRATO_PRINCIPAL, DATA, CATEGORIA, DESCRICAO, OBSERVACAO, ID_FORNECEDOR, TIPO_DE_TRANSACAO, VALOR) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const tipoTransacao = valorEntrada ? 'ENTRADA' : 'SAIDA';
-    const valor = valorEntrada ? valorEntrada : valorSaida;
 
+    let tipoTransacao;
+    let valor;
+
+    // Converter valores de entrada e saída para o formato correto (substituir vírgula por ponto)
+    if (typeof valorEn === 'string') {
+        valorEn = valorEn.replace(',', '.'); // Substitui a vírgula por ponto se for string
+    }
+    if (typeof valorSa === 'string') {
+        valorSa = valorSa.replace(',', '.'); // Substitui a vírgula por ponto se for string
+    }
+
+    // Verificar se o valor de Saída é válido e maior que 0
+    if (valorSa != null && parseFloat(valorSa) > 0) { // Converter para número
+        tipoTransacao = 'SAIDA';
+        valor = parseFloat(valorSa);
+    }
+    // Verificar se o valor de Entrada é válido e maior que 0
+    else if (valorEn != null && parseFloat(valorEn) > 0) {
+        tipoTransacao = 'ENTRADA';
+        valor = parseFloat(valorEn);
+    }
+    // Caso nenhum valor seja fornecido, retorne um erro
+    else {
+        return callback(new Error("Você deve fornecer um valor para Entrada ou Saída."), null);
+    }
+
+    // Executa a query de inserção
     mysqlConn.query(query, [idExtratoPrincipal, data, categoria, descricao, observacao, fornecedor, tipoTransacao, valor], (err, result) => {
         if (err) {
             console.error(`Erro ao inserir subextrato: ${err.message}`);
@@ -274,6 +301,7 @@ function inserirSubextrato(idExtratoPrincipal, data, categoria, descricao, obser
         }
     });
 }
+
 
 function buscarSubextratos(idExtratoPrincipal, callback) {
     const query = `

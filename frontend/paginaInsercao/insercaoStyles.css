@@ -964,10 +964,6 @@ select.fornecedor-select {
     cursor: pointer;
 }
 
-.subextrato-row {
-    background-color: #f9f9f9; /* Cor de fundo diferenciada */
-    font-style: italic; /* Texto em itálico para subextratos */
-}
 
 .styled-select {
     background-color: #f8f8f8;
@@ -1133,4 +1129,7 @@ select.fornecedor-select {
     cursor: pointer;
 }
 
+.subextrato-row {
+    background-color: #d1d8f0; /* Azul mais claro */
+}
 

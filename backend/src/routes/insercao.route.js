@@ -277,17 +277,18 @@ router.post('/editar-subextrato', async (req, res) => {
     }
 });
 
-router.delete('/deletar-subextrato', async (req, res) => {
-    const { idSubextrato } = req.query;
+router.delete('/deletar-subextrato/:idSubextrato', (req, res) => {
+    const { idSubextrato } = req.params;
 
-    try {
-        await deletarSubextrato(idSubextrato);
-        res.status(200).json({ message: 'Subextrato deletado com sucesso' });
-    } catch (error) {
-        console.error('Erro ao deletar subextrato:', error);
-        res.status(500).json({ message: 'Erro ao deletar subextrato' });
-    }
+    deletarSubextrato(idSubextrato, (err, result) => {
+        if (err) {
+            console.error("Erro ao deletar subextrato:", err);
+            return res.status(500).send("Erro ao deletar subextrato");
+        }
+        res.json({ message: "Subextrato deletado com sucesso", result });
+    });
 });
+
 
 
 router.get('/listar-rubricas-contabeis', (req, res) => {
