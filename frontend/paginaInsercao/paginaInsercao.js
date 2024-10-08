@@ -3316,7 +3316,38 @@ document.getElementById('excelFile').addEventListener('change', function() {
 });
 
 
-//subextrato
+function abrirPopupOpcao() {
+    var opcaoSelecionada = document.getElementById("popupOpcoes").value;
+    var url = "";
+
+    // Definir URL com base na opção selecionada
+    if (opcaoSelecionada === "rubricas") {
+        url = "/rubricas"; // Página de Rubricas
+    } else if (opcaoSelecionada === "fornecedor") {
+        url = "/fornecedor"; // Página de Fornecedor
+    } else if (opcaoSelecionada === "banco") {
+        url = "/dados"; // Página de Banco
+    }
+
+    // Verificar se uma URL foi selecionada
+    if (url) {
+        // Abrir popup e definir o src do iframe
+        $("#popupOpcoesModal").dialog({
+            modal: true,
+            width: 800, // Ajuste conforme necessário
+            height: 600, // Ajuste conforme necessário
+            title: "Configuração",
+            open: function() {
+                // Carregar a página selecionada no iframe
+                $("#popupIframe").attr("src", url);
+            },
+            close: function() {
+                // Limpar o src quando o popup for fechado
+                $("#popupIframe").attr("src", "");
+            }
+        });
+    }
+}
 
 
 

@@ -6,74 +6,62 @@
     <link rel="stylesheet" href="/paginaAdicionarFornecedor/adicionarFornecedor.css">
 </head>
 <body>
+<!--
 <div id="menu-container"></div>
-<main class="main-content">
-    <section id="Adicionar-cliente">
-        <h1>Adicionar Fornecedor</h1>
+-->
+
+<!-- Lista de Fornecedores -->
+<div class="lista-fornecedores">
+    <h2>Fornecedores</h2>
+    <ul id="fornecedor-lista" class="fornecedor-lista">
+        <!-- Lista será populada dinamicamente -->
+    </ul>
+</div>
+
+<div class="adicionar-fornecedor-container">
+    <button id="adicionar-fornecedor-btn" class="adicionar-fornecedor-btn" onclick="abrirPopup('popup-adicionar-fornecedor')">Adicionar Novo Fornecedor</button>
+    <button id="adicionar-subfornecedor-btn" class="adicionar-subfornecedor-btn">Adicionar Nova Subfornecedor</button>
+</div>
+
+<!-- Popup para Adicionar Fornecedor -->
+<div id="popup-adicionar-fornecedor" class="popup">
+    <div class="popup-content">
+        <span class="close" onclick="fecharPopup('popup-adicionar-fornecedor')">&times;</span>
+        <h2>Adicionar Novo Fornecedor</h2>
         <form id="formAdd" onsubmit="adicionarFornecedor(event)">
-            <div class="form-group">
-                <label for="nomeEmpresa">Nome do Fornecedor:</label>
-                <input type="text" id="nomeEmpresa" name="nomeFornecedor" required>
-            </div>
-            <div class="form-group">
-                <label for="seletorCNPJ">Tipo de Documento:</label>
-                <select id="seletorCNPJ" >
-                    <option value="0">CPF</option>
-                    <option value="1">CNPJ</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <input type="text" id="cpf" name="cpf" placeholder="CPF" class="cpf-cnpj">
-                <input type="text" id="cnpj" name="cnpj" placeholder="CNPJ" class="cpf-cnpj" style="display:none;">
-            </div>
-            <div class="form-group">
-                <label for="tipoProduto">Tipo de Produto:</label>
-                <input type="text" id="tipoProduto" name="tipoProduto" >
-            </div>
-            <button type="submit" class="btn-primary btn">Adicionar</button>
+            <input type="text" id="nomeEmpresa" name="nomeFornecedor" placeholder="Nome do Fornecedor" required>
+            <select id="seletorCNPJ">
+                <option value="0">CPF</option>
+                <option value="1">CNPJ</option>
+            </select>
+            <input type="text" id="cpf" name="cpf" placeholder="CPF" class="cpf-cnpj">
+            <input type="text" id="cnpj" name="cnpj" placeholder="CNPJ" class="cpf-cnpj" style="display:none;">
+            <input type="text" id="tipoProduto" name="tipoProduto" placeholder="Tipo de Produto">
+            <button type="submit">Adicionar</button>
         </form>
-    </section>
+    </div>
+</div>
 
-    <section id="Editar-Fornecedor">
-        <h1>Editar Fornecedor</h1>
-        <form id="formEdit">
-            <div class="form-group">
-                <label for="selectEditFornecedor">Selecione o Fornecedor:</label>
-                <select id="selectEditFornecedor" name="idFornecedor" required></select>
-            </div>
-            <div class="form-group">
-                <label for="novoNomeFornecedor">Novo Nome do Fornecedor:</label>
-                <input type="text" id="novoNomeFornecedor" name="nomeFornecedor" required>
-            </div>
-            <div class="form-group">
-                <label for="novoSeletorDocumento">Novo Documento:</label>
-                <select id="novoSeletorDocumento">
-                    <option value="CPF">CPF</option>
-                    <option value="CNPJ">CNPJ</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <input type="text" id="novoCpf" name="cpf" placeholder="CPF">
-                <input type="text" id="novoCnpj" name="cnpj" placeholder="CNPJ" style="display:none;">
-            </div>
-            <div class="form-group">
-                <label for="novoTipoProduto">Novo Tipo de Produto:</label>
-                <input type="text" id="novoTipoProduto" name="tipoProduto">
-            </div>
-            <button type="button" class="btn-primary btn" onclick="editarFornecedor()">Editar</button>
+<!-- Popup para Editar Fornecedor -->
+<div id="popup-editar-fornecedor" class="popup">
+    <div class="popup-content">
+        <span class="close" onclick="fecharPopup('popup-editar-fornecedor')">&times;</span>
+        <h2>Editar Fornecedor</h2>
+        <form id="formEdit" onsubmit="editarFornecedor(event)">
+            <input type="hidden" id="fornecedorId" name="idFornecedor">
+            <input type="text" id="novoNomeFornecedor" name="nomeFornecedor" placeholder="Novo Nome do Fornecedor" required>
+            <select id="novoSeletorDocumento">
+                <option value="CPF">CPF</option>
+                <option value="CNPJ">CNPJ</option>
+            </select>
+            <input type="text" id="novoCpf" name="cpf" placeholder="CPF">
+            <input type="text" id="novoCnpj" name="cnpj" placeholder="CNPJ" style="display:none;">
+            <input type="text" id="novoTipoProduto" name="tipoProduto" placeholder="Novo Tipo de Produto">
+            <button type="submit">Salvar</button>
         </form>
-    </section>
+    </div>
+</div>
 
-    <section id="RemoverConta">
-        <h1>Remover Fornecedor</h1>
-        <div class="form-group">
-            <label for="selectBanco">Nome do fornecedor a ser removido:</label>
-            <select id="selectBanco" name="selectNomeEmpresa"></select>
-        </div>
-        <button type="button" class="btn-danger btn" onclick="removerFornecedor()">Remover</button>
-    </section>
-
-</main>
 <script src="/paginaAdicionarFornecedor/adicionarFornecedor.js"></script>
 </body>
 </html>

@@ -162,10 +162,22 @@
     </div>
 
     <div id="botão-deletar">
+        <select id="popupOpcoes" onchange="abrirPopupOpcao()">
+            <option value="" disabled selected>Selecione uma ação</option>
+            <option value="rubricas">Adicionar Rubricas</option>
+            <option value="fornecedor">Adicionar Fornecedor</option>
+            <option value="banco">Adicionar Banco</option>
+        </select>
+
         <button onclick="deletarSelecionados()">Deletar Selecionados</button>
         <button onclick="selecionarTodasLinhas()">Selecionar Todos</button>
         <button id="botaoEditarTodas">Editar Todas as Linhas</button>
+    </div>
 
+
+    <!-- Div de popup que será preenchida com um iframe -->
+    <div id="popupOpcoesModal" style="display:none;">
+        <iframe id="popupIframe" src="" frameborder="0" style="width: 100%; height: 100%;"></iframe>
     </div>
 
     <div class="mes-selector-container" id="mesSelectorWrapper">

@@ -1133,3 +1133,6 @@ select.fornecedor-select {
     background-color: #d1d8f0; /* Azul mais claro */
 }
 
+#popupOpcoes{
+    margin-right: 57%;
+}

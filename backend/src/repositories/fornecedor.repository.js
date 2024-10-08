@@ -111,5 +111,13 @@ function editarFornecedor(idFornecedor, nomeFornecedor, cnpjFornecedor, cpfForne
         callback(null, result);
     });
 }
+function listarFornecedorPeloId(idFornecedor, callback) {
+    const query = `
+        SELECT IDFORNECEDOR, NOME, CNPJ, CPF, TIPO_DE_PRODUTO
+        FROM FORNECEDOR
+        WHERE IDFORNECEDOR = ?;
+    `;
+    mysqlConn.query(query, [idFornecedor], callback);
+}
 
-module.exports = { adicionarFornecedor, listarFornecedor, removerFornecedor, editarFornecedor };
+module.exports = { listarFornecedorPeloId, adicionarFornecedor, listarFornecedor, removerFornecedor, editarFornecedor };

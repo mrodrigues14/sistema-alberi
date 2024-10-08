@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Erro ao carregar o template:', error);
         });
+
+    carregarFornecedores();
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -65,50 +67,67 @@ function carregarFornecedores(idcliente) {
     fetch(`/fornecedor/listar?idcliente=${idcliente}`)
         .then(response => response.json())
         .then(fornecedores => {
-            const selectBanco = document.getElementById('selectBanco');
-            const selectEditFornecedor = document.getElementById('selectEditFornecedor');
+            const listaElement = document.getElementById('fornecedor-lista');
+            listaElement.innerHTML = '';
 
             fornecedores.forEach(fornecedor => {
-                const nomeFornecedor = fornecedor.NOME_TIPO.split(' - ')[0]; // Removendo o traço e qualquer coisa após ele
-                const option = document.createElement('option');
-                option.value = fornecedor.IDFORNECEDOR;
-                option.text = nomeFornecedor; // Exibe apenas o nome do fornecedor
-                selectBanco.appendChild(option);
-                selectEditFornecedor.appendChild(option.cloneNode(true));
-            });
+                const listItem = document.createElement('li');
+                listItem.classList.add('fornecedor');
 
-            selectEditFornecedor.addEventListener('change', function() {
-                const fornecedorSelecionadoId = this.value;
-                const fornecedorSelecionado = fornecedores.find(f => f.IDFORNECEDOR == fornecedorSelecionadoId);
+                const span = document.createElement('span');
+                span.textContent = fornecedor.NOME_TIPO.split(' - ')[0]; // Nome do fornecedor
+                listItem.appendChild(span);
 
-                if (fornecedorSelecionado) {
-                    document.getElementById('novoNomeFornecedor').value = fornecedorSelecionado.NOME_TIPO.split(' - ')[0];
-                    document.getElementById('novoTipoProduto').value = fornecedorSelecionado.NOME_TIPO.split(' - ')[1] || '';
+                const actions = document.createElement('div');
+                actions.classList.add('actions');
+                actions.innerHTML = `
+                    <button class="edit" onclick="abrirPopupEditarFornecedor(${fornecedor.IDFORNECEDOR})">✏️</button>
+                    <button class="delete" onclick="removerFornecedor(${fornecedor.IDFORNECEDOR})">🗑️</button>
+                `;
+                listItem.appendChild(actions);
 
-                    const novoSeletorDocumento = document.getElementById('novoSeletorDocumento');
-                    const cpfField = document.getElementById('novoCpf');
-                    const cnpjField = document.getElementById('novoCnpj');
-
-                    if (fornecedorSelecionado.CPF) {
-                        novoSeletorDocumento.value = 'CPF';
-                        cpfField.value = fornecedorSelecionado.CPF || '';
-                        cpfField.style.display = 'block';
-                        cnpjField.style.display = 'none';
-                    } else if (fornecedorSelecionado.CNPJ) {
-                        novoSeletorDocumento.value = 'CNPJ';
-                        cnpjField.value = fornecedorSelecionado.CNPJ || '';
-                        cpfField.style.display = 'none';
-                        cnpjField.style.display = 'block';
-                    } else {
-                        // Se CPF e CNPJ forem nulos ou undefined
-                        cpfField.value = '';
-                        cnpjField.value = '';
-                        cpfField.style.display = 'block';
-                        cnpjField.style.display = 'none';
-                    }
-                }
+                listaElement.appendChild(listItem);
             });
         });
+}
+function abrirPopup(popupId) {
+    const popup = document.getElementById(popupId);
+    if (popup) {
+        popup.style.display = 'flex';
+    }
+}
+
+function abrirPopupEditarFornecedor(idFornecedor) {
+    fetch(`/fornecedor/dados/${idFornecedor}`)
+        .then(response => response.json())
+        .then(fornecedor => {
+            const popup = document.getElementById('popup-editar-fornecedor');
+            document.getElementById('fornecedorId').value = fornecedor.IDFORNECEDOR;
+            document.getElementById('novoNomeFornecedor').value = fornecedor.NOME;
+            document.getElementById('novoTipoProduto').value = fornecedor.TIPO_DE_PRODUTO || '';
+
+            const novoSeletorDocumento = document.getElementById('novoSeletorDocumento');
+            if (fornecedor.CPF) {
+                novoSeletorDocumento.value = 'CPF';
+                document.getElementById('novoCpf').value = fornecedor.CPF;
+                document.getElementById('novoCnpj').style.display = 'none';
+            } else {
+                novoSeletorDocumento.value = 'CNPJ';
+                document.getElementById('novoCnpj').value = fornecedor.CNPJ;
+                document.getElementById('novoCpf').style.display = 'none';
+            }
+
+            popup.style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Erro ao buscar fornecedor:', error);
+        });
+}
+function fecharPopup(popupId) {
+    const popup = document.getElementById(popupId);
+    if (popup) {
+        popup.style.display = 'none';
+    }
 }
 
 function adicionarFornecedor(event) {
@@ -151,30 +170,6 @@ function adicionarFornecedor(event) {
         });
 }
 
-document.addEventListener('DOMContentLoaded', (event) => {
-    const params = new URLSearchParams(window.location.search);
-    const successMsg = params.get('successMsg');
-    if (successMsg) {
-        alert(successMsg);
-        history.pushState(null, '', window.location.pathname);
-    }
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-    const formRemove = document.getElementById('formRemove');
-
-    formRemove.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const selectElement = document.getElementById('selectBanco');
-        const empresa = selectElement.options[selectElement.selectedIndex].text;
-        if (confirm('Tem certeza que deseja remover o fornecedor: ' + empresa + '?')) {
-            formRemove.submit();
-        } else {
-            console.log('Remoção cancelada pelo usuário.');
-        }
-    });
-});
-
 function editarFornecedor() {
     const fornecedorId = document.getElementById('selectEditFornecedor').value;
     const nomeFornecedor = document.getElementById('novoNomeFornecedor').value;
@@ -200,7 +195,6 @@ function editarFornecedor() {
     })
         .then(response => {
             if (response.ok) {
-                // A resposta será redirecionada, então não capturamos o texto de sucesso aqui
                 window.location.href = '/fornecedor?successMsg=Fornecedor%20' + encodeURIComponent(nomeFornecedor) + '%20editado%20com%20sucesso!';
             } else {
                 throw new Error('Erro ao editar fornecedor');
@@ -212,42 +206,23 @@ function editarFornecedor() {
         });
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    const params = new URLSearchParams(window.location.search);
-    const successMsg = params.get('successMsg');
-    if (successMsg) {
-        alert(successMsg);
-        history.pushState(null, '', window.location.pathname);  // Remove o parâmetro da URL
-    }
-});
-
-function removerFornecedor() {
-    const selectElement = document.getElementById('selectBanco');
-    const fornecedorId = selectElement.value;  // Pegando o valor do ID do fornecedor
-    const fornecedorNome = selectElement.options[selectElement.selectedIndex].text;
-
-    if (confirm('Tem certeza que deseja remover o fornecedor: ' + fornecedorNome + '?')) {
+function removerFornecedor(idFornecedor) {
+    if (confirm('Tem certeza que deseja remover este fornecedor?')) {
         fetch('/fornecedor/remover', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ selectNomeEmpresa: fornecedorId, idcliente2: idcliente }) // Enviando o ID do fornecedor e o ID do cliente
+            body: JSON.stringify({ idFornecedor })
         })
             .then(response => {
                 if (response.ok) {
                     alert('Fornecedor removido com sucesso!');
-                    location.reload(); // Atualiza a página para refletir a remoção
-                } else {
-                    throw new Error('Erro ao remover fornecedor');
+                    carregarFornecedores();
                 }
             })
             .catch(error => {
-                console.error('Erro:', error);
-                alert('Ocorreu um erro ao remover o fornecedor.');
+                console.error('Erro ao remover o fornecedor:', error);
             });
-    } else {
-        console.log('Remoção cancelada pelo usuário.');
     }
 }
-
