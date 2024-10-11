@@ -2,36 +2,29 @@ let idCliente; // Definido como variável global
 
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        await loadTemplateAndStyles();
-        await fetchIdCliente(); // Certificando-se de que idCliente é definido aqui
+        await fetchIdCliente();
     } catch (error) {
         console.error('Erro ao carregar o template:', error);
     }
 
-    // Fetch e renderização das Rubricas Financeiras
+    // Fetch and render Rubricas Financeiras
     const rubricas = await fetchRubricas(idCliente);
-    console.log(rubricas)
     const categorias = construirArvoreDeCategorias(rubricas);
     renderRubricas(categorias, 'rubrica-lista');
 
-    // Fetch e renderização das Rubricas Contábeis (sem subcategorias)
+    // Fetch and render Rubricas Contábeis
     const rubricasContabeis = await fetchRubricasContabeis();
     renderRubricasContabeis(rubricasContabeis);
 
-    // Configura o campo idcliente nos formulários de adição
-    document.querySelector('input[name="idcliente"]').value = idCliente;
-    document.querySelector('input[name="idcliente2"]').value = idCliente;
-
-    // Preenche o seletor de rubrica-pai no formulário de sub-rubrica financeira
-    const categoriaPaiSelect = document.querySelector('select[name="categoriaPai"]');
-    categorias.forEach(categoria => {
-        const option = document.createElement('option');
-        option.value = categoria.IDCATEGORIA;
-        option.textContent = categoria.NOME;
-        categoriaPaiSelect.appendChild(option);
+    // Set idCliente in the form fields after fetching
+    document.querySelectorAll('input[name="idcliente"]').forEach(input => {
+        input.value = idCliente;
+    });
+    document.querySelectorAll('input[name="idcliente2"]').forEach(input => {
+        input.value = idCliente;
     });
 
-    // Adicionar event listeners aos botões
+    // Add event listeners to the buttons
     document.getElementById('adicionar-rubrica-btn').addEventListener('click', () => {
         abrirPopup('popup-adicionar-rubrica');
     });
@@ -40,20 +33,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         abrirPopup('popup-adicionar-subrubrica');
     });
 
-    // Botão para adicionar rubrica contábil
     document.getElementById('adicionar-rubrica-contabil-btn').addEventListener('click', () => {
         abrirPopup('popup-adicionar-rubrica-contabil');
     });
+
+    // Add event listeners for form submissions
+    document.getElementById('form-adicionar-rubrica').addEventListener('submit', adicionarRubricaFinanceira);
+    document.getElementById('form-adicionar-subrubrica').addEventListener('submit', adicionarSubRubricaFinanceira);
+    document.getElementById('form-adicionar-rubrica-contabil').addEventListener('submit', adicionarRubricaContabil);
 });
 
 async function fetchIdCliente() {
     const nomeEmpresa = getStoredEmpresaName();
     const response = await fetch(`/insercao/dados-empresa?nomeEmpresa=${encodeURIComponent(nomeEmpresa)}`);
     const data = await response.json();
-    idCliente = data[0].IDCLIENTE; // Atribui o valor à variável global
+    console.log(data)
+    idCliente = data[0].IDCLIENTE; // Assign the value globally
+    console.log('Fetched idCliente:', idCliente);
 }
 
-// Fetch para rubricas financeiras
+
 async function fetchRubricas(idCliente) {
     const response = await fetch(`/categoria/dados?idcliente=${encodeURIComponent(idCliente)}`);
     return response.json();
@@ -145,6 +144,94 @@ function adicionarCategoriaAoDom(categoria, container, nivel = 0) {
         });
     }
 }
+function adicionarRubricaFinanceira(event) {
+    event.preventDefault();
+
+    const nomeRubrica = document.querySelector('#form-adicionar-rubrica input[name="CATEGORIA"]').value;
+
+    fetch('/categoria', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            CATEGORIA: nomeRubrica,
+            idCliente: idCliente
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Rubrica adicionada com sucesso!');
+                location.reload();
+            } else {
+                alert('Erro ao adicionar a rubrica');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao adicionar a rubrica:', error);
+        });
+}
+
+function adicionarSubRubricaFinanceira(event) {
+    event.preventDefault();
+
+    const rubricaPai = document.querySelector('#form-adicionar-subrubrica select[name="categoriaPai"]').value;
+    const nomeSubRubrica = document.querySelector('#form-adicionar-subrubrica input[name="SUBCATEGORIA"]').value;
+
+    fetch('/categoria/subcategoria', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            categoriaPai: rubricaPai,
+            SUBCATEGORIA: nomeSubRubrica,
+            idCliente: idCliente
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Sub-rubrica adicionada com sucesso!');
+                location.reload();
+            } else {
+                alert('Erro ao adicionar a sub-rubrica');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao adicionar a sub-rubrica:', error);
+        });
+}
+
+function adicionarRubricaContabil(event) {
+    event.preventDefault();
+
+    const nomeRubricaContabil = document.querySelector('#form-adicionar-rubrica-contabil input[name="RUBRICA_CONTABIL"]').value;
+    fetch('/categoria/addContabil', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            RUBRICA_CONTABIL: nomeRubricaContabil,
+            idCliente: idCliente
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Rubrica contábil adicionada com sucesso!');
+                location.reload(); // Recarrega a página para exibir as novas rubricas contábeis
+            } else {
+                alert('Erro ao adicionar a rubrica contábil');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao adicionar a rubrica contábil:', error);
+        });
+}
+
 function deletarCategoria(idCategoria) {
     if (confirm('Tem certeza que deseja remover esta rubrica?')) {
         fetch(`/categoria/delete`, {

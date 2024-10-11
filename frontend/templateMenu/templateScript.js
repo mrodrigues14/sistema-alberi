@@ -1,3 +1,5 @@
+let idcliente = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     clearLocalStorageOnFirstLoad();
     clearCacheOnFirstLoad();
@@ -50,8 +52,11 @@ function loadAndDisplayUsername() {
                 userButton.textContent = data.username;
                 localStorage.setItem('idUsuario', data.idusuario);
                 localStorage.setItem('userRoles', data.role);
-                console.log(data.role);
-                console.log(data.idusuario);
+
+                idcliente = data.idusuario;
+
+                console.log('Global idcliente:', idcliente);
+
                 showAdminOptions();
 
                 if (!localStorage.getItem('idEmpresaSelecionada')) {
@@ -85,7 +90,6 @@ function loadAndDisplayUsername() {
             window.location.href = '/';
         });
 }
-
 function toggleDropdown(dropdownId) {
     var dropdown = document.getElementById(dropdownId);
     if (dropdown.style.display === "block") {

@@ -38,17 +38,19 @@ router.post('/adicionar', (req, res) => {
 });
 
 router.post('/remover', (req, res) => {
-    const {selectNomeEmpresa, idcliente2} = req.body;
-    removerFornecedor(selectNomeEmpresa, idcliente2, (err, result) => {
-        if(err) {
-            console.error(err);
+    const { idFornecedor, idcliente } = req.body;
+
+    removerFornecedor(idFornecedor, idcliente, (err, result) => {
+        if (err) {
+            console.error('Erro ao remover fornecedor:', err);
             res.status(500).send('Erro ao remover fornecedor');
-        }
-        else {
-            res.redirect(`/fornecedor`);
+        } else {
+            console.log('Fornecedor removido com sucesso:', result);
+            res.json({ success: true, message: 'Fornecedor removido com sucesso!' });
         }
     });
 });
+
 
 router.post('/editar', (req, res) => {
     const { idFornecedor, nomeFornecedor, cnpj, cpf, tipoProduto, idcliente } = req.body;
@@ -57,7 +59,7 @@ router.post('/editar', (req, res) => {
             console.error(err);
             res.status(500).send('Erro ao editar fornecedor');
         } else {
-            res.redirect(`/fornecedor?successMsg=Fornecedor ${nomeFornecedor} editado com sucesso!`);
+            res.json({ success: true, message: `Fornecedor ${nomeFornecedor} editado com sucesso!` });
         }
     });
 });

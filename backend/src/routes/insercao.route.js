@@ -94,11 +94,14 @@ router.get('/dados-categoria', (req, res) => {
 
 router.post('/inserir-individual', async (req, res) => {
     try {
-        const { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil } = req.body;
+        const { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil, rubrica_do_mes } = req.body;
+
+        // Se rubrica_do_mes não for fornecido, passe null
+        const rubricaDoMes = rubrica_do_mes ? rubrica_do_mes : null;
+
         console.log("Dados recebidos no body:", req.body);
 
-        // Insere os dados no banco
-        await inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil,(err, result) => {
+        await inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil, rubricaDoMes, (err, result) => {
             if (err) {
                 console.error("Erro durante a inserção:", err);
                 return res.status(500).send("Erro ao inserir dados");
@@ -115,6 +118,7 @@ router.post('/inserir-individual', async (req, res) => {
 });
 
 
+
 function formatarDataParaBanco(data) {
     const [dia, mes, ano] = data.split('/');
     return `${ano}-${mes}-${dia}`;
@@ -125,12 +129,15 @@ router.post('/inserir-lote', async (req, res) => {
 
     try {
         for (const entrada of entradas) {
-            let { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil } = entrada;
+            let { Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil, rubrica_do_mes } = entrada;
+
+            // Se rubrica_do_mes não for fornecido, passe null
+            const rubricaDoMes = rubrica_do_mes ? rubrica_do_mes : null;
 
             Data = formatarDataParaBanco(Data);
 
             await new Promise((resolve, reject) => {
-                inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil, (err, result) => {
+                inserir(Data, Categoria, Descricao, Nome, TIPO, VALOR, IDBANCO, IDCLIENTE, FORNECEDOR, rubrica_contabil, rubricaDoMes, (err, result) => {
                     if (err) {
                         return reject(err);
                     }
@@ -144,9 +151,6 @@ router.post('/inserir-lote', async (req, res) => {
         res.status(500).send("Erro ao inserir dados");
     }
 });
-
-
-
 
 router.post('/deletar-extrato', (req, res) => {
     const { idExtrato } = req.body;

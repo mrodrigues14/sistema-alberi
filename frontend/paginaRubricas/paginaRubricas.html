@@ -27,7 +27,7 @@
     <div class="popup-content">
         <span class="close" onclick="fecharPopup('popup-adicionar-rubrica')">&times;</span>
         <h2>Adicionar Nova Rubrica Financeira</h2>
-        <form id="form-adicionar-rubrica" method="post" action="/categoria/">
+        <form id="form-adicionar-rubrica">
             <input type="text" name="CATEGORIA" placeholder="Nome da Rubrica" required>
             <input type="hidden" name="idcliente" value="">
             <button type="submit">Adicionar</button>
@@ -40,7 +40,7 @@
     <div class="popup-content">
         <span class="close" onclick="fecharPopup('popup-adicionar-subrubrica')">&times;</span>
         <h2>Adicionar Nova Sub-Rubrica Financeira</h2>
-        <form id="form-adicionar-subrubrica" method="post" action="/categoria/subcategoria">
+        <form id="form-adicionar-subrubrica">
             <select name="categoriaPai" required>
                 <option value="" disabled selected>Selecione a Rubrica-Pai</option>
             </select>
@@ -56,7 +56,7 @@
     <div class="popup-content">
         <span class="close" onclick="fecharPopup('popup-editar-rubrica')">&times;</span>
         <h2>Editar Rubrica Financeira</h2>
-        <form id="form-editar-rubrica" method="post" action="/categoria/editar">
+        <form id="form-editar-rubrica">
             <input type="hidden" name="idcliente" value="">
             <input type="hidden" name="categoriaAntiga" value="">
             <input type="text" name="categoriaNova" placeholder="Novo nome da Rubrica" required>
@@ -81,7 +81,7 @@
     <div class="popup-content">
         <span class="close" onclick="fecharPopup('popup-adicionar-rubrica-contabil')">&times;</span>
         <h2>Adicionar Nova Rubrica Contábil</h2>
-        <form id="form-adicionar-rubrica-contabil" method="post" action="/categoria/addContabil">
+        <form id="form-adicionar-rubrica-contabil">
             <input type="text" name="RUBRICA_CONTABIL" placeholder="Nome da Rubrica Contábil" required>
             <input type="hidden" name="idcliente" value="">
             <button type="submit">Adicionar</button>
@@ -94,7 +94,7 @@
     <div class="popup-content">
         <span class="close" onclick="fecharPopup('popup-editar-rubrica-contabil')">&times;</span>
         <h2>Editar Rubrica Contábil</h2>
-        <form id="form-editar-rubrica-contabil" method="post" action="/categoria/contabil/editar">
+        <form id="form-editar-rubrica-contabil">
             <input type="hidden" name="idcliente" value="">
             <input type="hidden" name="rubricaContabilAntiga" value="">
             <input type="text" name="rubricaContabilNova" placeholder="Novo nome da Rubrica Contábil" required>

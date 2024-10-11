@@ -1,13 +1,12 @@
 const mysqlConn = require("../base/database");
 
-function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, FORNECEDOR, rubrica_contabil, callback) {
-
-    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, FORNECEDOR, rubrica_contabil];
+function inserir(DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, FORNECEDOR, rubrica_contabil, rubrica_do_mes, callback) {
+    const parameters = [DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO, VALOR, id_banco, id_empresa, FORNECEDOR, rubrica_contabil, rubrica_do_mes];
     console.log(parameters);
 
     mysqlConn.query(
-        `INSERT INTO EXTRATO (DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE, FORNECEDOR, RUBRICA_CONTABIL)
-         VALUES (?,?,?,?,?,?,?,?,?,?)`,
+        `INSERT INTO EXTRATO (DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR, ID_BANCO, ID_CLIENTE, FORNECEDOR, RUBRICA_CONTABIL, RUBRICA_DO_MES)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
         parameters,
         function(err, result, fields) {
             if (err) {
@@ -164,13 +163,13 @@ function uploadAnexo(idExtrato, nomeArquivo, tipoExtratoAnexo, callback) {
 }
 
 
-function inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, valorEntrada, valorSaida, callback) {
-    const query = `INSERT INTO EXTRATO (ID_SUBEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, ID_FORNECEDOR, TIPO_DE_TRANSACAO, VALOR) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+function inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, valorEntrada, valorSaida, rubrica_do_mes, callback) {
+    const query = `INSERT INTO EXTRATO (ID_SUBEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, ID_FORNECEDOR, TIPO_DE_TRANSACAO, VALOR, RUBRICA_DO_MES) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const tipoTransacao = valorEntrada > 0 ? 'ENTRADA' : 'SAIDA';
     const valor = valorEntrada > 0 ? valorEntrada : valorSaida;
 
-    mysqlConn.query(query, [idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, tipoTransacao, valor], (err, result) => {
+    mysqlConn.query(query, [idExtratoPrincipal, data, categoria, descricao, nomeExtrato, fornecedor, tipoTransacao, valor, rubrica_do_mes], (err, result) => {
         if (err) {
             callback(err, null);
         } else {
@@ -179,13 +178,16 @@ function inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeE
     });
 }
 
-function editarSubextrato(idSubextrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida, callback) {
+
+function editarSubextrato(idExtrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida, rubrica_do_mes, callback) {
     const query = `
-        UPDATE SUBEXTRATO 
-        SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, FORNECEDOR = ?, RUBRICA_CONTABIL = ?, ENTRADA = ?, SAIDA = ?
-        WHERE ID_SUBEXTRATO = ?
+        UPDATE EXTRATO 
+        SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, FORNECEDOR = ?, RUBRICA_CONTABIL = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?, RUBRICA_DO_MES = ?
+        WHERE IDEXTRATO = ?
     `;
-    const values = [data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida, idSubextrato];
+    const tipoTransacao = entrada > 0 ? 'ENTRADA' : 'SAIDA';
+    const valor = entrada > 0 ? entrada : saida;
+    const values = [data, categoria, descricao, fornecedor, rubricaContabil, tipoTransacao, valor, rubrica_do_mes, idExtrato];
 
     mysqlConn.query(query, values, function(err, result) {
         if (err) {
@@ -195,6 +197,7 @@ function editarSubextrato(idSubextrato, data, categoria, descricao, fornecedor, 
         }
     });
 }
+
 
 
 function deletarSubextrato(idSubextrato, callback) {

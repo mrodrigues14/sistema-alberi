@@ -358,7 +358,7 @@ iframe {
 
 /* Responsividade para o select2 */
 .select2-container--default .select2-selection--single {
-    width: 128%; /* Ocupa 100% da largura do contêiner pai */
+    width: 128%;
     box-sizing: border-box; /* Inclui padding e border no cálculo da largura */
     padding-right: 30px; /* Garante espaço para a seta dentro do campo */
 }
@@ -370,6 +370,8 @@ iframe {
     white-space: nowrap; /* Evita que o texto quebre em várias linhas */
     overflow: hidden; /* Evita que o texto extrapole a largura */
     text-overflow: ellipsis; /* Adiciona reticências se o texto for muito longo */
+    display: contents !important;
+
 }
 
 .select2-selection__arrow {
@@ -1135,4 +1137,148 @@ select.fornecedor-select {
 
 #popupOpcoes{
     margin-right: 57%;
+}
+
+.rubricaMesLabel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    margin-top: 5px;
+
+}
+
+.rubricaMesCheckbox {
+    display: none; /* Esconde o checkbox padrão */
+}
+
+.rubricaMesCheckbox:checked + .customCheckbox {
+    background-color: #4CAF50; /* Verde moderno */
+    border-color: #4CAF50;
+}
+
+.rubricaMesCheckbox:checked + .customCheckbox:after {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 3px;
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    transition: all 0.3s ease;
+}
+
+
+.customCheckbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: 2px solid #999;
+    background-color: #fff;
+    margin-right: 10px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.rubricaMesCheckbox,
+.recorrenteCheckbox {
+    display: none;
+}
+
+.rubricaMesCheckbox:checked + .customCheckbox,
+.recorrenteCheckbox:checked + .customCheckbox {
+    background-color: #4CAF50; /* Verde moderno */
+    border-color: #4CAF50;
+}
+
+.rubricaMesCheckbox:checked + .customCheckbox:after,
+.recorrenteCheckbox:checked + .customCheckbox:after {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 3px;
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    transition: all 0.3s ease;
+}
+
+.customCheckbox:hover {
+    border-color: #666;
+}
+
+.rubricaMesLabel:hover,
+.recorrenteLabel:hover {
+    color: #4CAF50;
+}
+
+.recorrenteLabel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    margin-top: 5px;
+}
+
+/* Estilização do container das opções de recorrência */
+.recorrente-options-container {
+    display: none; /* Inicialmente oculto */
+    margin-top: 10px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilização dos rótulos */
+.recorrente-options-container label {
+    display: block;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Estilização do seletor de período de recorrência */
+.recorrente-select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    transition: border-color 0.3s ease;
+}
+
+.recorrente-select:focus {
+    border-color: #4CAF50;
+}
+
+/* Estilização do campo de quantidade de recorrências */
+.recorrente-input {
+    width: 90%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.recorrente-input:focus {
+    border-color: #4CAF50;
+}
+
+/* Adiciona um pequeno efeito de sombra ao foco nos campos */
+.recorrente-select:focus,
+.recorrente-input:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }

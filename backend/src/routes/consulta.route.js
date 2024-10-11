@@ -19,8 +19,11 @@ router.get('/editar/extratoLink', (req, res) => {
 });
 
 router.post('/editar/extrato', (req, res) => {
-    const { id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil } = req.body;
-    editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil, (err, result) => {
+    const { id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil, rubrica_do_mes } = req.body;
+
+    const rubricaDoMes = rubrica_do_mes ? rubrica_do_mes : null;
+
+    editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil, rubricaDoMes, (err, result) => {
         if (err) {
             res.status(500).json(err);
         } else {
@@ -28,8 +31,6 @@ router.post('/editar/extrato', (req, res) => {
         }
     });
 });
-
-
 
 router.get('/dados', (req, res) => {
     const { banco, data, empresa } = req.query;

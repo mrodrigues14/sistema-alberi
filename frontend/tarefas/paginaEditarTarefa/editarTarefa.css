@@ -3,7 +3,7 @@ html, body {
     margin: 0;
     padding: 0;
     background-color: #f4f7f6; /* Cor de fundo suave */
-    font-family: Arial, sans-serif; /* Tipografia mais legível */
+    font-family: 'DM Sans', sans-serif;
 }
 
 #closeButton {

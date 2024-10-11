@@ -2,6 +2,9 @@
     margin-bottom: 20px;
 }
 
+body{
+    font-family: 'DM Sans', sans-serif !important;
+}
 .lista-rubricas {
     background-color: #FFFFFF;
     padding: 20px;

@@ -68,16 +68,19 @@ function carregarFornecedores(idcliente) {
         .then(response => response.json())
         .then(fornecedores => {
             const listaElement = document.getElementById('fornecedor-lista');
-            listaElement.innerHTML = '';
+            listaElement.innerHTML = ''; // Limpar lista antes de renderizar os fornecedores
 
             fornecedores.forEach(fornecedor => {
+                console.log(fornecedor)
                 const listItem = document.createElement('li');
                 listItem.classList.add('fornecedor');
 
+                // Exibe o nome do fornecedor e armazena o IDFORNECEDOR
                 const span = document.createElement('span');
                 span.textContent = fornecedor.NOME_TIPO.split(' - ')[0]; // Nome do fornecedor
                 listItem.appendChild(span);
 
+                // Criar o container para as ações de editar e remover
                 const actions = document.createElement('div');
                 actions.classList.add('actions');
                 actions.innerHTML = `
@@ -86,8 +89,12 @@ function carregarFornecedores(idcliente) {
                 `;
                 listItem.appendChild(actions);
 
+                // Anexar o item da lista ao elemento da lista
                 listaElement.appendChild(listItem);
             });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar os fornecedores:', error);
         });
 }
 function abrirPopup(popupId) {
@@ -145,9 +152,9 @@ function adicionarFornecedor(event) {
         idcliente
     };
 
-    if (tipoDocumento === '0') {
+    if (tipoDocumento === '0' && cpf) {
         dados.cpf = cpf;
-    } else {
+    } else if (tipoDocumento === '1' && cnpj) {
         dados.cnpj = cnpj;
     }
 
@@ -170,8 +177,10 @@ function adicionarFornecedor(event) {
         });
 }
 
-function editarFornecedor() {
-    const fornecedorId = document.getElementById('selectEditFornecedor').value;
+function editarFornecedor(event) {
+    event.preventDefault();
+
+    const fornecedorId = document.getElementById('fornecedorId').value;
     const nomeFornecedor = document.getElementById('novoNomeFornecedor').value;
     const tipoDocumento = document.getElementById('novoSeletorDocumento').value;
     const cpf = document.getElementById('novoCpf').value || null;
@@ -195,7 +204,15 @@ function editarFornecedor() {
     })
         .then(response => {
             if (response.ok) {
-                window.location.href = '/fornecedor?successMsg=Fornecedor%20' + encodeURIComponent(nomeFornecedor) + '%20editado%20com%20sucesso!';
+                return response.json();
+            } else {
+                throw new Error('Erro ao editar fornecedor');
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = '/fornecedor';
             } else {
                 throw new Error('Erro ao editar fornecedor');
             }
@@ -206,6 +223,7 @@ function editarFornecedor() {
         });
 }
 
+
 function removerFornecedor(idFornecedor) {
     if (confirm('Tem certeza que deseja remover este fornecedor?')) {
         fetch('/fornecedor/remover', {
@@ -213,16 +231,26 @@ function removerFornecedor(idFornecedor) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ idFornecedor })
+            body: JSON.stringify({ idFornecedor, idcliente }) // Enviando idFornecedor e idcliente
         })
             .then(response => {
                 if (response.ok) {
-                    alert('Fornecedor removido com sucesso!');
-                    carregarFornecedores();
+                    return response.json(); // Processa a resposta JSON do servidor
+                } else {
+                    throw new Error('Erro ao remover fornecedor');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    alert(data.message); // Exibe uma mensagem de sucesso
+                    location.reload(); // Recarrega a página para atualizar a lista
+                } else {
+                    throw new Error('Erro ao remover fornecedor');
                 }
             })
             .catch(error => {
-                console.error('Erro ao remover o fornecedor:', error);
+                console.error('Erro:', error);
+                alert('Ocorreu um erro ao remover o fornecedor.');
             });
     }
 }

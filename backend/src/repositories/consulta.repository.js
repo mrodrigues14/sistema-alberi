@@ -2,11 +2,8 @@ const mysqlConn = require("../base/database");
 
 function buscar(banco, data, cliente, callback) {
     const [ano, mes] = data.split('-');
-
     const dataInicio = `${ano}-${mes}-01`;
-
     const dataFim = new Date(ano, mes, 0).toISOString().split('T')[0];
-
     const parametros = [banco, dataInicio, dataFim, cliente];
 
     mysqlConn.query(`SELECT IDEXTRATO, DATA, 
@@ -28,13 +25,14 @@ function buscar(banco, data, cliente, callback) {
                     VALOR, 
                     CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, 
                     C.NOME AS NOME_CLIENTE, 
-                    EXTRATO.ID_FORNECEDOR, -- ID_FORNECEDOR diretamente da tabela EXTRATO
-                    IFNULL(F.NOME, EXTRATO.FORNECEDOR) AS NOME_FORNECEDOR, -- Coluna FORNECEDOR
-                    EXTRATO.RUBRICA_CONTABIL -- Recuperando diretamente da tabela EXTRATO
+                    EXTRATO.ID_FORNECEDOR, 
+                    IFNULL(F.NOME, EXTRATO.FORNECEDOR) AS NOME_FORNECEDOR, 
+                    EXTRATO.RUBRICA_CONTABIL,
+                    EXTRATO.RUBRICA_DO_MES 
                     FROM EXTRATO
                     INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
                     INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
-                    LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR -- Junção para pegar o nome do fornecedor, se existir
+                    LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR
                     LEFT JOIN CATEGORIA CAT ON EXTRATO.CATEGORIA = CAT.IDCATEGORIA
                     LEFT JOIN CATEGORIA SUBCAT ON CAT.ID_CATEGORIA_PAI = SUBCAT.IDCATEGORIA
                     WHERE ID_BANCO = ? AND DATA >= ? AND DATA < ? AND ID_CLIENTE = ?
@@ -51,7 +49,9 @@ function buscar(banco, data, cliente, callback) {
 
 function extratoAEditar(id, callback) {
     mysqlConn.query(`SELECT IDEXTRATO, DATA, CATEGORIA, DESCRICAO, NOME_NO_EXTRATO, TIPO_DE_TRANSACAO, VALOR,
-                    CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, C.NOME AS NOME_CLIENTE, F.NOME AS NOME_FORNECEDOR
+                    CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, C.NOME AS NOME_CLIENTE, F.NOME AS NOME_FORNECEDOR,
+                    EXTRATO.RUBRICA_CONTABIL, -- Já estava
+                    EXTRATO.RUBRICA_DO_MES -- Adicionando RUBRICA_DO_MES
                     FROM EXTRATO
                     INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
                     INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
@@ -66,9 +66,9 @@ function extratoAEditar(id, callback) {
         });
 }
 
-function editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil, callback) {
-    mysqlConn.query(`UPDATE EXTRATO SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, NOME_NO_EXTRATO = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?, FORNECEDOR = ?, RUBRICA_CONTABIL = ? WHERE IDEXTRATO = ?`,
-        [data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil, id],
+function editarExtrato(id, data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil, rubrica_do_mes, callback) {
+    mysqlConn.query(`UPDATE EXTRATO SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, NOME_NO_EXTRATO = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?, FORNECEDOR = ?, RUBRICA_CONTABIL = ?, RUBRICA_DO_MES = ? WHERE IDEXTRATO = ?`,
+        [data, categoria, descricao, nome_no_extrato, tipo, valor, fornecedor, rubrica_contabil, rubrica_do_mes, id],
         function (err, result, fields) {
             if (err) {
                 callback(err, null);

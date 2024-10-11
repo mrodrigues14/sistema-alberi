@@ -178,6 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
     gerarMeses();
 });
 
+
 function selecionarMesAno(mesAno) {
     const monthButtons = document.querySelectorAll('.mes-button');
     monthButtons.forEach(btn => btn.classList.remove('active'));
@@ -227,9 +228,15 @@ function construirArvoreDeCategorias(categorias) {
 function resetForm() {
     document.getElementById('meuFormulario').reset();
 }
+document.getElementById('recorrente').addEventListener('click', function() {
+    const recorrenteOptions = document.getElementById('recorrenteOptions');
 
-let datasRecorrentesGlobais = []; // Variável global para armazenar as datas recorrentes geradas
-
+    if (this.checked) {
+        recorrenteOptions.style.display = 'block';
+    } else {
+        recorrenteOptions.style.display = 'none';
+    }
+});
 document.getElementById('meuFormulario').addEventListener('submit', async function(event) {
     event.preventDefault(); // Previne o envio padrão do formulário
 
@@ -251,131 +258,88 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
     const fornecedorSelecionado = document.getElementById('seletorFornecedor');
     const fornecedor = fornecedorSelecionado.options[fornecedorSelecionado.selectedIndex].textContent.trim();
 
-    // Se houver datas recorrentes, use-as, caso contrário, use apenas a data inicial
-    let datasRecorrentes = [Data]; // Inicializa com a data inicial
-    if (datasRecorrentesGlobais.length > 0) {
-        datasRecorrentes = datasRecorrentesGlobais; // Substitui pela recorrência se houver
-    }
+    // Captura se o checkbox "Rubrica do Mês" está selecionado
+    const rubricaDoMesSelecionado = document.getElementById('rubricaMes').checked ? 1 : 0;
+
     const idBancoElement = document.getElementById('seletorBanco');
-    const idBanco = IDBANCO || (idBancoElement ? idBancoElement.value : null);
-    // Monta o objeto de dados para cada data (incluindo datas de recorrência)
-    const dadosParaInserir = datasRecorrentes.map(data => ({
-        Data: data,
-        Categoria: categoria, // ID da categoria
-        Descricao: descricao,
-        Nome: nomeExtrato,
-        TIPO: valorEn ? 'Entrada' : 'Saída', // Determina se é entrada ou saída
-        VALOR: valorEn || valorSa,
-        IDBANCO: idBanco,
-        IDCLIENTE: id_empresa, // Ajuste conforme a necessidade
-        FORNECEDOR: fornecedor, // Nome do fornecedor
-        rubrica_contabil: rubricaContabil // Inclui a Rubrica Contábil no objeto de dados
-    }));
+    const idBanco = idBancoElement ? idBancoElement.value : null;
 
-    console.log(dadosParaInserir); // Verifique os dados no console antes de enviar
+    // Captura o período e a quantidade de recorrências
+    const periodoRecorrencia = document.getElementById('periodoRecorrencia').value;
+    const quantidadeRecorrencia = parseInt(document.getElementById('quantidadeRecorrencia').value, 10);
 
+    // Função para adicionar dias, semanas, meses ou anos a uma data
+    function adicionarPeriodo(data, periodo, quantidade) {
+        const novaData = new Date(data);
+        switch (periodo) {
+            case 'semanal':
+                novaData.setDate(novaData.getDate() + 7 * quantidade);
+                break;
+            case 'quinzenal':
+                novaData.setDate(novaData.getDate() + 14 * quantidade);
+                break;
+            case 'mensal':
+                novaData.setMonth(novaData.getMonth() + quantidade);
+                break;
+            case 'anual':
+                novaData.setFullYear(novaData.getFullYear() + quantidade);
+                break;
+            default:
+                return data;
+        }
+        return novaData.toISOString().split('T')[0]; // Retorna no formato YYYY-MM-DD
+    }
+
+    // Array para armazenar todas as datas a serem inseridas (data inicial + recorrências)
+    const datasRecorrentes = [Data];
+
+    // Gera as datas de recorrência com base no período e na quantidade
+    for (let i = 1; i <= quantidadeRecorrencia; i++) {
+        const novaData = adicionarPeriodo(Data, periodoRecorrencia, i);
+        datasRecorrentes.push(novaData);
+    }
+
+    console.log(datasRecorrentes); // Verifique as datas no console
+
+    // Monta e envia as transações para cada data gerada
     try {
-        let response;
-        if (datasRecorrentesGlobais.length > 1) {
-            // Se for recorrente, usa a rota de inserir-lote
-            response = await fetch('/insercao/inserir-lote', {
+        for (const dataRecorrente of datasRecorrentes) {
+            const dadosParaInserir = {
+                Data: dataRecorrente,
+                Categoria: categoria, // ID da categoria
+                Descricao: descricao,
+                Nome: nomeExtrato,
+                TIPO: valorEn ? 'Entrada' : 'Saída', // Determina se é entrada ou saída
+                VALOR: valorEn || valorSa,
+                IDBANCO: idBanco,
+                IDCLIENTE: id_empresa, // Ajuste conforme a necessidade
+                FORNECEDOR: fornecedor, // Nome do fornecedor
+                rubrica_contabil: rubricaContabil, // Inclui a Rubrica Contábil no objeto de dados
+                rubrica_do_mes: rubricaDoMesSelecionado // Inclui o valor da Rubrica do Mês (1 ou 0)
+            };
+
+            console.log(dadosParaInserir); // Verifique os dados no console antes de enviar
+
+            const response = await fetch('/insercao/inserir-individual', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(dadosParaInserir) // Envia um array com todas as transações recorrentes
+                body: JSON.stringify(dadosParaInserir) // Envia os dados da transação para cada data
             });
-        } else {
-            console.log(dadosParaInserir)
-            response = await fetch('/insercao/inserir-individual', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dadosParaInserir[0]) // Envia apenas a transação principal
-            });
+
+            if (!response.ok) {
+                throw new Error('Erro ao inserir dados');
+            }
         }
 
-        if (response.ok) {
-            window.location.href = '/insercao';
-        } else {
-            throw new Error('Erro ao inserir dados');
-        }
+        // Redireciona após o sucesso
+        window.location.href = '/insercao';
     } catch (error) {
         console.error(error);
         alert('Ocorreu um erro ao inserir os dados. Por favor, tente novamente.');
     }
 });
-
-// Ao clicar no seletor de categoria, abre o pop-up para perguntar sobre a recorrência
-document.getElementById('seletorCategoria').addEventListener('click', function() {
-    abrirPopupRecorrencia();
-});
-
-function abrirPopupRecorrencia() {
-    var popup = document.getElementById("popupRecorrencia");
-    popup.style.display = "block";
-}
-
-function fecharPopupA() {
-    var popup = document.getElementById("popupRecorrencia");
-    popup.style.display = "none";
-}
-
-function mostrarFrequencia() {
-    document.getElementById("frequenciaRecorrencia").style.display = "block";
-}
-
-function mostrarQuantidade() {
-    document.getElementById("quantidadeRecorrencia").style.display = "block";
-}
-
-// Confirma a recorrência e armazena as datas recorrentes, fechando o pop-up
-function confirmarRecorrencia() {
-    var recorrente = document.querySelector('input[name="recorrente"]:checked').value;
-    if (recorrente === 'sim') {
-        var frequencia = document.getElementById("frequencia").value;
-        var quantidade = document.getElementById("quantidade").value;
-
-        if (!frequencia || !quantidade) {
-            alert("Por favor, selecione a frequência e insira a quantidade.");
-            return;
-        }
-
-        // Gera as datas recorrentes
-        datasRecorrentesGlobais = gerarDatasRecorrentes(document.getElementById('datepicker').value, frequencia, quantidade);
-    } else {
-        // Se não for recorrente, limpa a variável global para não gerar datas adicionais
-        datasRecorrentesGlobais = [];
-    }
-
-    fecharPopupA(); // Fecha o pop-up após confirmar
-}
-
-// Gera as datas recorrentes com base na frequência e quantidade
-function gerarDatasRecorrentes(dataInicial, frequencia, quantidade) {
-    var datas = [];
-    var dataBase = new Date(dataInicial);
-
-    for (var i = 1; i <= quantidade; i++) {
-        var novaData = new Date(dataBase);
-
-        if (frequencia === 'diaria') {
-            novaData.setDate(novaData.getDate() + i);
-        } else if (frequencia === 'semanal') {
-            novaData.setDate(novaData.getDate() + (7 * i));
-        } else if (frequencia === 'quinzenal') {
-            novaData.setDate(novaData.getDate() + (14 * i));
-        } else if (frequencia === 'mensal') {
-            novaData.setMonth(novaData.getMonth() + i);
-        }
-
-        datas.push(novaData.toISOString().split('T')[0]); // Armazena a data formatada em AAAA-MM-DD
-    }
-
-    return datas;
-}
-
 
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
     categorias.forEach(categoria => {
@@ -3348,6 +3312,9 @@ function abrirPopupOpcao() {
         });
     }
 }
+
+
+
 
 
 

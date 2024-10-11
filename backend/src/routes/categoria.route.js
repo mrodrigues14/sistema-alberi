@@ -24,17 +24,24 @@ router.get('/dados' , (req, res) => {
     });
 });
 
-router.post('/' , (req, res) => {
-    const {CATEGORIA, idcliente} = req.body;
-    console.log(CATEGORIA, idcliente);
-    adicionarOuAssociarCategoria(CATEGORIA, idcliente, (err, result) => {
+router.post('/', (req, res) => {
+    const { CATEGORIA, idCliente } = req.body;
+    console.log(CATEGORIA, idCliente);
+
+    adicionarOuAssociarCategoria(CATEGORIA, idCliente, (err, result) => {
         if (err) {
             console.error(err);
-            return res.status(500).send("Erro ao adicionar categoria");
+            return res.status(500).json({ success: false, message: "Erro ao adicionar categoria" });
         }
-        res.redirect(`/rubricas?successMsg=Rubrica ${CATEGORIA} adicionada com sucesso!`);
+
+        // Enviando mensagem de sucesso como JSON
+        res.status(200).json({
+            success: true,
+            message: `Rubrica ${CATEGORIA} adicionada com sucesso!`
+        });
     });
 });
+
 
 router.post('/delete' , (req, res) => {
     const {idCliente, categoria} = req.body;
@@ -49,15 +56,21 @@ router.post('/delete' , (req, res) => {
 });
 
 router.post('/subcategoria', (req, res) => {
-    const {idcliente2, categoriaPai, SUBCATEGORIA} = req.body;
-    adicionarSubcategoria(idcliente2 ,categoriaPai, SUBCATEGORIA, (err, result) => {
+    const { idcliente2, categoriaPai, SUBCATEGORIA } = req.body;
+
+    adicionarSubcategoria(idcliente2, categoriaPai, SUBCATEGORIA, (err, result) => {
         if (err) {
             console.error(err);
-            return res.status(500).send("Erro ao adicionar subcategoria");
+            return res.status(500).json({ success: false, message: "Erro ao adicionar subcategoria" });
         }
-        res.redirect(`/rubricas?successMsg=Sub-Rubrica ${SUBCATEGORIA} adicionada com sucesso!`);
+
+        res.status(200).json({
+            success: true,
+            message: `Sub-Rubrica ${SUBCATEGORIA} adicionada com sucesso!`
+        });
     });
 });
+
 
 router.post('/editar' , (req, res) => {
     const {idcliente, categoriaAntiga, categoriaNova} = req.body;
