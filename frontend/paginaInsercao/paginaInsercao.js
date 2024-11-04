@@ -237,6 +237,7 @@ document.getElementById('recorrente').addEventListener('click', function() {
         recorrenteOptions.style.display = 'none';
     }
 });
+
 document.getElementById('meuFormulario').addEventListener('submit', async function(event) {
     event.preventDefault(); // Previne o envio padrão do formulário
 
@@ -291,12 +292,20 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
     }
 
     // Array para armazenar todas as datas a serem inseridas (data inicial + recorrências)
-    const datasRecorrentes = [Data];
+    const datasRecorrentes = [];
 
-    // Gera as datas de recorrência com base no período e na quantidade
-    for (let i = 1; i <= quantidadeRecorrencia; i++) {
-        const novaData = adicionarPeriodo(Data, periodoRecorrencia, i);
-        datasRecorrentes.push(novaData);
+    // Se a opção de recorrência estiver selecionada, gera as datas de recorrência
+    if (document.getElementById('recorrente').checked) {
+        datasRecorrentes.push(Data); // Adiciona a data inicial
+
+        // Gera as datas de recorrência com base no período e na quantidade
+        for (let i = 1; i <= quantidadeRecorrencia; i++) {
+            const novaData = adicionarPeriodo(Data, periodoRecorrencia, i);
+            datasRecorrentes.push(novaData);
+        }
+    } else {
+        // Se não for recorrente, apenas adiciona a data selecionada
+        datasRecorrentes.push(Data);
     }
 
     console.log(datasRecorrentes); // Verifique as datas no console
@@ -333,13 +342,14 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
             }
         }
 
-        // Redireciona após o sucesso
-        window.location.href = '/insercao';
+        await buscarDados(); // Chama a função que busca os dados
+        resetForm();
     } catch (error) {
         console.error(error);
         alert('Ocorreu um erro ao inserir os dados. Por favor, tente novamente.');
     }
 });
+
 
 function adicionarCategoriasAoSelect(select, categorias, prefixo = '') {
     categorias.forEach(categoria => {
@@ -886,6 +896,11 @@ function alternarModoEdicao() {
 document.getElementById('botaoEditarTodas').addEventListener('click', alternarModoEdicao);
 
 async function atualizarTabela(dados, saldoInicial) {
+    // Exibe o spinner de carregamento
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.querySelector('.body-insercao').classList.add('blur-background');
+    document.querySelector('.popup-insercao-container').classList.add('blur-background');
+
     const tbody = document.getElementById('extrato-body');
     tbody.innerHTML = '';
 
@@ -960,7 +975,7 @@ async function atualizarTabela(dados, saldoInicial) {
             console.log(subextratos)
             subextratos.forEach(subextrato => {
                 const subRow = tbody.insertRow();
-                subRow.dataset.subextrato = subextrato.IDSUBEXTRATO;
+                subRow.dataset.subextrato = subextrato.ID_SUBEXTRATO;
                 subRow.classList.add('subextrato-row'); // Adiciona a classe para cor de fundo
 
                 // Adiciona os dados do subextrato nas células
@@ -991,7 +1006,13 @@ async function atualizarTabela(dados, saldoInicial) {
             });
         }
     }
+
+    // Esconde o spinner de carregamento
+    document.getElementById('loadingSpinner').style.display = 'none';
+    document.querySelector('.body-insercao').classList.remove('blur-background');
+    document.querySelector('.popup-insercao-container').classList.remove('blur-background');
 }
+
 function deletarSubextrato(idSubextrato, buttonElement) {
     console.log(idSubextrato);
     if (confirm('Tem certeza que deseja deletar este subextrato?')) {
