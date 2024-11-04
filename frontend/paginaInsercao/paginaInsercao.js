@@ -1016,7 +1016,6 @@ async function atualizarTabela(dados, saldoInicial) {
 function deletarSubextrato(idSubextrato, buttonElement) {
     console.log(idSubextrato);
     if (confirm('Tem certeza que deseja deletar este subextrato?')) {
-        // Envia a requisição DELETE para deletar o subextrato com o ID no caminho da URL
         fetch(`/insercao/deletar-subextrato/${idSubextrato}`, {
             method: 'DELETE',
             headers: {
@@ -1338,7 +1337,11 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
 
     const newRow = document.createElement('tr');
     newRow.dataset.subextrato = idExtratoPrincipal;
-    newRow.classList.add('subextrato-row'); // Adiciona a classe de estilo para subextratos
+    newRow.classList.add('subextrato-row');
+
+    // Define `originalData` como array vazio e `originalButtons` como HTML atual
+    newRow.dataset.originalData = JSON.stringify([]);
+    newRow.dataset.originalButtons = newRow.innerHTML;
 
     newRow.innerHTML = `
         <td><input type="date" name="Data" class="editavel" value="${extratoData.split('/').reverse().join('-')}" style="width: 100%;"></td>
@@ -1366,7 +1369,6 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
     `;
 
     row.insertAdjacentElement('afterend', newRow);
-
     // Popula os campos de categoria, fornecedor e rubrica contábil
     popularSelectCategoria(document.getElementById('subextratoCategoria'));
     popularSelectFornecedor(document.getElementById('subextratoFornecedor'));
@@ -1468,17 +1470,23 @@ function atualizarTabelaComSubextrato(idExtratoPrincipal) {
 
 function cancelarSubextrato(buttonElement) {
     const row = buttonElement.closest('tr');
-    const originalData = JSON.parse(row.dataset.originalData);
-    const cells = row.querySelectorAll('td');
 
-    // Restaurar dados originais
-    cells.forEach((cell, index) => {
-        cell.textContent = originalData[index];
-    });
+    // Verifica se a linha é uma linha de subextrato adicionada dinamicamente
+    if (row.classList.contains('subextrato-row')) {
+        // Remove a linha do DOM
+        row.remove();
+    } else {
+        // Caso contrário, restaura os dados originais
+        const originalData = JSON.parse(row.dataset.originalData);
+        const cells = row.querySelectorAll('td');
 
-    // Restaurar os botões de edição e exclusão
-    const ferramentasCell = cells[cells.length - 1];
-    ferramentasCell.innerHTML = row.dataset.originalButtons;
+        cells.forEach((cell, index) => {
+            cell.textContent = originalData[index];
+        });
+
+        const ferramentasCell = cells[cells.length - 1];
+        ferramentasCell.innerHTML = row.dataset.originalButtons;
+    }
 }
 
 function abrirLinhaSubextrato(buttonElement) {
