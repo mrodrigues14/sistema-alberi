@@ -207,12 +207,14 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function formatarValorFinanceiroInput(valor) {
+    const isNegative = valor.startsWith('-');
     valor = valor.replace(/\D/g, '');
     valor = (valor / 100).toFixed(2);
     valor = valor.replace(".", ",");
     valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-    return valor;
+    return isNegative ? '-' + valor : valor;
 }
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const saldoInicialInput = document.getElementById('saldoInicial');
