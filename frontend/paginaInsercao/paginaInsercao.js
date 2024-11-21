@@ -905,7 +905,7 @@ async function atualizarTabela(dados, saldoInicial) {
     tbody.innerHTML = '';
 
     let saldo = saldoInicial;
-
+    console.log(dados)
     for (const item of dados) {
         if (!item.ID_SUBEXTRATO) {
             const row = tbody.insertRow();
@@ -2154,9 +2154,9 @@ function uploadAnexo() {
 
 function formatDate(dateString) {
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const year = date.getUTCFullYear();
     return `${day}/${month}/${year}`;
 }
 
