@@ -965,6 +965,22 @@ select.fornecedor-select {
     border-radius: 5px;
     cursor: pointer;
 }
+.campo-vermelho-piscante {
+    border: 2px solid red;
+    animation: piscar 1s infinite;
+}
+
+@keyframes piscar {
+    0% {
+        background-color: #ffcccc;
+    }
+    50% {
+        background-color: transparent;
+    }
+    100% {
+        background-color: #ffcccc;
+    }
+}
 
 
 .styled-select {

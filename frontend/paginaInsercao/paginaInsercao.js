@@ -2947,12 +2947,15 @@ function processarDadosDoExtratoItauPersonalite(data) {
 
 //caixa
 function excelDateToJSDate(excelDate) {
-    const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
+    const epochStart = (excelDate - 25569) * 86400 * 1000; // Converter para milissegundos
+    const date = new Date(epochStart); // Criar objeto Date
+
+    const day = String(date.getUTCDate()).padStart(2, '0'); // Dia (sem UTC)
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Mês (sem UTC)
+    const year = date.getUTCFullYear(); // Ano
     return `${day}/${month}/${year}`;
 }
+
 function processarDadosDoExcelCaixa(data) {
     const extrato = [];
     const valorRegex = /(\d{1,3}(\.\d{3})*,\d{2})\s([CD])/;
@@ -2992,13 +2995,21 @@ function processarDadosDoExcelTemplate(jsonData) {
             return null;
         }
 
+        // Função auxiliar para extrair o valor real de uma célula
+        const extrairValorCelula = (cell) => {
+            if (typeof cell === 'object' && cell.v !== undefined) {
+                return cell.v; // Valor real da célula
+            }
+            return cell || ''; // Retorna o valor diretamente se não for um objeto
+        };
+
         // Formatar os campos conforme a estrutura do Excel
-        const dataFormatada = row[0] ? excelDateToJSDate(row[0]) : '';  // Data
-        const categoria = row[1] || '';  // Categoria
-        const fornecedor = row[2] || '';  // Fornecedor
-        const descricao = row[3] || '';  // Descrição
-        const nome = row[4] || '';  // Nome
-        const rubricaContabil = row[5] || '';  // Rubrica Contábil
+        const dataFormatada = row[0] ? excelDateToJSDate(extrairValorCelula(row[0])) : ''; // Data
+        const categoria = extrairValorCelula(row[1]); // Categoria
+        const fornecedor = extrairValorCelula(row[2]); // Fornecedor
+        const descricao = extrairValorCelula(row[3]); // Descrição
+        const nome = extrairValorCelula(row[4]); // Nome
+        const rubricaContabil = extrairValorCelula(row[5]); // Rubrica Contábil
 
         // Verificar se o valor é de entrada ou saída
         const valorEntrada = row[6] !== undefined && row[6] !== null && row[6] !== '' ? formatarValorFinanceiro(row[6]) : '';
@@ -3006,7 +3017,6 @@ function processarDadosDoExcelTemplate(jsonData) {
 
         // Determinar se a linha é de entrada ou saída
         const tipo = valorEntrada ? 'entrada' : (valorSaida ? 'saida' : '');
-
         return {
             data: dataFormatada,
             categoria: categoria,
@@ -3067,14 +3077,15 @@ function mostrarExtratoPopup(extrato) {
         const rubricaSelect = document.createElement('select');
         preencherSelectComOpcoesContabil(rubricaSelect, document.getElementById('seletorCategoria')); // Preenche com as opções de categoria
 
-        if (verificarValorNoSelect(rubricaSelect, linha.categoria)) {
-            rubricaSelect.value = linha.categoria;
-        } else {
-            const opcaoCustom = document.createElement('option');
-            opcaoCustom.value = linha.categoria || '';
-            opcaoCustom.textContent = linha.categoria || 'Valor não informado';
-            rubricaSelect.appendChild(opcaoCustom);
-            rubricaSelect.value = linha.categoria || '';
+        const categoriaValor = linha.categoria || ''; // Valor vindo do Excel
+
+        const opcaoCustom = document.createElement('option');
+        opcaoCustom.value = categoriaValor; // Define o valor vindo do Excel
+        opcaoCustom.textContent = categoriaValor || 'Valor não informado'; // Texto exibido no select
+        opcaoCustom.selected = true; // Define como selecionado
+        rubricaSelect.appendChild(opcaoCustom); // Adiciona a nova opção ao select
+
+        if (!verificarValorNoSelect(rubricaSelect, categoriaValor)) {
             destacarCampo(rubricaSelect);
         }
 
@@ -3110,7 +3121,6 @@ function mostrarExtratoPopup(extrato) {
             opcaoCustomFornecedor.textContent = linha.fornecedor || 'Valor não informado';
             fornecedorSelect.appendChild(opcaoCustomFornecedor);
             fornecedorSelect.value = linha.fornecedor || '';
-            destacarCampo(fornecedorSelect);
         }
 
         fornecedorCell.appendChild(fornecedorSelect);
@@ -3172,7 +3182,6 @@ function mostrarExtratoPopup(extrato) {
 function preencherSelectComOpcoesContabil(selectElement, modelSelectElement) {
     Array.from(modelSelectElement.options).forEach(option => {
         const newOption = document.createElement('option');
-        console.log(option)
         newOption.value = option.textContent;
         newOption.textContent = option.textContent;
         newOption.disabled = option.disabled; // Mantém a propriedade disabled
