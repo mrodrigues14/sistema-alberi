@@ -693,24 +693,24 @@ async function buscarDados() {
 
         const response = await fetch(`/consulta/dados?banco=${idBanco}&data=${dataFormatada}&empresa=${idEmpresa}`);
         const data = await response.json();
-        console.log(data)
-        console.log(saldoInicial)
-        atualizarTabela(data, saldoInicial);
+        await atualizarTabela(data, saldoInicial);
         fetchSaldoFinal();
     } catch (error) {
         console.error('Erro ao buscar os dados:', error);
     }
 }
-let editMode = false; // Variável para controlar o modo de edição
+
+
+let editMode = false;
 
 function alternarModoEdicao() {
-    const tabela = document.getElementById('extrato-body'); // Substitua pelo ID correto da sua tabela
+    const tabela = document.getElementById('extrato-body');
     if (!tabela) {
         console.error('Tabela não encontrada!');
         return;
     }
 
-    const linhas = tabela.querySelectorAll('tr'); // Captura todas as linhas do corpo da tabela
+    const linhas = tabela.querySelectorAll('tr');
 
     if (linhas.length === 0) {
         console.warn('Nenhuma linha encontrada na tabela.');
@@ -905,7 +905,6 @@ async function atualizarTabela(dados, saldoInicial) {
     tbody.innerHTML = '';
 
     let saldo = saldoInicial;
-    console.log(dados)
     for (const item of dados) {
         if (!item.ID_SUBEXTRATO) {
             const row = tbody.insertRow();
@@ -986,8 +985,8 @@ async function atualizarTabela(dados, saldoInicial) {
                     <td>${subextrato.OBSERVACAO || ''}</td>
                     <td>${subextrato.DESCRICAO || ''}</td>
                     <td>${subextrato.RUBRICA_CONTABIL || ''}</td>
-                    <td>${subextrato.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(subextrato.VALOR) : ''}</td>
-                    <td>${subextrato.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(subextrato.VALOR) : ''}</td>
+                    <td>${subextrato.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicaoSub(subextrato.VALOR) : ''}</td>
+                    <td>${subextrato.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicaoSub(subextrato.VALOR) : ''}</td>
                     <td></td>
                     <td>
                         <button onclick="abrirPopupAnexos(${subextrato.ID_SUBEXTRATO})">
@@ -1012,27 +1011,46 @@ async function atualizarTabela(dados, saldoInicial) {
     document.querySelector('.body-insercao').classList.remove('blur-background');
     document.querySelector('.popup-insercao-container').classList.remove('blur-background');
 }
+function formatarValorParaExibicaoSub(valor) {
+    if (typeof valor === 'number') {
+        valor = valor.toFixed(2); // Garante duas casas decimais
+    }
+
+    return valor
+        .toString()
+        .replace('.', ',') // Troca o separador decimal
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Adiciona pontos como separador de milhar
+}
 
 function deletarSubextrato(idSubextrato, buttonElement) {
-    console.log(idSubextrato);
+    const subextratoRow = buttonElement.closest('tr'); // Linha atual do subextrato
+    let extratoRow = subextratoRow.previousElementSibling; // Procura a linha anterior
+
+    // Encontra a linha do extrato principal associada
+    while (extratoRow && !extratoRow.dataset.idextrato) {
+        extratoRow = extratoRow.previousElementSibling;
+    }
+
+    if (!extratoRow || !extratoRow.dataset.idextrato) {
+        console.error('Não foi possível encontrar o extrato principal associado.');
+        return;
+    }
+
+    const idExtratoPrincipal = extratoRow.dataset.idextrato;
+
     if (confirm('Tem certeza que deseja deletar este subextrato?')) {
         fetch(`/insercao/deletar-subextrato/${idSubextrato}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
         })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erro ao deletar subextrato');
-                }
+                if (!response.ok) throw new Error('Erro ao deletar subextrato');
                 return response.json();
             })
             .then(result => {
                 alert(result.message);
-                // Remove a linha do subextrato da tabela
-                const row = buttonElement.closest('tr');
-                row.remove();
+                // Atualiza apenas a linha do extrato principal e seus subextratos
+                atualizarTabelaComSubextrato(idExtratoPrincipal);
             })
             .catch(error => {
                 console.error(error);
@@ -1040,6 +1058,7 @@ function deletarSubextrato(idSubextrato, buttonElement) {
             });
     }
 }
+
 
 function editarLinha(buttonElement) {
     const row = buttonElement.closest('tr');
@@ -1228,6 +1247,7 @@ function confirmarEdicao(buttonElement) {
         valor = parseFloat(cells[7].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || null;
     }
 
+    console.log(valor)
     const categoria = cells[1].querySelector('select').value || dadosOriginais[1]; // Mantém o valor original da categoria se não selecionado
 
     // Obtém o nome da rubrica contábil selecionada
@@ -1390,29 +1410,51 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
 function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
     const row = buttonElement.closest('tr');
 
-    // Pega os elementos <select> de categoria e rubrica contábil
+    // Determina se o valor é entrada ou saída
+    let tipo = null;
+    let valorEn = null;
+    let valorSa = null;
+
+
+    if (row.querySelector('[name="valorEn"]').value) {
+        tipo = 'ENTRADA';
+        valorEn = parseFloat(row.querySelector('[name="valorEn"]').value.replace(/\./g, '').replace(',', '.')) || null;
+    } else if (row.querySelector('[name="valorSa"]').value) {
+        tipo = 'SAIDA';
+        valorSa = parseFloat(row.querySelector('[name="valorSa"]').value.replace(/\./g, '').replace(',', '.')) || null;
+    }
+
+    if (!tipo && valorEn === null || !tipo && valorSa === null) {
+        alert('Por favor, insira um valor válido para entrada ou saída.');
+        return;
+    }
+
+    // Pega os elementos <select> de categoria, fornecedor e rubrica contábil
     const categoriaSelect = row.querySelector('[name="categoria"]');
     const fornecedorSelect = row.querySelector('[name="fornecedor"]');
     const rubricaContabilSelect = row.querySelector('[name="rubricaContabil"]');
 
-    // Pega o texto (nome) das opções selecionadas
+    // Pega o texto (nome) das opções selecionadas, verificando se existem
     const categoriaNome = categoriaSelect.options[categoriaSelect.selectedIndex].text;
-    const fornecedorNome = fornecedorSelect.options[fornecedorSelect.selectedIndex].text;
+    const fornecedorNome = fornecedorSelect && fornecedorSelect.selectedIndex >= 0
+        ? fornecedorSelect.options[fornecedorSelect.selectedIndex].text
+        : ''; // Caso não haja fornecedor selecionado, retorna string vazia
     const rubricaContabilNome = rubricaContabilSelect.options[rubricaContabilSelect.selectedIndex].text;
 
+    // Monta o objeto de dados
     const data = {
         Data: row.querySelector('[name="Data"]').value,
         categoria: categoriaNome, // Nome da categoria
-        fornecedor: fornecedorNome, // Nome do fornecedor
+        fornecedor: fornecedorNome, // Nome do fornecedor ou string vazia
         descricao: row.querySelector('[name="descricao"]').value,
         observacao: row.querySelector('[name="observacao"]').value,
-        valorEn: row.querySelector('[name="valorEn"]').value,
-        valorSa: row.querySelector('[name="valorSa"]').value,
+        valorEn: valorEn,
+        valorSa: valorSa,
         rubricaContabil: rubricaContabilNome, // Nome da rubrica contábil
         id_extrato_principal: idExtratoPrincipal
     };
 
-    // Enviar para o backend
+    // Envia os dados ao backend
     fetch('/insercao/inserir-subextrato', {
         method: 'POST',
         headers: {
@@ -1421,15 +1463,13 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
         body: JSON.stringify(data)
     })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Erro ao inserir subextrato');
-            }
+            if (!response.ok) throw new Error('Erro ao inserir subextrato');
             return response.json();
         })
         .then(result => {
             alert(result.message);
-            row.remove(); // Remove a linha de inserção após confirmação
-            atualizarTabelaComSubextrato(idExtratoPrincipal); // Atualiza a tabela após adicionar o subextrato
+            atualizarTabelaComSubextrato(idExtratoPrincipal);
+            row.remove();
         })
         .catch(error => {
             console.error(error);
@@ -1437,34 +1477,65 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
         });
 }
 
+
 function atualizarTabelaComSubextrato(idExtratoPrincipal) {
-    // Exemplo de implementação para recarregar a tabela com subextratos
-    fetch(`/insercao/buscar-subextratos/${idExtratoPrincipal}`)
+    console.log("idprincpal")
+    console.log(idExtratoPrincipal)
+    fetch(`/insercao/subextratos?idExtrato=${idExtratoPrincipal}`)
         .then(response => response.json())
         .then(data => {
-            // Aqui você pode atualizar a tabela de subextratos com os dados recebidos
-            const tabelaSubextratos = document.getElementById('subextratos-tabela'); // Exemplo de ID da tabela
+            const tabela = document.getElementById('extrato-body');
+            const extratoRow = tabela.querySelector(`tr[data-idextrato="${idExtratoPrincipal}"]`);
 
-            // Limpar a tabela antes de atualizar
-            tabelaSubextratos.innerHTML = '';
+            if (!extratoRow) {
+                console.error(`Linha do extrato com ID ${idExtratoPrincipal} não encontrada.`);
+                return;
+            }
 
-            // Adicionar linhas de subextratos à tabela
+            // Remove subextratos existentes logo após a linha do extrato
+            let nextRow = extratoRow.nextElementSibling;
+            while (nextRow && nextRow.classList.contains('subextrato-row')) {
+                nextRow.remove();
+                nextRow = extratoRow.nextElementSibling;
+            }
+
+            // Adiciona os novos subextratos após a linha do extrato principal
             data.forEach(subextrato => {
-                const row = tabelaSubextratos.insertRow();
+                const subRow = document.createElement('tr');
+                subRow.dataset.subextrato = subextrato.ID_SUBEXTRATO;
+                subRow.classList.add('subextrato-row'); // Preserva a classe de estilo
 
-                row.innerHTML = `
-                    <td>${subextrato.Data}</td>
-                    <td>${subextrato.Categoria}</td>
-                    <td>${subextrato.Fornecedor}</td>
-                    <td>${subextrato.Descricao}</td>
-                    <td>${subextrato.Observacao}</td>
-                    <td>${subextrato.TipoTransacao}</td>
-                    <td>${subextrato.Valor}</td>
+                subRow.innerHTML = `
+                    <td>${formatDate(subextrato.DATA)}</td>
+                    <td>${subextrato.CATEGORIA || ''}</td>
+                    <td>${subextrato.NOME_FORNECEDOR || ''}</td>
+                    <td>${subextrato.OBSERVACAO || ''}</td>
+                    <td>${subextrato.DESCRICAO || ''}</td>
+                    <td>${subextrato.RUBRICA_CONTABIL || ''}</td>
+                    <td class="text-right">${subextrato.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(subextrato.VALOR) : ''}</td>
+                    <td class="text-right">${subextrato.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(subextrato.VALOR) : ''}</td>
+                    <td></td>
+                    <td>
+                        <button onclick="abrirPopupAnexos(${subextrato.ID_SUBEXTRATO})">
+                            <i class="fa fa-paperclip"></i>
+                        </button>
+                    </td>   
+                    <td>
+                        <button onclick="editarSubextrato(${subextrato.ID_SUBEXTRATO}, this)" class="edit-btn-extrato-opcoes">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deletarSubextrato(${subextrato.ID_SUBEXTRATO}, this)" class="delete-btn-extrato-opcoes">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
                 `;
+
+                // Insere a nova linha de subextrato logo após a linha do extrato principal
+                extratoRow.insertAdjacentElement('afterend', subRow);
             });
         })
         .catch(error => {
-            console.error('Erro ao buscar subextratos:', error);
+            console.error('Erro ao atualizar subextratos:', error);
         });
 }
 
@@ -1655,22 +1726,21 @@ function confirmarEdicaoSubextrato(idSubextrato, buttonElement) {
     // Chamada à API para salvar a edição do subextrato
     fetch('/insercao/editar-subextrato', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dadosEditados)
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Erro ao editar subextrato');
-        }
-        return response.json();
-    }).then(result => {
-        alert(result.message);
-        atualizarTabelaComSubextrato(dadosEditados.idExtratoPrincipal);
-    }).catch(error => {
-        console.error(error);
-        alert('Erro ao editar subextrato');
-    });
+    })
+        .then(response => {
+            if (!response.ok) throw new Error('Erro ao editar subextrato');
+            return response.json();
+        })
+        .then(result => {
+            alert(result.message);
+            atualizarTabelaComSubextrato(dadosEditados.idExtratoPrincipal); // Atualiza a tabela imediatamente
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Erro ao editar subextrato');
+        });
 }
 
 function cancelarEdicaoSubextrato(buttonElement) {
@@ -1778,11 +1848,9 @@ function fetchSaldoFinal() {
         Array.from(rows).forEach(row => {
             const entradaCell = row.cells[6].textContent.trim();
             const saidaCell = row.cells[7].textContent.trim();
-            console.log(entradaCell, saidaCell)
             const entrada = parseFloat(entradaCell.replace(/\./g, '').replace(',', '.')) || 0;
             const saida = parseFloat(saidaCell.replace(/\./g, '').replace(',', '.')) || 0;
 
-            console.log(saldoFinal)
             saldoFinal += entrada - saida;
         });
     }
@@ -1790,7 +1858,7 @@ function fetchSaldoFinal() {
     saldoFinalTable.innerHTML = '';
     const rowFinal = saldoFinalTable.insertRow();
     rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
-    console.log(rowFinal)
+    console.log("saldo finao", rowFinal)
     definirSaldoInicialProximoMes(saldoFinal);
 }
 
