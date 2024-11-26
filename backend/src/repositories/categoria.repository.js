@@ -163,4 +163,39 @@ function deletarRubricaContabil(idRubrica, callback) {
     });
 }
 
-module.exports = {buscarRubricasContabeis, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil, buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria, editarCategoria, buscarCategoriaPorId};
+function buscarCategoriaComOpcoes(idcliente, callback) {
+    mysqlConn.query(
+        `SELECT C.IDCATEGORIA, C.NOME, COALESCE(C.ID_CATEGORIA_PAI, C.IDCATEGORIA) AS ORDER_PARENT, 
+                C.ID_CATEGORIA_PAI, C.GASTO_MES, C.GASTO_EXTRA
+         FROM CATEGORIA C
+         INNER JOIN RELACAOCLIENTECATEGORIA RCC ON C.IDCATEGORIA = RCC.ID_CATEGORIA
+         WHERE RCC.ID_CLIENTE = ?
+         ORDER BY ORDER_PARENT, C.ID_CATEGORIA_PAI IS NOT NULL, C.IDCATEGORIA`,
+        [idcliente],
+        function (err, result) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
+
+function atualizarOpcoesCategoria(idCategoria, campos, callback) {
+    const { GASTO_MES, GASTO_EXTRA } = campos;
+    mysqlConn.query(
+        `UPDATE CATEGORIA SET GASTO_MES = ?, GASTO_EXTRA = ? WHERE IDCATEGORIA = ?`,
+        [GASTO_MES, GASTO_EXTRA, idCategoria],
+        function (err, result) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
+
+
+module.exports = {atualizarOpcoesCategoria, buscarCategoriaComOpcoes, buscarRubricasContabeis, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil, buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria, editarCategoria, buscarCategoriaPorId};

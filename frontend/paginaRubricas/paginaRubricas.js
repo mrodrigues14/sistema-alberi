@@ -93,6 +93,39 @@ function renderRubricas(categorias, listaId) {
         adicionarCategoriaAoDom(categoria, listaElement);
     });
 }
+function toggleGastoMes(idCategoria, isChecked) {
+    fetch('/categoria/atualizarOpcoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idCategoria, GASTO_MES: isChecked, GASTO_EXTRA: null })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("Gasto do Mês atualizado com sucesso!");
+            } else {
+                console.error("Erro ao atualizar Gasto do Mês.");
+            }
+        })
+        .catch(error => console.error("Erro:", error));
+}
+
+function toggleGastoExtra(idCategoria, isChecked) {
+    fetch('/categoria/atualizarOpcoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idCategoria, GASTO_MES: null, GASTO_EXTRA: isChecked })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("Gasto Extra atualizado com sucesso!");
+            } else {
+                console.error("Erro ao atualizar Gasto Extra.");
+            }
+        })
+        .catch(error => console.error("Erro:", error));
+}
 
 // Renderização de rubricas contábeis (sem subcategorias)
 function renderRubricasContabeis(rubricasContabeis) {
@@ -101,17 +134,36 @@ function renderRubricasContabeis(rubricasContabeis) {
 
     rubricasContabeis.forEach(rubrica => {
         const listItem = document.createElement('li');
-        listItem.classList.add('rubrica'); // Mesma classe usada para manter o estilo igual
+        listItem.classList.add('rubrica');
 
         const span = document.createElement('span');
         span.textContent = rubrica.NOME;
         listItem.appendChild(span);
 
         const actions = document.createElement('div');
-        actions.classList.add('actions'); // Usando a mesma classe de ações
+        actions.classList.add('actions');
         actions.innerHTML = `
             <button class="edit" onclick="editarRubricaContabil(${rubrica.ID_RUBRICA_CONTABIL})">✏️</button>
             <button class="delete" onclick="deletarRubricaContabil(${rubrica.ID_RUBRICA_CONTABIL})">🗑️</button>
+            <div class="dropdown-rubrica">
+                <button class="dropdown-btn-rubrica" onclick="toggleDropdown(event, 'dropdown-menu-contabil-${rubrica.ID_RUBRICA_CONTABIL}')">⋮</button>
+                <div class="dropdown-menu-rubrica" id="dropdown-menu-contabil-${rubrica.ID_RUBRICA_CONTABIL}">
+                    <label>
+                        <input type="checkbox" 
+                               name="GASTO_MES_CONTABIL_${rubrica.ID_RUBRICA_CONTABIL}" 
+                               ${rubrica.GASTO_MES ? "checked" : ""} 
+                               onchange="toggleGastoMes(${rubrica.ID_RUBRICA_CONTABIL}, this.checked)">
+                        Rubrica do Mês
+                    </label>
+                    <label>
+                        <input type="checkbox" 
+                               name="GASTO_EXTRA_CONTABIL_${rubrica.ID_RUBRICA_CONTABIL}" 
+                               ${rubrica.GASTO_EXTRA ? "checked" : ""} 
+                               onchange="toggleGastoExtra(${rubrica.ID_RUBRICA_CONTABIL}, this.checked)">
+                        Gasto Extra
+                    </label>
+                </div>
+            </div>
         `;
         listItem.appendChild(actions);
 
@@ -131,6 +183,25 @@ function adicionarCategoriaAoDom(categoria, container, nivel = 0) {
     actions.innerHTML = `
         <button class="edit" onclick="editarCategoria(${categoria.IDCATEGORIA})">✏️</button>
         <button class="delete" onclick="deletarCategoria(${categoria.IDCATEGORIA})">🗑️</button>
+        <div class="dropdown-rubrica">
+            <button class="dropdown-btn-rubrica" onclick="toggleDropdown(event, 'dropdown-menu-${categoria.IDCATEGORIA}')">⋮</button>
+            <div class="dropdown-menu-rubrica" id="dropdown-menu-${categoria.IDCATEGORIA}">
+                <label>
+                    <input type="checkbox" 
+                           name="GASTO_MES_${categoria.IDCATEGORIA}" 
+                           ${categoria.GASTO_MES ? "checked" : ""} 
+                           onchange="toggleGastoMes(${categoria.IDCATEGORIA}, this.checked)">
+                    Rubrica do Mês
+                </label>
+                <label>
+                    <input type="checkbox" 
+                           name="GASTO_EXTRA_${categoria.IDCATEGORIA}" 
+                           ${categoria.GASTO_EXTRA ? "checked" : ""} 
+                           onchange="toggleGastoExtra(${categoria.IDCATEGORIA}, this.checked)">
+                    Gasto Extra
+                </label>
+            </div>
+        </div>
     `;
     listItem.appendChild(actions);
 
@@ -380,3 +451,25 @@ function applyHTML(htmlData) {
 function getStoredEmpresaName() {
     return localStorage.getItem('nomeEmpresaSelecionada');
 }
+
+function toggleDropdown(event, menuId) {
+    event.stopPropagation(); // Impede que o evento se propague para o body
+    const dropdownMenu = document.getElementById(menuId);
+
+    // Fecha outros menus abertos
+    document.querySelectorAll('.dropdown-menu-rubrica.show').forEach(menu => {
+        if (menu !== dropdownMenu) {
+            menu.classList.remove('show');
+        }
+    });
+
+    // Alterna a exibição do menu atual
+    dropdownMenu.classList.toggle('show');
+}
+
+// Fecha o menu suspenso ao clicar fora
+document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-menu-rubrica.show').forEach(menu => {
+        menu.classList.remove('show');
+    });
+});

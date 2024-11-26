@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const {buscar, buscarCategoriaPorId, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil,
-    buscarRubricasContabeis
+    buscarRubricasContabeis, buscarCategoriaComOpcoes, atualizarOpcoesCategoria
 } = require('../repositories/categoria.repository');
 const {adicionarOuAssociarCategoria} = require('../repositories/categoria.repository');
 const {deletar} = require('../repositories/categoria.repository');
@@ -13,9 +13,9 @@ router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../frontend/paginaEditarCategoria/paginaEditarCategoria.html'));
 });
 
-router.get('/dados' , (req, res) => {
-    const {idcliente} = req.query;
-    buscar(idcliente, (err, result) => {
+router.get('/dados', (req, res) => {
+    const { idcliente } = req.query;
+    buscarCategoriaComOpcoes(idcliente, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao buscar dados");
@@ -23,6 +23,19 @@ router.get('/dados' , (req, res) => {
         res.json(result);
     });
 });
+
+router.post('/atualizarOpcoes', (req, res) => {
+    const { idCategoria, GASTO_MES, GASTO_EXTRA } = req.body;
+
+    atualizarOpcoesCategoria(idCategoria, { GASTO_MES, GASTO_EXTRA }, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ success: false, message: "Erro ao atualizar as opções da categoria" });
+        }
+        res.status(200).json({ success: true, message: "Opções da categoria atualizadas com sucesso!" });
+    });
+});
+
 
 router.post('/', (req, res) => {
     const { CATEGORIA, idCliente } = req.body;
