@@ -93,16 +93,24 @@ function renderRubricas(categorias, listaId) {
         adicionarCategoriaAoDom(categoria, listaElement);
     });
 }
-function toggleGastoMes(idCategoria, isChecked) {
+function toggleGastoMes(idCategoria, buttonElement) {
+    const isSelected = buttonElement.classList.contains('selected');
+    const newState = !isSelected; // Toggle the state
+
     fetch('/categoria/atualizarOpcoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idCategoria, GASTO_MES: isChecked, GASTO_EXTRA: null })
+        body: JSON.stringify({ idCategoria, GASTO_MES: newState, GASTO_EXTRA: null })
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log("Gasto do Mês atualizado com sucesso!");
+                // Atualizar visualmente o botão
+                if (newState) {
+                    buttonElement.classList.add('selected');
+                } else {
+                    buttonElement.classList.remove('selected');
+                }
             } else {
                 console.error("Erro ao atualizar Gasto do Mês.");
             }
@@ -110,16 +118,25 @@ function toggleGastoMes(idCategoria, isChecked) {
         .catch(error => console.error("Erro:", error));
 }
 
-function toggleGastoExtra(idCategoria, isChecked) {
+
+function toggleGastoExtra(idCategoria, buttonElement) {
+    const isSelected = buttonElement.classList.contains('selected');
+    const newState = !isSelected; // Toggle the state
+
     fetch('/categoria/atualizarOpcoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idCategoria, GASTO_MES: null, GASTO_EXTRA: isChecked })
+        body: JSON.stringify({ idCategoria, GASTO_MES: null, GASTO_EXTRA: newState })
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log("Gasto Extra atualizado com sucesso!");
+                // Atualizar visualmente o botão
+                if (newState) {
+                    buttonElement.classList.add('selected');
+                } else {
+                    buttonElement.classList.remove('selected');
+                }
             } else {
                 console.error("Erro ao atualizar Gasto Extra.");
             }
@@ -145,25 +162,16 @@ function renderRubricasContabeis(rubricasContabeis) {
         actions.innerHTML = `
             <button class="edit" onclick="editarRubricaContabil(${rubrica.ID_RUBRICA_CONTABIL})">✏️</button>
             <button class="delete" onclick="deletarRubricaContabil(${rubrica.ID_RUBRICA_CONTABIL})">🗑️</button>
-            <div class="dropdown-rubrica">
-                <button class="dropdown-btn-rubrica" onclick="toggleDropdown(event, 'dropdown-menu-contabil-${rubrica.ID_RUBRICA_CONTABIL}')">⋮</button>
-                <div class="dropdown-menu-rubrica" id="dropdown-menu-contabil-${rubrica.ID_RUBRICA_CONTABIL}">
-                    <label>
-                        <input type="checkbox" 
-                               name="GASTO_MES_CONTABIL_${rubrica.ID_RUBRICA_CONTABIL}" 
-                               ${rubrica.GASTO_MES ? "checked" : ""} 
-                               onchange="toggleGastoMes(${rubrica.ID_RUBRICA_CONTABIL}, this.checked)">
-                        Rubrica do Mês
-                    </label>
-                    <label>
-                        <input type="checkbox" 
-                               name="GASTO_EXTRA_CONTABIL_${rubrica.ID_RUBRICA_CONTABIL}" 
-                               ${rubrica.GASTO_EXTRA ? "checked" : ""} 
-                               onchange="toggleGastoExtra(${rubrica.ID_RUBRICA_CONTABIL}, this.checked)">
-                        Gasto Extra
-                    </label>
-                </div>
-            </div>
+            <button 
+                class="toggle-button-rubrica ${rubrica.GASTO_MES ? 'selected' : ''}" 
+                onclick="toggleGastoMesContabil(${rubrica.ID_RUBRICA_CONTABIL}, this)">
+                Rubrica do Mês
+            </button>
+            <button 
+                class="toggle-button-rubrica ${rubrica.GASTO_EXTRA ? 'selected' : ''}" 
+                onclick="toggleGastoExtraContabil(${rubrica.ID_RUBRICA_CONTABIL}, this)">
+                Gasto Extra
+            </button>
         `;
         listItem.appendChild(actions);
 
@@ -183,25 +191,16 @@ function adicionarCategoriaAoDom(categoria, container, nivel = 0) {
     actions.innerHTML = `
         <button class="edit" onclick="editarCategoria(${categoria.IDCATEGORIA})">✏️</button>
         <button class="delete" onclick="deletarCategoria(${categoria.IDCATEGORIA})">🗑️</button>
-        <div class="dropdown-rubrica">
-            <button class="dropdown-btn-rubrica" onclick="toggleDropdown(event, 'dropdown-menu-${categoria.IDCATEGORIA}')">⋮</button>
-            <div class="dropdown-menu-rubrica" id="dropdown-menu-${categoria.IDCATEGORIA}">
-                <label>
-                    <input type="checkbox" 
-                           name="GASTO_MES_${categoria.IDCATEGORIA}" 
-                           ${categoria.GASTO_MES ? "checked" : ""} 
-                           onchange="toggleGastoMes(${categoria.IDCATEGORIA}, this.checked)">
-                    Rubrica do Mês
-                </label>
-                <label>
-                    <input type="checkbox" 
-                           name="GASTO_EXTRA_${categoria.IDCATEGORIA}" 
-                           ${categoria.GASTO_EXTRA ? "checked" : ""} 
-                           onchange="toggleGastoExtra(${categoria.IDCATEGORIA}, this.checked)">
-                    Gasto Extra
-                </label>
-            </div>
-        </div>
+        <button 
+            class="toggle-button-rubrica ${categoria.GASTO_MES ? 'selected' : ''}" 
+            onclick="toggleGastoMes(${categoria.IDCATEGORIA}, this)">
+            Rubrica do Mês
+        </button>
+        <button 
+            class="toggle-button-rubrica ${categoria.GASTO_EXTRA ? 'selected' : ''}" 
+            onclick="toggleGastoExtra(${categoria.IDCATEGORIA}, this)">
+            Gasto Extra
+        </button>
     `;
     listItem.appendChild(actions);
 
@@ -473,3 +472,45 @@ document.addEventListener('click', () => {
         menu.classList.remove('show');
     });
 });
+
+function toggleGastoMesContabil(idRubricaContabil, buttonElement) {
+    const isSelected = buttonElement.classList.contains('selected');
+    const newState = !isSelected;
+
+    fetch('/categoria/atualizarOpcoesContabil', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idRubricaContabil, GASTO_MES: newState, GASTO_EXTRA: null })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                buttonElement.classList.toggle('selected', newState);
+            } else {
+                console.error("Erro ao atualizar Rubrica do Mês.");
+            }
+        })
+        .catch(error => console.error("Erro:", error));
+}
+
+function toggleGastoExtraContabil(idRubricaContabil, buttonElement) {
+    const isSelected = buttonElement.classList.contains('selected');
+    const newState = !isSelected;
+
+    fetch('/categoria/atualizarOpcoesContabil', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idRubricaContabil, GASTO_MES: null, GASTO_EXTRA: newState })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                buttonElement.classList.toggle('selected', newState);
+            } else {
+                console.error("Erro ao atualizar Gasto Extra.");
+            }
+        })
+        .catch(error => console.error("Erro:", error));
+}
+
+

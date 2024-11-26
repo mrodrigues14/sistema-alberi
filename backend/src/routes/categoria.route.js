@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const {buscar, buscarCategoriaPorId, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil,
-    buscarRubricasContabeis, buscarCategoriaComOpcoes, atualizarOpcoesCategoria
+    buscarRubricasContabeis, buscarCategoriaComOpcoes, atualizarOpcoesCategoria, atualizarOpcoesRubricaContabil
 } = require('../repositories/categoria.repository');
 const {adicionarOuAssociarCategoria} = require('../repositories/categoria.repository');
 const {deletar} = require('../repositories/categoria.repository');
@@ -151,6 +151,20 @@ router.post('/deleteContabil', (req, res) => {
         res.redirect(currentUrl);
     });
 });
+
+router.post('/atualizarOpcoesContabil', (req, res) => {
+    const { idRubricaContabil, GASTO_MES, GASTO_EXTRA } = req.body;
+
+    atualizarOpcoesRubricaContabil(idRubricaContabil, { GASTO_MES, GASTO_EXTRA }, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ success: false, message: "Erro ao atualizar as opções da rubrica contábil" });
+        }
+        res.status(200).json({ success: true, message: "Opções da rubrica contábil atualizadas com sucesso!" });
+    });
+});
+
+
 
 
 module.exports = router;

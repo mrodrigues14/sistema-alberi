@@ -122,8 +122,10 @@ function buscarCategoriaPorId(idCategoria, callback) {
 
 function buscarRubricasContabeis(callback) {
     mysqlConn.query(
-        `SELECT ID_RUBRICA_CONTABIL, NOME FROM RUBRICA_CONTABIL ORDER BY ID_RUBRICA_CONTABIL`,
-        function(err, result) {
+        `SELECT ID_RUBRICA_CONTABIL, NOME, GASTO_MES, GASTO_EXTRA 
+         FROM RUBRICA_CONTABIL 
+         ORDER BY ID_RUBRICA_CONTABIL`,
+        function (err, result) {
             if (err) {
                 callback(err, null);
             } else {
@@ -132,6 +134,7 @@ function buscarRubricasContabeis(callback) {
         }
     );
 }
+
 
 function adicionarRubricaContabil(nome, callback) {
     mysqlConn.query(`INSERT INTO RUBRICA_CONTABIL (NOME) VALUES (?)`, [nome], function(err, result) {
@@ -197,5 +200,20 @@ function atualizarOpcoesCategoria(idCategoria, campos, callback) {
     );
 }
 
+function atualizarOpcoesRubricaContabil(idRubricaContabil, campos, callback) {
+    const { GASTO_MES, GASTO_EXTRA } = campos;
+    mysqlConn.query(
+        `UPDATE RUBRICA_CONTABIL SET GASTO_MES = ?, GASTO_EXTRA = ? WHERE ID_RUBRICA_CONTABIL = ?`,
+        [GASTO_MES, GASTO_EXTRA, idRubricaContabil],
+        function (err, result) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        }
+    );
+}
 
-module.exports = {atualizarOpcoesCategoria, buscarCategoriaComOpcoes, buscarRubricasContabeis, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil, buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria, editarCategoria, buscarCategoriaPorId};
+
+module.exports = {atualizarOpcoesRubricaContabil, atualizarOpcoesCategoria, buscarCategoriaComOpcoes, buscarRubricasContabeis, adicionarRubricaContabil, editarRubricaContabil, deletarRubricaContabil, buscar, adicionarOuAssociarCategoria, deletar, adicionarSubcategoria, editarCategoria, buscarCategoriaPorId};
