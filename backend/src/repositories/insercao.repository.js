@@ -96,6 +96,7 @@ function buscarCategorias(IDCLIENTE, callback) {
 }
 
 function deletarExtrato(idExtrato, callback) {
+    let queryDeleteAnexos;
     let queryDeleteSubextrato;
     let queryDeleteExtrato;
     let params;
@@ -103,33 +104,40 @@ function deletarExtrato(idExtrato, callback) {
     if (Array.isArray(idExtrato) && idExtrato.length > 0) {
         const placeholders = idExtrato.map(() => '?').join(', ');
 
+        queryDeleteAnexos = `DELETE FROM EXTRATO_ANEXOS WHERE ID_EXTRATO IN (${placeholders})`;
         queryDeleteSubextrato = `DELETE FROM SUBEXTRATO WHERE ID_EXTRATO_PRINCIPAL IN (${placeholders})`;
-
         queryDeleteExtrato = `DELETE FROM EXTRATO WHERE IDEXTRATO IN (${placeholders})`;
 
         params = idExtrato;
     } else {
+        queryDeleteAnexos = `DELETE FROM EXTRATO_ANEXOS WHERE ID_EXTRATO = ?`;
         queryDeleteSubextrato = `DELETE FROM SUBEXTRATO WHERE ID_EXTRATO_PRINCIPAL = ?`;
-
         queryDeleteExtrato = `DELETE FROM EXTRATO WHERE IDEXTRATO = ?`;
 
         params = [idExtrato];
     }
 
-    mysqlConn.query(queryDeleteSubextrato, params, function(err, result) {
+    mysqlConn.query(queryDeleteAnexos, params, function(err) {
         if (err) {
             callback(err, null);
         } else {
-            mysqlConn.query(queryDeleteExtrato, params, function(err, result) {
+            mysqlConn.query(queryDeleteSubextrato, params, function(err) {
                 if (err) {
                     callback(err, null);
                 } else {
-                    callback(null, result);
+                    mysqlConn.query(queryDeleteExtrato, params, function(err, result) {
+                        if (err) {
+                            callback(err, null);
+                        } else {
+                            callback(null, result);
+                        }
+                    });
                 }
             });
         }
     });
 }
+
 
 // Listar anexos de um extrato
 function listarAnexos(idExtrato, callback) {
