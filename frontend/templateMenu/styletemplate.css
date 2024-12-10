@@ -41,6 +41,8 @@ body {
     transition: background-color 0.3s ease;
     display: inline-block;
     min-width: 140px;
+    text-decoration: none;
+    color: black;
 }
 
 .menu-item:hover {

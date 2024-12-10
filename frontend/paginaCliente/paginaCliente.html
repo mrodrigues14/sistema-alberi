@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Empresas</title>
+    <link rel="stylesheet" href="/paginaCliente/paginaClienteStyle.css">
+</head>
+<body>
+<div id="menu-container"></div>
+
+<h1>Lista de Empresas</h1>
+<button id="add-client-btn" class="primary">Adicionar Empresa</button>
+
+<!-- Modal -->
+<div id="modal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="close-modal" onclick="toggleModal()">✖</button>
+        <div id="modal-step-1">
+            <div class="modal-header">Selecione o tipo de cliente:</div>
+            <div class="modal-buttons">
+                <button class="primary" onclick="selectTipoCliente('fisica')">Pessoa Física</button>
+                <button class="primary" onclick="selectTipoCliente('juridica')">Pessoa Jurídica</button>
+            </div>
+        </div>
+        <div id="modal-step-2" style="display: none;">
+            <form id="add-client-form">
+                <input type="hidden" id="tipoCliente" name="tipoCliente" />
+                <div id="form-fisica" style="display: none;">
+                    <input type="text" id="nomeFisica" name="nomeFisica" placeholder="Nome Completo"  />
+                    <input type="text" id="apelidoFisica" name="apelidoFisica" placeholder="Apelido" />
+                    <input type="text" id="cpfFisica" name="cpfFisica" placeholder="CPF"  />
+                    <input type="text" id="telefoneFisica" name="telefoneFisica" placeholder="Telefone" />
+                    <input type="text" id="enderecoFisica" name="enderecoFisica" placeholder="Endereço" />
+                    <input type="text" id="cepFisica" name="cepFisica" placeholder="CEP" />
+                </div>
+                <div id="form-juridica" style="display: none;">
+                    <input type="text" id="nomeEmpresa" name="nomeEmpresa" placeholder="Nome da Empresa"  />
+                    <input type="text" id="apelidoEmpresa" name="apelidoEmpresa" placeholder="Apelido" />
+                    <input type="text" id="cnpj" name="cnpj" placeholder="CNPJ"  />
+                    <input type="text" id="telefone" name="telefone" placeholder="Telefone" />
+                    <input type="text" id="endereco" name="endereco" placeholder="Endereço" />
+                    <input type="text" id="cep" name="cep" placeholder="CEP" />
+                    <input type="text" id="nomeResponsavel" name="nomeResponsavel" placeholder="Nome do Responsável" />
+                    <input type="text" id="cpfResponsavel" name="cpfResponsavel" placeholder="CPF do Responsável" />
+                </div>
+                <button type="submit" class="primary">Cadastrar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<table id="empresa-table">
+    <thead>
+    <tr>
+        <th>Nome</th>
+        <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Linhas serão geradas dinamicamente -->
+    </tbody>
+</table>
+<script src="/paginaCliente/paginaClienteScript.js"></script>
+</body>
+</html>

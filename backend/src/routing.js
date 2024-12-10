@@ -7,7 +7,7 @@ const consultaRouter = require('./routes/consulta.route');
 const rubricasRouter = require('./routes/rubricas.route');
 const adicionarFornecedorRouter = require('./routes/fornecedor.route');
 const editarCategoriaRouter = require('./routes/categoria.route');
-const cadastroRouter = require('./routes/cadastro.route');
+const clienteRouter = require('./routes/cadastro.route');
 const dadosRouter = require('./routes/dados.route');
 const paginaMenuInicial = require('./routes/paginaMenuInicial.route');
 const seletorEmpresa = require('./routes/seletorEmpresa.route')
@@ -27,7 +27,7 @@ function routing(app){
     app.use('/rubricas', rubricasRouter);
     app.use('/fornecedor', adicionarFornecedorRouter);
     app.use('/categoria', editarCategoriaRouter);
-    app.use('/cadastro', cadastroRouter);
+    app.use('/cliente', clienteRouter);
     app.use('/dados', dadosRouter);
     app.use('/', loginRouter);
     app.use('/paginaMenuInicial', paginaMenuInicial);

@@ -4,11 +4,11 @@ const path = require('path');
 const { adicionar, listar, remover, editar, obterEmpresa } = require('../repositories/cadastro.repository');
 
 router.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../../frontend/paginaCadastro/adicionarCliente/adicionarCliente.html'));
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaCliente/paginaCliente.html'));
 });
 
 router.get('/editarCliente', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../../frontend/paginaCadastro/editarCliente/editarCliente.html'));
+    res.sendFile(path.join(__dirname, '../../../frontend/paginaCliente/editarCliente/editarCliente.html'));
 });
 
 router.post('/addCliente', async (req, res) => {
@@ -17,20 +17,20 @@ router.post('/addCliente', async (req, res) => {
 
     try {
         if (tipoCliente === 'fisica') {
-            adicionar(nomeFisica, apelidoFisica, telefoneFisica, null, cpfFisica, enderecoFisica, cepFisica, null, null, null, null, [], (error, result) => {
+            await adicionar(nomeFisica, apelidoFisica, telefoneFisica, null, cpfFisica, enderecoFisica, cepFisica, null, null, null, null, [], (error, result) => {
                 if (error) {
                     console.error('Erro ao adicionar a pessoa física:', error.message);
-                    return res.status(400).json({ success: false, message: error.message, reload: true });
+                    return res.status(400).json({success: false, message: error.message, reload: true});
                 }
-                res.json({ success: true, message: `Pessoa Física ${nomeFisica} cadastrada com sucesso!` });
+                res.json({success: true, message: `Pessoa Física ${nomeFisica} cadastrada com sucesso!`});
             });
         } else if (tipoCliente === 'juridica') {
-            adicionar(nomeEmpresa, apelidoEmpresa, telefone, cnpj, null, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios || [], (error, result) => {
+            await adicionar(nomeEmpresa, apelidoEmpresa, telefone, cnpj, null, endereco, cep, nomeResponsavel, cpfResponsavel, inscricaoEstadual, cnaePrincipal, socios || [], (error, result) => {
                 if (error) {
                     console.error('Erro ao adicionar a empresa:', error.message);
-                    return res.status(400).json({ success: false, message: error.message, reload: true });
+                    return res.status(400).json({success: false, message: error.message, reload: true});
                 }
-                res.json({ success: true, message: `Empresa ${nomeEmpresa} cadastrada com sucesso!` });
+                res.json({success: true, message: `Empresa ${nomeEmpresa} cadastrada com sucesso!`});
             });
         } else {
             res.status(400).json({ success: false, message: 'Tipo de cliente inválido.' });
@@ -60,7 +60,7 @@ router.post('/remover', (req, res) => {
             console.error(err);
             return res.status(500).send("Erro ao remover dados");
         }
-        res.redirect('/cadastro');
+        res.redirect('/cliente');
     });
 });
 
