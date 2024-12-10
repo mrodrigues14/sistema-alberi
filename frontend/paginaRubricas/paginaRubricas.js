@@ -138,7 +138,7 @@ function toggleGastoExtra(idCategoria, buttonElement) {
                     buttonElement.classList.remove('selected');
                 }
             } else {
-                console.error("Erro ao atualizar Gasto Extra.");
+                console.error("Erro ao atualizar Rubrica Extra.");
             }
         })
         .catch(error => console.error("Erro:", error));
@@ -170,7 +170,7 @@ function renderRubricasContabeis(rubricasContabeis) {
             <button 
                 class="toggle-button-rubrica ${rubrica.GASTO_EXTRA ? 'selected' : ''}" 
                 onclick="toggleGastoExtraContabil(${rubrica.ID_RUBRICA_CONTABIL}, this)">
-                Gasto Extra
+                Rubrica Extra
             </button>
         `;
         listItem.appendChild(actions);
@@ -199,7 +199,7 @@ function adicionarCategoriaAoDom(categoria, container, nivel = 0) {
         <button 
             class="toggle-button-rubrica ${categoria.GASTO_EXTRA ? 'selected' : ''}" 
             onclick="toggleGastoExtra(${categoria.IDCATEGORIA}, this)">
-            Gasto Extra
+            Rubrica Extra
         </button>
     `;
     listItem.appendChild(actions);
@@ -507,7 +507,7 @@ function toggleGastoExtraContabil(idRubricaContabil, buttonElement) {
             if (data.success) {
                 buttonElement.classList.toggle('selected', newState);
             } else {
-                console.error("Erro ao atualizar Gasto Extra.");
+                console.error("Erro ao atualizar Rubrica Extra.");
             }
         })
         .catch(error => console.error("Erro:", error));

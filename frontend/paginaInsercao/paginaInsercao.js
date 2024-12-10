@@ -260,7 +260,6 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
     const fornecedor = fornecedorSelecionado.options[fornecedorSelecionado.selectedIndex].textContent.trim();
 
     // Captura se o checkbox "Rubrica do Mês" está selecionado
-    const rubricaDoMesSelecionado = document.getElementById('rubricaMes').checked ? 1 : 0;
 
     const idBancoElement = document.getElementById('seletorBanco');
     const idBanco = idBancoElement ? idBancoElement.value : null;
@@ -324,7 +323,7 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
                 IDCLIENTE: id_empresa, // Ajuste conforme a necessidade
                 FORNECEDOR: fornecedor, // Nome do fornecedor
                 rubrica_contabil: rubricaContabil, // Inclui a Rubrica Contábil no objeto de dados
-                rubrica_do_mes: rubricaDoMesSelecionado // Inclui o valor da Rubrica do Mês (1 ou 0)
+                rubrica_do_mes: 0 // Inclui o valor da Rubrica do Mês (1 ou 0)
             };
 
             console.log(dadosParaInserir); // Verifique os dados no console antes de enviar
