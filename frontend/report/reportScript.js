@@ -175,7 +175,8 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
                         <strong>Situação:</strong> ${report.SITUACAO}<br>
                         ${report.DESCRICAO_RECUSA ? `<strong>Motivo da Recusa:</strong> ${report.DESCRICAO_RECUSA}<br>` : ''}
                         <div class="button-group">
-                            ${situacao !== 'Concluido' ? `<button class="edit-btn button-group-editar" onclick="openEditPopup(${report.ID})">Editar Chamado</button>` : ''}
+                            <button class="attachments-btn" onclick="openAttachmentsPopup(${report.ID})">Anexos</button>
+                            ${situacao !== 'Concluido' ? `<button class="edit-btn" onclick="openEditPopup(${report.ID})">Editar Chamado</button>` : ''}
                             ${situacao === 'Em validacao' ? `<button class="complete-btn" onclick="markAsCompleted(${report.ID})">Concluir Chamado</button>` : ''}
                             ${situacao === 'Em validacao' ? `<button class="reject-btn" onclick="openRejectPopup(${report.ID})">Recusar Chamado</button>` : ''}
                         </div>
@@ -199,6 +200,114 @@ function loadUserReports(userId, page = 1, limit = 10, situacao = null) {
             document.querySelector('.container').classList.remove('blur-background');
             document.querySelector('.report-list-container').classList.remove('blur-background');
         });
+}
+
+function openAttachmentsPopup(reportId) {
+    console.log('Abrindo popup para o report ID:', reportId);
+
+    const popup = document.getElementById('attachmentsPopup');
+    popup.dataset.reportId = reportId;
+
+    fetch(`/report/getReport/${reportId}`)
+        .then(response => response.json())
+        .then(report => {
+            console.log(report);
+            const attachments = report.ARQUIVO || [];
+            const attachmentsList = popup.querySelector('.attachments-list');
+            attachmentsList.innerHTML = '';
+
+            attachments.forEach((attachment) => {
+                const fileExtension = attachment.name.substring(attachment.name.lastIndexOf('.')).toLowerCase();
+                const shortName = attachment.name.length > 15
+                    ? `${attachment.name.substring(0, 12)}...${fileExtension}`
+                    : attachment.name;
+
+                // Define o ícone com base no tipo de arquivo
+                let preview = '';
+                if (fileExtension === '.pdf') {
+                    preview = `<img src="/paginaInsercao/imagens/pdfImage.png" alt="PDF Icon" class="attachment-preview">`;
+                } else if (['.xlsx', '.xls'].includes(fileExtension)) {
+                    preview = `<img src="/paginaInsercao/imagens/excelIcon.jpeg" alt="Excel Icon" class="attachment-preview">`;
+                } else if (['.doc', '.docx'].includes(fileExtension)) {
+                    preview = `<img src="/paginaInsercao/imagens/wordIcon.jpeg" alt="Word Icon" class="attachment-preview">`;
+                } else if (['.png', '.jpg', '.jpeg'].includes(fileExtension)) {
+                    preview = `<img src="/paginaInsercao/imagens/imagesIcon.png" alt="Image Icon" class="attachment-preview">`;
+                } else {
+                    preview = `<img src="/paginaInsercao/imagens/unknownFile.png" alt="Unknown File Icon" class="attachment-preview">`;
+                }
+
+                // Cria o item de anexo
+                const listItem = document.createElement('div');
+                listItem.classList.add('attachment-item');
+                listItem.innerHTML = `
+                    ${preview}
+                    <div class="attachment-name">${shortName}</div>
+                    <div class="attachment-actions">
+                        <button onclick="downloadAttachment('${attachment.data}', '${attachment.name}')">Download</button>
+                    </div>
+                `;
+                attachmentsList.appendChild(listItem);
+            });
+
+            popup.style.display = 'block';
+        })
+        .catch(error => console.error('Erro ao carregar anexos:', error));
+}
+
+function downloadAttachment(data, fileName) {
+    const link = document.createElement('a');
+    link.href = `data:application/octet-stream;base64,${data}`;
+    link.download = fileName;
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+}
+
+function closeAttachmentsPopup() {
+    document.getElementById('attachmentsPopup').style.display = 'none';
+}
+
+function deleteAttachment(reportId, attachmentIndex) {
+    fetch(`/report/deletarAnexo/${reportId}/${attachmentIndex}`, { method: 'DELETE' })
+        .then(() => {
+            alert('Anexo excluído com sucesso.');
+            openAttachmentsPopup(reportId);
+        })
+        .catch(error => console.error('Erro ao excluir anexo:', error));
+}
+
+function addAttachments() {
+    const newAttachmentInput = document.getElementById('newAttachment');
+    const files = newAttachmentInput.files;
+
+    if (!files.length) {
+        alert('Por favor, selecione pelo menos um arquivo.');
+        return;
+    }
+
+    const formData = new FormData();
+    console.log(files)
+    Array.from(files).forEach((file) => {
+        formData.append('files', file);
+    });
+
+    const reportId = document.getElementById('attachmentsPopup').dataset.reportId;
+
+    fetch(`/report/addAttachments/${reportId}`, {
+        method: 'POST',
+        body: formData
+    })
+        .then((response) => {
+            if (response.ok) {
+                alert('Anexos adicionados com sucesso!');
+                openAttachmentsPopup(reportId); // Recarrega a lista de anexos
+            } else {
+                response.text().then((text) => console.error('Erro ao adicionar anexos:', text));
+            }
+        })
+        .catch((error) => console.error('Erro ao adicionar anexos:', error));
 }
 
 function markAsCompleted(reportId) {

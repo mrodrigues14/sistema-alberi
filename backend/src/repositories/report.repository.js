@@ -76,13 +76,24 @@ function getReportById(reportId, callback) {
             callback(err, null);
         } else {
             if (result.length > 0) {
-                callback(null, result[0]);
+                // Converte o campo ARQUIVO de Buffer para JSON
+                const report = result[0];
+                if (report.ARQUIVO) {
+                    try {
+                        report.ARQUIVO = JSON.parse(report.ARQUIVO.toString());
+                    } catch (parseError) {
+                        console.error('Erro ao parsear o campo ARQUIVO:', parseError);
+                        report.ARQUIVO = []; // Define como array vazio caso falhe
+                    }
+                }
+                callback(null, report);
             } else {
                 callback(new Error('Relatório não encontrado'), null);
             }
         }
     });
 }
+
 
 function deletarReport(reportId, callback) {
     mysqlConn.query('DELETE FROM REPORT WHERE ID = ?', [reportId], (err, result) => {
@@ -94,6 +105,20 @@ function deletarReport(reportId, callback) {
     });
 }
 
+function addAttachmentsToReport(reportId, attachments) {
+    return new Promise((resolve, reject) => {
+        const attachmentsJson = JSON.stringify(attachments);
+        mysqlConn.query(
+            `UPDATE REPORT SET ARQUIVO = ? WHERE ID = ?`,
+            [attachmentsJson, reportId],
+            (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+            }
+        );
+    });
+}
+
 module.exports = {
     inserirReport,
     getReportsByUserId,
@@ -102,5 +127,6 @@ module.exports = {
     recusarReport,
     editarReport,
     getReportById,
-    deletarReport
+    deletarReport,
+    addAttachmentsToReport
 };

@@ -440,3 +440,131 @@ button {
     pointer-events: none;
 }
 
+#attachmentsPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    padding: 20px;
+    width: 400px; /* Largura fixa opcional, ajuste conforme necessário */
+    max-width: 90%; /* Para telas menores */
+    overflow-y: auto; /* Caso o conteúdo exceda a altura */
+    max-height: 90%; /* Impede o estouro vertical */
+}
+
+/* Lista de anexos */
+.attachments-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+/* Cada item de anexo */
+.attachment-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 120px;
+    text-align: center;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* Preview da imagem ou ícone */
+.attachment-preview {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+/* Ícones genéricos */
+.attachment-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    font-size: 18px;
+    color: #555;
+    background-color: #eaeaea;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+}
+
+/* Nome do arquivo */
+.attachment-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Botões de ação */
+.attachment-actions button {
+    font-size: 12px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Botão Visualizar (Azul) */
+.attachment-actions button:first-child {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.attachment-actions button:first-child:hover {
+    background-color: #0056b3;
+}
+
+/* Botão Download (Verde) */
+.attachment-actions button:nth-child(2) {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.attachment-actions button:nth-child(2):hover {
+    background-color: #1e7e34;
+}
+
+/* Botão Fechar (Vermelho) */
+.btn-close {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-close:hover {
+    background-color: #a71d2a;
+}
+
+/* Botão Adicionar (Verde) */
+.btn-add {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.btn-add:hover {
+    background-color: #1e7e34;
+}
+
+.attachments-btn{
+    background-color: #ffae0f;
+}

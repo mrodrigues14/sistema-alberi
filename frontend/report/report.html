@@ -139,6 +139,20 @@
         <div id="editPreview"></div>
     </div>
 </div>
+<div id="attachmentsPopup" class="" style="display: none;">
+    <div class="popup-content">
+        <h2>Anexos</h2>
+        <ul class="attachments-list"></ul>
+        <div class="form-group">
+            <label for="newAttachment">Adicionar Anexos:</label>
+            <input type="file" id="newAttachment" multiple>
+        </div>
+        <div class="button-group">
+            <button onclick="addAttachments()" class="btn-add">Adicionar</button>
+            <button onclick="closeAttachmentsPopup()" class="btn-close">Fechar</button>
+        </div>
+    </div>
+</div>
 
 <div id="loadingSpinner" class="loading-spinner" style="display: none;">
     <div class="spinner"></div>

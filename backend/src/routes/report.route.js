@@ -8,7 +8,8 @@ const { deletarReport, getReportById,
     editarReport, recusarReport,
     inserirReport, getReportFilesByRange,
     getReportsByUserId ,
-    updateReportStatus} = require('../repositories/report.repository');
+    updateReportStatus,
+    addAttachmentsToReport} = require('../repositories/report.repository');
 const upload = multer({ storage: multer.memoryStorage() }); // Usando memória para armazenamento temporário
 
 router.get('/', (req, res) => {
@@ -232,6 +233,32 @@ router.delete('/deletar/:id', (req, res) => {
 });
 const { getAllReports } = require('../repositories/report.repository');
 
+router.delete('/deletarAnexo/:id/:index', (req, res) => {
+    const reportId = req.params.id;
+    const attachmentIndex = parseInt(req.params.index);
+
+    getReportById(reportId, (err, report) => {
+        if (err) {
+            res.status(500).send('Erro ao buscar relatório');
+        } else {
+            const arquivos = JSON.parse(report.ARQUIVO || '[]');
+            if (attachmentIndex >= 0 && attachmentIndex < arquivos.length) {
+                arquivos.splice(attachmentIndex, 1);
+                editarReport(reportId, report.TITULO, report.DESCRICAO, JSON.stringify(arquivos), report.PRIORIDADE, report.FUNCIONALIDADE_AFETADA, (editErr) => {
+                    if (editErr) {
+                        res.status(500).send('Erro ao atualizar relatório');
+                    } else {
+                        res.send('Anexo removido com sucesso');
+                    }
+                });
+            } else {
+                res.status(400).send('Índice de anexo inválido');
+            }
+        }
+    });
+});
+
+
 router.get('/listarTodos', (req, res) => {
     getAllReports((err, reports) => {
         if (err) {
@@ -239,6 +266,53 @@ router.get('/listarTodos', (req, res) => {
             res.status(500).send('Erro ao buscar reports');
         } else {
             res.json(reports);
+        }
+    });
+});
+
+router.post('/addAttachments/:id', upload.array('files', 10), (req, res) => {
+    const reportId = req.params.id;
+    const files = req.files;
+
+    if (!files || files.length === 0) {
+        return res.status(400).send('Nenhum arquivo enviado.');
+    }
+
+    // Busca o relatório existente
+    getReportById(reportId, (err, report) => {
+        if (err) {
+            console.error('Erro ao buscar relatório:', err);
+            return res.status(500).send('Erro ao buscar relatório.');
+        }
+
+        if (!report) {
+            return res.status(404).send('Relatório não encontrado.');
+        }
+
+        try {
+            // Adiciona os novos arquivos
+            const newAttachments = files.map((file) => ({
+                name: file.originalname,
+                data: file.buffer.toString('base64'),
+                type: file.mimetype,
+            }));
+
+            // Recupera anexos existentes e adiciona novos
+            const currentAttachments = Array.isArray(report.ARQUIVO) ? report.ARQUIVO : JSON.parse(report.ARQUIVO || '[]');
+            const updatedAttachments = [...currentAttachments, ...newAttachments];
+
+            // Atualiza o banco de dados
+            addAttachmentsToReport(reportId, updatedAttachments)
+                .then(() => {
+                    res.send('Anexos adicionados com sucesso.');
+                })
+                .catch((updateErr) => {
+                    console.error('Erro ao atualizar anexos no banco:', updateErr);
+                    res.status(500).send('Erro ao atualizar anexos no banco.');
+                });
+        } catch (error) {
+            console.error('Erro ao processar anexos:', error);
+            res.status(500).send('Erro ao processar anexos.');
         }
     });
 });
