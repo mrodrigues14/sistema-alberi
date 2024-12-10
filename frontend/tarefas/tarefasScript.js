@@ -247,10 +247,14 @@ function createItemEl(columnEl, column, item, index) {
     listEl.innerHTML = `
         <div class="item-content">
             <div class="item-header">
+                <!-- Edit Icon -->
                 <div class="edit-icon" onclick="editItem(${index}, ${column}); event.stopPropagation();">&#9998;</div>
-                <div class="delete-icon" onclick="showDeleteConfirmPopup(${item.idtarefa}, '${item.title}', ${index}, ${column}); event.stopPropagation();">&#128465;</div>
+                <!-- Delete Icon -->
+                <div class="delete-icon" onclick="showDeleteConfirmPopup(${item.idtarefa}, '${item.title}', ${index}, ${column}); event.stopPropagation();">
+                    &#128465;
+                </div>
             </div>
-            <h4 class="item-title">${item.title || ''}</h4>
+            <a class="item-title">${item.title || ''}</a>
             <div class="item-priority">${stars}</div>
             <span class="item-company">${item.apelido || ''}</span>
         </div>
