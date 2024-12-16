@@ -73,16 +73,17 @@
                     <tbody>
                     <tr>
                         <td>
-                            <input type="date" name="Data" id="datepicker">
+                            <input class="valor" type="text" name="Data" id="datepicker" placeholder="dd-mm-aaaa">
+
                             <br>
                             <!-- Checkbox Recorrente -->
-                            <label class="recorrenteLabel" for="recorrente">
+                            <!--<label class="recorrenteLabel" for="recorrente">
                                 <input type="checkbox" id="recorrente" name="recorrente" class="recorrenteCheckbox">
                                 <span class="customCheckbox"></span>
                                 Recorrente
                             </label>
 
-                            <!-- Div oculta que será mostrada quando o checkbox Recorrente for marcado -->
+                            &lt;!&ndash; Div oculta que será mostrada quando o checkbox Recorrente for marcado &ndash;&gt;
                             <div id="recorrenteOptions" class="recorrente-options-container">
                                 <label for="periodoRecorrencia">Período de Recorrência:</label>
                                 <select name="periodoRecorrencia" id="periodoRecorrencia" class="recorrente-select">
@@ -94,13 +95,12 @@
 
                                 <label for="quantidadeRecorrencia">Quantidade de Recorrências:</label>
                                 <input type="number" name="quantidadeRecorrencia" id="quantidadeRecorrencia" min="1" value="1" class="recorrente-input">
-                            </div>
-
+                            </div>-->
 
                         </td>
                         <td>
                             <label>
-                                <select name="categoria" id="seletorCategoria"></select>
+                                <select name="categoria" id="seletorCategoria" style="width: 100%;"></select>
                             </label>
                         </td>
 
@@ -160,20 +160,20 @@
     </div>
 
     <div id="botão-deletar">
-        <select id="popupOpcoes" onchange="abrirPopupOpcao()">
-            <option value="" disabled selected>Selecione uma ação</option>
-            <option value="rubricas">Adicionar Rubricas</option>
-            <option value="fornecedor">Adicionar Fornecedor</option>
-            <option value="banco">Adicionar Banco</option>
-        </select>
+        <div class="esquerda">
+            <button onclick="abrirPopupOpcao('rubricas')">Adicionar Rubricas</button>
+            <button onclick="abrirPopupOpcao('fornecedor')">Adicionar Fornecedor</button>
+            <button onclick="abrirPopupOpcao('banco')">Adicionar Banco</button>
+        </div>
+        <div class="direita">
 
-        <button onclick="deletarSelecionados()">Deletar Selecionados</button>
-        <button onclick="selecionarTodasLinhas()">Selecionar Todos</button>
-        <button id="botaoEditarTodas">Editar Todas as Linhas</button>
+            <button onclick="selecionarTodasLinhas()">Selecionar Todos</button>
+            <button onclick="deletarSelecionados()">Deletar Selecionados</button>
+            <button id="botaoEditarTodas">Editar Todas as Linhas</button>
+        </div>
     </div>
 
 
-    <!-- Div de popup que será preenchida com um iframe -->
     <div id="popupOpcoesModal" style="display:none;">
         <iframe id="popupIframe" src="" frameborder="0" style="width: 100%; height: 100%;"></iframe>
     </div>

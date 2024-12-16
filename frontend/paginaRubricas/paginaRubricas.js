@@ -95,7 +95,7 @@ function renderRubricas(categorias, listaId) {
 }
 function toggleGastoMes(idCategoria, buttonElement) {
     const isSelected = buttonElement.classList.contains('selected');
-    const newState = !isSelected; // Toggle the state
+    const newState = !isSelected; // Alterna o estado
 
     fetch('/categoria/atualizarOpcoes', {
         method: 'POST',
@@ -105,11 +105,13 @@ function toggleGastoMes(idCategoria, buttonElement) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualizar visualmente o botão
-                if (newState) {
-                    buttonElement.classList.add('selected');
-                } else {
-                    buttonElement.classList.remove('selected');
+                // Atualiza visualmente o botão
+                buttonElement.classList.toggle('selected', newState);
+
+                // Desmarcar botão Gasto Extra
+                const buttonExtra = document.querySelector(`[data-id="${idCategoria}"].btn-gasto-extra`);
+                if (buttonExtra) {
+                    buttonExtra.classList.remove('selected');
                 }
             } else {
                 console.error("Erro ao atualizar Gasto do Mês.");
@@ -118,10 +120,9 @@ function toggleGastoMes(idCategoria, buttonElement) {
         .catch(error => console.error("Erro:", error));
 }
 
-
 function toggleGastoExtra(idCategoria, buttonElement) {
     const isSelected = buttonElement.classList.contains('selected');
-    const newState = !isSelected; // Toggle the state
+    const newState = !isSelected; // Alterna o estado
 
     fetch('/categoria/atualizarOpcoes', {
         method: 'POST',
@@ -131,18 +132,21 @@ function toggleGastoExtra(idCategoria, buttonElement) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualizar visualmente o botão
-                if (newState) {
-                    buttonElement.classList.add('selected');
-                } else {
-                    buttonElement.classList.remove('selected');
+                // Atualiza visualmente o botão
+                buttonElement.classList.toggle('selected', newState);
+
+                // Desmarcar botão Gasto do Mês
+                const buttonMes = document.querySelector(`[data-id="${idCategoria}"].btn-gasto-mes`);
+                if (buttonMes) {
+                    buttonMes.classList.remove('selected');
                 }
             } else {
-                console.error("Erro ao atualizar Rubrica Extra.");
+                console.error("Erro ao atualizar Gasto Extra.");
             }
         })
         .catch(error => console.error("Erro:", error));
 }
+
 
 // Renderização de rubricas contábeis (sem subcategorias)
 function renderRubricasContabeis(rubricasContabeis) {
@@ -485,7 +489,14 @@ function toggleGastoMesContabil(idRubricaContabil, buttonElement) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Atualiza o botão atual
                 buttonElement.classList.toggle('selected', newState);
+
+                // Desmarcar botão Gasto Extra
+                const buttonExtra = document.querySelector(`[data-id="${idRubricaContabil}"].btn-gasto-extra-contabil`);
+                if (buttonExtra) {
+                    buttonExtra.classList.remove('selected');
+                }
             } else {
                 console.error("Erro ao atualizar Rubrica do Mês.");
             }
@@ -505,12 +516,20 @@ function toggleGastoExtraContabil(idRubricaContabil, buttonElement) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Atualiza o botão atual
                 buttonElement.classList.toggle('selected', newState);
+
+                // Desmarcar botão Gasto do Mês
+                const buttonMes = document.querySelector(`[data-id="${idRubricaContabil}"].btn-gasto-mes-contabil`);
+                if (buttonMes) {
+                    buttonMes.classList.remove('selected');
+                }
             } else {
                 console.error("Erro ao atualizar Rubrica Extra.");
             }
         })
         .catch(error => console.error("Erro:", error));
 }
+
 
 

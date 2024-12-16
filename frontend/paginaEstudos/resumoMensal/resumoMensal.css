@@ -112,4 +112,86 @@ table tfoot td {
     }
 }
 
-/* Additional specific styles
+.submenuEstudos {
+    display: flex;
+    justify-content: center;
+    background-color: #FFFFFF;
+;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ccc;
+}
+
+.submenu-item-estudos {
+    text-decoration: none;
+    color: #555;
+    margin: 0 15px;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.submenu-item-estudos:hover {
+    background-color: #2d3692;
+    color: #fff;
+}
+
+.submenu-item-estudos.active {
+    background-color: #2d3692;
+    color: #fff;
+}
+
+.mes-selector-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: -20px;
+    overflow: hidden;
+    height: 80px; /* Define uma altura específica para os botões */
+
+}
+
+.mes-button {
+    flex: 0 0 auto;
+    margin: 0 2px; /* Margem reduzida entre os botões */
+    padding: 5px 10px; /* Aumenta o padding vertical para melhorar a altura */
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 12px; /* Aumenta o tamanho da fonte para melhor legibilidade */
+    min-width: 80px; /* Define uma largura mínima para os botões */
+    height: 40px; /* Define uma altura específica para os botões */
+}
+.mes-selector {
+    display: flex;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    padding: 5px; /* Mantém o padding interno do container dos meses */
+    width: 80%;
+    justify-content: center; /* Centraliza os meses no container */
+    align-items: center; /* Centraliza verticalmente os botões */
+    margin: 10px;
+}
+.mes-button.active {
+    background-color: #2d3692;
+    color: white;
+}
+
+.arrow-button {
+    background-color: #2d3692;
+    color: black;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    color: white;
+
+}
+
+.ui-datepicker {
+    display: none !important; /* Força a não exibição do calendário */
+}

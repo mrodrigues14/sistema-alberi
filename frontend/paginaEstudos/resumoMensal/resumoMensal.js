@@ -1,72 +1,61 @@
-const jsPDF = window.jspdf.jsPDF;
-
-let idEmpresa = 0;
-let totalEntrada = 0;
-let totalSaida = 0;
-
 
 function getStoredEmpresaName() {
     return localStorage.getItem('nomeEmpresaSelecionada');
 }
-document.addEventListener('DOMContentLoaded', function() {
-    fetchTemplate();
-    fetchTemplateEstudos();
+
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        await loadTemplateAndStyles();
+    } catch (error) {
+        console.error('Erro ao carregar o template:', error);
+    }
 });
 
-function fetchTemplate(){
-    fetch('/templateMenu/template.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('menu-container-estudos').innerHTML = data;
+async function loadTemplateAndStyles() {
+    const cachedCSS = localStorage.getItem('templateCSS');
+    const cachedHTML = localStorage.getItem('templateHTML');
 
-            var link = document.createElement('link');
-            link.href = '/templateMenu/styletemplate.css';
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            document.head.appendChild(link);
+    if (cachedCSS && cachedHTML) {
+        applyCSS(cachedCSS);
+        applyHTML(cachedHTML);
+    } else {
+        const [cssData, htmlData] = await Promise.all([
+            fetchText('/templateMenu/styletemplate.css'),
+            fetchText('/templateMenu/template.html')
+        ]);
 
-            var script = document.createElement('script');
-            script.src = '/templateMenu/templateScript.js';
-            script.onload = function() {
-                loadAndDisplayUsername();
-                handleEmpresa();
-            };
-            document.body.appendChild(script);
-        })
-        .catch(error => {
-            console.error('Erro ao carregar o template:', error);
-        });
+        localStorage.setItem('templateCSS', cssData);
+        localStorage.setItem('templateHTML', htmlData);
 
+        applyCSS(cssData);
+        applyHTML(htmlData);
+    }
+
+    const script = document.createElement('script');
+    script.src = '/templateMenu/templateScript.js';
+    script.onload = function() {
+        loadAndDisplayUsername();
+        handleEmpresa();
+        loadNomeEmpresa();
+    };
+    document.body.appendChild(script);
 }
 
-$(document).ready(function() {
-    $('#seletorMesAno').datepicker({
-        changeMonth: true,
-        changeYear: true,
-        showButtonPanel: true,
-        dateFormat: 'mm-yy',
-        closeText: 'Pronto',
-        showTodayButton: false,
-        monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
-        monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-            'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-        beforeShow: function(input, inst) {
-            $(inst.dpDiv).addClass('hide-calendar');
-        },
-        onClose: function(dateText, inst) {
-            var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
-            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
-            $(this).datepicker('setDate', new Date(year, month, 1));
-            $(this).val($.datepicker.formatDate('mm-yy', new Date(year, month, 1)));
-            buscarDados();
-            buscarDadosCategoria()
-                .then(buscarSaidaCategoria)
-                .then(atualizarTabelaSaldoDoMes)
-                .then(atualizarTabelaSaldoConta);
-        }
-    });
-});
+function fetchText(url) {
+    return fetch(url).then(response => response.text());
+}
+
+function applyCSS(cssData) {
+    const style = document.createElement('style');
+    style.textContent = cssData;
+    document.head.appendChild(style);
+}
+
+function applyHTML(htmlData) {
+    document.getElementById('menu-container').innerHTML = htmlData;
+}
+
+
 
 function formatDateToFirstOfMonth(mesAnoString) {
     if (!mesAnoString) return '';
@@ -75,6 +64,7 @@ function formatDateToFirstOfMonth(mesAnoString) {
     return `${ano}-${mes}-01`;
 }
 
+let idEmpresa
 window.onload = function() {
 
     const nomeEmpresa = getStoredEmpresaName();
@@ -94,11 +84,10 @@ window.onload = function() {
         });
 }
 
-let saldoMesAnterior = 0;
 function buscarDados() {
-    const mesAno = $('#seletorMesAno').val();
+    const mesAno = document.getElementById('mesSelectorValue').value;
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
-
+    console.log(dataFormatada)
     const url = `/estudos/resumoMensal/saldoinicial?empresa=${idEmpresa}&data=${dataFormatada}`;
 
     fetch(url)
@@ -143,11 +132,10 @@ function atualizarTabela(data) {
 
 }
 
-document.getElementById('seletorMesAno').addEventListener('change', buscarDados);
-document.getElementById('seletorMesAno').addEventListener('change', buscarDadosCategoria);
+
 
 function buscarDadosCategoria(){
-    const mesAno = $('#seletorMesAno').val();
+    const mesAno = document.getElementById('mesSelectorValue').value;
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
     const url = `/estudos/resumoMensal/entradacategoria?empresa=${idEmpresa}&data=${dataFormatada}`;
 
@@ -198,7 +186,7 @@ function atualizarTabelaCategoria(data) {
 }
 
 function buscarSaidaCategoria(){
-    const mesAno = $('#seletorMesAno').val();
+    const mesAno = document.getElementById('mesSelectorValue').value;
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
     const url = `/estudos/resumoMensal/saidacategoria?empresa=${idEmpresa}&data=${dataFormatada}`;
 
@@ -269,6 +257,7 @@ function atualizarTabelaSaldoConta(){
     celulaSaldo.className = 'right-align';
 }
 
+/*
 function gerarPDF() {
     var doc = new jsPDF('l', 'mm', 'a4');
 
@@ -321,5 +310,94 @@ function gerarPDF() {
     doc.save('Resumo_Mensal.pdf');
 
 }
+*/
 
 
+document.addEventListener('DOMContentLoaded', function () {
+    const mesSelector = document.getElementById('mesSelector');
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth(); // Mês atual (0-11)
+    const currentYear = currentDate.getFullYear();
+    console.log(currentMonth)
+    function gerarMeses() {
+        mesSelector.innerHTML = ''; // Limpa o conteúdo antes de gerar
+
+        for (let ano = currentYear - 1; ano <= currentYear + 1; ano++) { // Gera do ano anterior até o próximo ano
+            for (let mes = 0; mes < 12; mes++) {
+                const button = document.createElement('button');
+                button.classList.add('mes-button');
+                const monthName = new Date(ano, mes).toLocaleString('pt-BR', { month: 'long' });
+                button.textContent = `${monthName}/${ano}`;
+                button.dataset.mesAno = `${String(mes + 1).padStart(2, '0')}-${ano}`;
+                button.addEventListener('click', function () {
+                    selecionarMesAno(button.dataset.mesAno);
+                });
+
+                mesSelector.appendChild(button);
+
+                if (ano === currentYear && mes === currentMonth) {
+                    button.classList.add('active');
+                    selecionarMesAno(button.dataset.mesAno);
+                }
+            }
+        }
+    }
+
+    gerarMeses();
+});
+
+function selecionarMesAno(mesAno) {
+    const monthButtons = document.querySelectorAll('.mes-button');
+    monthButtons.forEach(btn => btn.classList.remove('active'));
+
+    const selectedButton = [...monthButtons].find(btn => btn.dataset.mesAno === mesAno);
+    if (selectedButton) {
+        selectedButton.classList.add('active');
+    }
+
+    const mesSelectorValue = document.getElementById('mesSelectorValue');
+    if (mesSelectorValue) {
+        mesSelectorValue.value = mesAno;
+    }
+
+    buscarDados()
+    buscarDadosCategoria()
+    buscarSaidaCategoria()
+}
+
+
+function scrollMeses(direcao) {
+    const mesSelector = document.getElementById('mesSelector'); // Corrigido
+    const scrollAmount = 150;
+
+    if (direcao === 'left') {
+        mesSelector.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    } else if (direcao === 'right') {
+        mesSelector.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+}
+
+
+$(document).ready(function() {
+    $('#mesSelectorValue').datepicker({
+        changeMonth: true,
+        changeYear: true,
+        showButtonPanel: true,
+        dateFormat: 'mm-yy',
+        closeText: 'Pronto',
+        showTodayButton: false,
+        monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+        monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+            'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+        beforeShow: function(input, inst) {
+            $(inst.dpDiv).addClass('hide-calendar');
+        },
+        onClose: function(dateText, inst) {
+            var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+            $(this).datepicker('setDate', new Date(year, month, 1));
+            $(this).val($.datepicker.formatDate('mm-yy', new Date(year, month, 1)));
+        }
+    });
+});

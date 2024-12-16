@@ -187,20 +187,28 @@ function inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeE
 }
 
 
-function editarSubextrato(idExtrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida, rubrica_do_mes, callback) {
+function editarSubextrato(idExtrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida, callback) {
     const query = `
-        UPDATE EXTRATO 
-        SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, FORNECEDOR = ?, RUBRICA_CONTABIL = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?, RUBRICA_DO_MES = ?
-        WHERE IDEXTRATO = ?
+        UPDATE SUBEXTRATO 
+        SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, ID_SUBEXTRATO = ?, RUBRICA_CONTABIL = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?
+        WHERE ID_SUBEXTRATO = ?
     `;
     const tipoTransacao = entrada > 0 ? 'ENTRADA' : 'SAIDA';
     const valor = entrada > 0 ? entrada : saida;
-    const values = [data, categoria, descricao, fornecedor, rubricaContabil, tipoTransacao, valor, rubrica_do_mes, idExtrato];
+    const values = [data, categoria, descricao, fornecedor, rubricaContabil, tipoTransacao, valor, idExtrato];
+
+    console.log('Query:', query);
+    console.log('Values:', values);
 
     mysqlConn.query(query, values, function(err, result) {
         if (err) {
+            console.error('Erro ao editar subextrato:', err.message);
             callback(err, null);
         } else {
+            if (result.affectedRows === 0) {
+                console.warn('Nenhuma linha foi atualizada. Verifique os valores do IDEXTRATO e dados fornecidos.');
+            }
+            console.log('Resultado da atualização:', result);
             callback(null, result);
         }
     });
@@ -271,47 +279,115 @@ function verificarSaldoInicial(clienteId, bancoId, data, callback) {
 }
 
 function inserirSubextrato(idExtratoPrincipal, data, categoria, descricao, observacao, fornecedor, valorEn, valorSa, callback) {
-    const query = `
+    const queryInserirSubextrato = `
         INSERT INTO SUBEXTRATO (ID_EXTRATO_PRINCIPAL, DATA, CATEGORIA, DESCRICAO, OBSERVACAO, ID_FORNECEDOR, TIPO_DE_TRANSACAO, VALOR) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    let tipoTransacao;
-    let valor;
+    const queryVerificarSubextratos = `
+        SELECT COUNT(*) AS total FROM SUBEXTRATO WHERE ID_EXTRATO_PRINCIPAL = ?
+    `;
 
-    // Converter valores de entrada e saída para o formato correto (substituir vírgula por ponto)
-    if (typeof valorEn === 'string') {
-        valorEn = valorEn.replace(',', '.'); // Substitui a vírgula por ponto se for string
-    }
-    if (typeof valorSa === 'string') {
-        valorSa = valorSa.replace(',', '.'); // Substitui a vírgula por ponto se for string
-    }
+    const queryInvalidarLinha = `
+        UPDATE EXTRATO 
+        SET CATEGORIA = NULL, FORNECEDOR = NULL, RUBRICA_CONTABIL = NULL 
+        WHERE IDEXTRATO = ?
+    `;
 
-    // Verificar se o valor de Saída é válido e maior que 0
-    if (valorSa != null && parseFloat(valorSa) > 0) { // Converter para número
-        tipoTransacao = 'SAIDA';
-        valor = parseFloat(valorSa);
-    }
-    // Verificar se o valor de Entrada é válido e maior que 0
-    else if (valorEn != null && parseFloat(valorEn) > 0) {
-        tipoTransacao = 'ENTRADA';
-        valor = parseFloat(valorEn);
-    }
-    // Caso nenhum valor seja fornecido, retorne um erro
-    else {
-        return callback(new Error("Você deve fornecer um valor para Entrada ou Saída."), null);
-    }
+    const tipoTransacao = valorEn > 0 ? 'ENTRADA' : 'SAIDA';
+    const valor = valorEn > 0 ? valorEn : valorSa;
 
-    // Executa a query de inserção
-    mysqlConn.query(query, [idExtratoPrincipal, data, categoria, descricao, observacao, fornecedor, tipoTransacao, valor], (err, result) => {
+    mysqlConn.getConnection((err, connection) => {
         if (err) {
-            console.error(`Erro ao inserir subextrato: ${err.message}`);
-            callback(err, null);
-        } else {
-            callback(null, result);
+            console.error('Erro ao obter conexão do pool:', err.message);
+            return callback(err, null);
         }
+
+        connection.beginTransaction(err => {
+            if (err) {
+                connection.release(); // Libera a conexão em caso de erro
+                console.error('Erro ao iniciar transação:', err.message);
+                return callback(err, null);
+            }
+
+            // Verifica se já existem subextratos
+            connection.query(queryVerificarSubextratos, [idExtratoPrincipal], (err, result) => {
+                if (err) {
+                    return connection.rollback(() => {
+                        connection.release(); // Libera a conexão após rollback
+                        console.error('Erro ao verificar subextratos:', err.message);
+                        callback(err, null);
+                    });
+                }
+
+                const totalSubextratos = result[0].total;
+
+                // Insere o novo subextrato
+                connection.query(queryInserirSubextrato, [
+                    idExtratoPrincipal,
+                    data,
+                    categoria,
+                    descricao,
+                    observacao,
+                    fornecedor,
+                    tipoTransacao,
+                    valor
+                ], (err, resultSubextrato) => {
+                    if (err) {
+                        return connection.rollback(() => {
+                            connection.release(); // Libera a conexão após rollback
+                            console.error('Erro ao inserir subextrato:', err.message);
+                            callback(err, null);
+                        });
+                    }
+
+                    // Apenas invalida a linha principal se não houver subextratos antes
+                    if (totalSubextratos === 0) {
+                        connection.query(queryInvalidarLinha, [idExtratoPrincipal], (err, resultInvalidacao) => {
+                            if (err) {
+                                return connection.rollback(() => {
+                                    connection.release(); // Libera a conexão após rollback
+                                    console.error('Erro ao invalidar linha principal:', err.message);
+                                    callback(err, null);
+                                });
+                            }
+
+                            connection.commit(err => {
+                                if (err) {
+                                    return connection.rollback(() => {
+                                        connection.release(); // Libera a conexão após rollback
+                                        console.error('Erro ao confirmar transação:', err.message);
+                                        callback(err, null);
+                                    });
+                                }
+
+                                // Transação concluída com sucesso
+                                connection.release(); // Libera a conexão
+                                callback(null, { subextrato: resultSubextrato, invalidacao: resultInvalidacao });
+                            });
+                        });
+                    } else {
+                        // Se já houver subextratos, apenas confirme a transação
+                        connection.commit(err => {
+                            if (err) {
+                                return connection.rollback(() => {
+                                    connection.release(); // Libera a conexão após rollback
+                                    console.error('Erro ao confirmar transação:', err.message);
+                                    callback(err, null);
+                                });
+                            }
+
+                            // Transação concluída com sucesso
+                            connection.release(); // Libera a conexão
+                            callback(null, { subextrato: resultSubextrato, invalidacao: null });
+                        });
+                    }
+                });
+            });
+        });
     });
 }
+
 
 
 function buscarSubextratos(idExtratoPrincipal, callback) {

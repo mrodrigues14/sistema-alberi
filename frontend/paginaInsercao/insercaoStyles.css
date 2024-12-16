@@ -330,7 +330,7 @@ iframe {
     border-radius: 5px;
     cursor: text;
     background-color: #fff;
-    text-align-last: right;
+    text-align-last: center;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -358,13 +358,11 @@ iframe {
 
 /* Responsividade para o select2 */
 .select2-container--default .select2-selection--single {
-    width: 128%;
     box-sizing: border-box; /* Inclui padding e border no cálculo da largura */
     padding-right: 30px; /* Garante espaço para a seta dentro do campo */
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
-    width: 100% !important;
     font-size: 12px; /* Ajusta o tamanho da fonte */
     padding-right: 30px; /* Espaço para evitar que o texto sobreponha a seta */
     white-space: nowrap; /* Evita que o texto quebre em várias linhas */
@@ -377,7 +375,6 @@ iframe {
 .select2-selection__arrow {
     position: absolute;
     top: 50% !important;
-    right: -20px !important;
     transform: translateY(-50%);
     width: 20px;
     height: 20px;
@@ -805,11 +802,13 @@ select.fornecedor-select {
 
 .tabela th, .tabela td {
     padding: 10px;
-    text-align: left;
+    text-align: center;
     border: 1px solid #ddd;
     color: white;
 }
-
+.erro-subextrato {
+    background-color: #ffcccc !important; /* Fundo vermelho claro para indicar erro */
+}
 /* Configurações responsivas */
 @media (max-width: 768px) {
     .tabela table, .tabela thead, .tabela tbody, .tabela th, .tabela td, .tabela tr {
@@ -1298,3 +1297,34 @@ select.fornecedor-select {
     outline: none;
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
+
+#botão-deletar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin: 1vw 6.7vw 0 6.7vw;
+}
+
+#botão-deletar button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #fff;
+    font-size: 16px;
+    text-align: center;
+    margin: 5px;
+}
+
+#botão-deletar .esquerda {
+    display: flex;
+    gap: 10px;
+}
+
+#botão-deletar .direita {
+    display: flex;
+    gap: 10px;
+}
+
+seletorCategoria

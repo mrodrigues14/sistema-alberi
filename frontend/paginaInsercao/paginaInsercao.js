@@ -228,7 +228,7 @@ function construirArvoreDeCategorias(categorias) {
 function resetForm() {
     document.getElementById('meuFormulario').reset();
 }
-document.getElementById('recorrente').addEventListener('click', function() {
+/*document.getElementById('recorrente').addEventListener('click', function() {
     const recorrenteOptions = document.getElementById('recorrenteOptions');
 
     if (this.checked) {
@@ -236,14 +236,29 @@ document.getElementById('recorrente').addEventListener('click', function() {
     } else {
         recorrenteOptions.style.display = 'none';
     }
+});*/
+const datepicker = document.getElementById('datepicker');
+
+datepicker.addEventListener('input', function() {
+    let value = this.value.replace(/\D/g, ''); // Remove qualquer caractere que não seja número
+    if (value.length > 2) value = value.slice(0, 2) + '/' + value.slice(2); // Adiciona o primeiro "-"
+    if (value.length > 5) value = value.slice(0, 5) + '/' + value.slice(5); // Adiciona o segundo "-"
+    this.value = value.slice(0, 10); // Limita ao formato dd-mm-aaaa
 });
+
 
 document.getElementById('meuFormulario').addEventListener('submit', async function(event) {
     event.preventDefault(); // Previne o envio padrão do formulário
 
     // Captura os valores do formulário
     const formData = new FormData(this);
-    const Data = formData.get('Data'); // Data inicial
+    let Data = formData.get('Data'); // Data inicial
+
+    function formatarDataParaAmericano(data) {
+        const [dia, mes, ano] = data.split('/');
+        return `${ano}-${mes}-${dia}`;
+    }
+    Data = formatarDataParaAmericano(Data);
     const categoria = formData.get('categoria'); // ID da categoria
     const descricao = formData.get('descricao');
     const nomeExtrato = formData.get('nomeExtrato');
@@ -259,90 +274,43 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
     const fornecedorSelecionado = document.getElementById('seletorFornecedor');
     const fornecedor = fornecedorSelecionado.options[fornecedorSelecionado.selectedIndex].textContent.trim();
 
-    // Captura se o checkbox "Rubrica do Mês" está selecionado
-
+    // Captura o banco selecionado
     const idBancoElement = document.getElementById('seletorBanco');
     const idBanco = idBancoElement ? idBancoElement.value : null;
 
-    // Captura o período e a quantidade de recorrências
-    const periodoRecorrencia = document.getElementById('periodoRecorrencia').value;
-    const quantidadeRecorrencia = parseInt(document.getElementById('quantidadeRecorrencia').value, 10);
+    // Monta os dados para inserção
+    const dadosParaInserir = {
+        Data: Data,
+        Categoria: categoria, // ID da categoria
+        Descricao: descricao,
+        Nome: nomeExtrato,
+        TIPO: valorEn ? 'Entrada' : 'Saída', // Determina se é entrada ou saída
+        VALOR: valorEn || valorSa,
+        IDBANCO: idBanco,
+        IDCLIENTE: id_empresa, // Ajuste conforme a necessidade
+        FORNECEDOR: fornecedor, // Nome do fornecedor
+        rubrica_contabil: rubricaContabil, // Inclui a Rubrica Contábil no objeto de dados
+        rubrica_do_mes: 0 // Inclui o valor da Rubrica do Mês (1 ou 0)
+    };
 
-    // Função para adicionar dias, semanas, meses ou anos a uma data
-    function adicionarPeriodo(data, periodo, quantidade) {
-        const novaData = new Date(data);
-        switch (periodo) {
-            case 'semanal':
-                novaData.setDate(novaData.getDate() + 7 * quantidade);
-                break;
-            case 'quinzenal':
-                novaData.setDate(novaData.getDate() + 14 * quantidade);
-                break;
-            case 'mensal':
-                novaData.setMonth(novaData.getMonth() + quantidade);
-                break;
-            case 'anual':
-                novaData.setFullYear(novaData.getFullYear() + quantidade);
-                break;
-            default:
-                return data;
-        }
-        return novaData.toISOString().split('T')[0]; // Retorna no formato YYYY-MM-DD
-    }
+    console.log(dadosParaInserir); // Verifique os dados no console antes de enviar
 
-    // Array para armazenar todas as datas a serem inseridas (data inicial + recorrências)
-    const datasRecorrentes = [];
-
-    // Se a opção de recorrência estiver selecionada, gera as datas de recorrência
-    if (document.getElementById('recorrente').checked) {
-        datasRecorrentes.push(Data); // Adiciona a data inicial
-
-        // Gera as datas de recorrência com base no período e na quantidade
-        for (let i = 1; i <= quantidadeRecorrencia; i++) {
-            const novaData = adicionarPeriodo(Data, periodoRecorrencia, i);
-            datasRecorrentes.push(novaData);
-        }
-    } else {
-        // Se não for recorrente, apenas adiciona a data selecionada
-        datasRecorrentes.push(Data);
-    }
-
-    console.log(datasRecorrentes); // Verifique as datas no console
-
-    // Monta e envia as transações para cada data gerada
+    // Envia os dados ao backend
     try {
-        for (const dataRecorrente of datasRecorrentes) {
-            const dadosParaInserir = {
-                Data: dataRecorrente,
-                Categoria: categoria, // ID da categoria
-                Descricao: descricao,
-                Nome: nomeExtrato,
-                TIPO: valorEn ? 'Entrada' : 'Saída', // Determina se é entrada ou saída
-                VALOR: valorEn || valorSa,
-                IDBANCO: idBanco,
-                IDCLIENTE: id_empresa, // Ajuste conforme a necessidade
-                FORNECEDOR: fornecedor, // Nome do fornecedor
-                rubrica_contabil: rubricaContabil, // Inclui a Rubrica Contábil no objeto de dados
-                rubrica_do_mes: 0 // Inclui o valor da Rubrica do Mês (1 ou 0)
-            };
+        const response = await fetch('/insercao/inserir-individual', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dadosParaInserir) // Envia os dados
+        });
 
-            console.log(dadosParaInserir); // Verifique os dados no console antes de enviar
-
-            const response = await fetch('/insercao/inserir-individual', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dadosParaInserir) // Envia os dados da transação para cada data
-            });
-
-            if (!response.ok) {
-                throw new Error('Erro ao inserir dados');
-            }
+        if (!response.ok) {
+            throw new Error('Erro ao inserir dados');
         }
 
         await buscarDados(); // Chama a função que busca os dados
-        resetForm();
+        resetForm(); // Reseta o formulário após o envio
     } catch (error) {
         console.error(error);
         alert('Ocorreu um erro ao inserir os dados. Por favor, tente novamente.');
@@ -446,7 +414,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const seletorBanco = document.getElementById('seletorBanco');
     const idBancoPost = document.getElementById('id_bancoPost');
     const formulario = document.getElementById('meuFormulario');
-    const seletorRubricaContabil = document.getElementById('seletorRubricaContabil'); // Novo seletor
 
     seletorBanco.addEventListener('change', function() {
         IDBANCO = this.value;
@@ -459,26 +426,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     idBancoPost.value = seletorBanco.value;
 
-    // Inicializando o select2 para Fornecedor
-    $('#seletorFornecedor').select2({
-        placeholder: "Selecione um fornecedor",
-        allowClear: true,
-        sorter: data => data.sort((a, b) => a.text.localeCompare(b.text))
-    });
+    // Função para configurar o botão de adição no Select2
+    function configurarSelect2ComBotao(selector, placeholder, opcaoSelecionada) {
+        $(selector).select2({
+            placeholder: placeholder,
+            allowClear: true,
+            language: {
+                noResults: function() {
+                    return `<button class="btn-add-opcao" data-opcao="${opcaoSelecionada}">Adicionar ${opcaoSelecionada}</button>`;
+                }
+            },
+            escapeMarkup: function(markup) {
+                return markup;
+            }
+        });
+    }
 
-    // Inicializando o select2 para Categoria (Rubrica Financeira)
-    $('#seletorCategoria').select2({
-        placeholder: "Selecione uma rúbrica",
-        allowClear: true
-    });
+    // Configura os Select2 com botões de adição
+    configurarSelect2ComBotao('#seletorCategoria', 'Selecione uma rúbrica', 'rubricas');
+    configurarSelect2ComBotao('#seletorFornecedor', 'Selecione um fornecedor', 'fornecedor');
+    configurarSelect2ComBotao('#seletorRubricaContabil', 'Selecione uma rubrica contábil', 'rubricas');
 
-    // Inicializando o select2 para Rubrica Contábil
-    $('#seletorRubricaContabil').select2({
-        placeholder: "", // Novo seletor adicionado
-        allowClear: true,
-        sorter: data => data.sort((a, b) => a.text.localeCompare(b.text))
+    // Evento para capturar cliques nos botões dinâmicos
+    $(document).on('click', '.btn-add-opcao', function(e) {
+        e.preventDefault();
+        const opcao = $(this).data('opcao');
+        abrirPopupOpcao(opcao); // Chama o popup com a opção correta
     });
 });
+
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -572,7 +548,7 @@ function initializePageConsulta() {
                         }
                         const semFornecedor = document.createElement('option');
                         semFornecedor.value = '';
-                        semFornecedor.textContent = 'Sem fornecedor';
+                        semFornecedor.textContent = '';
                         select.appendChild(semFornecedor);
                         data.forEach(fornecedor => {
                             const option = document.createElement('option');
@@ -914,13 +890,12 @@ async function atualizarTabela(dados, saldoInicial) {
 
             // Rubrica Financeira (Categoria)
             const categoriaCell = row.insertCell();
-            const categoriaSelect = document.getElementById('seletorCategoria');
             const categoriaText = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
-            categoriaCell.textContent = categoriaText || 'Categoria não encontrada';
+            categoriaCell.textContent = categoriaText || '';
 
             // Fornecedor
             const fornecedorCell = row.insertCell();
-            fornecedorCell.textContent = item.NOME_FORNECEDOR || 'Fornecedor não encontrado';
+            fornecedorCell.textContent = item.NOME_FORNECEDOR || '';
 
             // Observação
             row.insertCell().textContent = item.DESCRICAO;
@@ -930,7 +905,7 @@ async function atualizarTabela(dados, saldoInicial) {
 
             // Rubrica Contábil
             const rubricaCell = row.insertCell();
-            rubricaCell.textContent = item.RUBRICA_CONTABIL || 'Rubrica não encontrada';
+            rubricaCell.textContent = item.RUBRICA_CONTABIL || '';
 
             // Entrada e Saída
             const entradaCell = row.insertCell();
@@ -944,14 +919,30 @@ async function atualizarTabela(dados, saldoInicial) {
 
             // Anexos
             const anexosCell = row.insertCell();
-            anexosCell.innerHTML = `<button onclick="abrirPopupAnexos(${item.IDEXTRATO})"><i class="fa fa-paperclip"></i></button>`;
+            anexosCell.innerHTML = `
+                <button onclick="abrirPopupAnexos(${item.IDEXTRATO})">
+                    <i class="fa-solid fa-circle-plus"></i>
+                </button>
+            `;
+
+            const anexos = await buscarAnexos(item.IDEXTRATO);
+            if (anexos.length > 0) {
+                anexos.forEach(anexo => {
+                    const anexoButton = document.createElement('button');
+                    anexoButton.textContent = anexo.TIPO_EXTRATO_ANEXO; // Exibe o tipo (CP, DC/NF, etc.)
+                    anexoButton.classList.add('anexo-button');
+                    anexoButton.onclick = () => window.open(`/consulta/download-anexo/${anexo.NOME_ARQUIVO}`, '_blank');
+
+                    anexosCell.insertBefore(anexoButton, anexosCell.firstChild);
+                });
+            }
 
             // Ferramentas (Editar, Selecionar, Deletar)
             const deleteCell = row.insertCell();
             deleteCell.innerHTML = `
                 <div class="dropdown-extrato-opcoes">
                     <div class="dropdown-content-extrato-opcoes">
-                        <button onclick="abrirLinhaSubextrato(this)"><i class="fa-solid fa-circle-plus"></i></button>
+                        <button onclick="abrirLinhaSubextrato(this)"><i class="fa-solid fa-divide"></i></button>
                         <button onclick="editarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="edit-btn-extrato-opcoes">
                             <i class="fas fa-edit"></i>
                         </button>
@@ -970,38 +961,86 @@ async function atualizarTabela(dados, saldoInicial) {
 
             // Buscar os subextratos associados a este extrato principal
             const subextratos = await buscarSubextratos(item.IDEXTRATO);
-            console.log(subextratos)
-            subextratos.forEach(subextrato => {
-                const subRow = tbody.insertRow();
-                subRow.dataset.subextrato = subextrato.ID_SUBEXTRATO;
-                subRow.classList.add('subextrato-row'); // Adiciona a classe para cor de fundo
+            if (subextratos.length > 0) {
+                const totalSubEntradas = subextratos
+                    .filter(sub => sub.TIPO_DE_TRANSACAO === 'ENTRADA')
+                    .reduce((sum, sub) => sum + parseFloat(sub.VALOR || 0), 0);
 
-                // Adiciona os dados do subextrato nas células
-                subRow.innerHTML = `
-                    <td>${formatDate(subextrato.DATA)}</td>
-                    <td>${subextrato.CATEGORIA || ''}</td>
-                    <td>${subextrato.NOME_FORNECEDOR || ''}</td>
-                    <td>${subextrato.OBSERVACAO || ''}</td>
-                    <td>${subextrato.DESCRICAO || ''}</td>
-                    <td>${subextrato.RUBRICA_CONTABIL || ''}</td>
-                    <td>${subextrato.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicaoSub(subextrato.VALOR) : ''}</td>
-                    <td>${subextrato.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicaoSub(subextrato.VALOR) : ''}</td>
-                    <td></td>
-                    <td>
-                        <button onclick="abrirPopupAnexos(${subextrato.ID_SUBEXTRATO})">
-                            <i class="fa fa-paperclip"></i>
-                        </button>
-                    </td>   
-                    <td>
-                        <button onclick="editarSubextrato(${subextrato.ID_SUBEXTRATO}, this)" class="edit-btn-extrato-opcoes">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="deletarSubextrato(${subextrato.ID_SUBEXTRATO}, this)" class="delete-btn-extrato-opcoes">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
-                `;
-            });
+                const totalSubSaidas = subextratos
+                    .filter(sub => sub.TIPO_DE_TRANSACAO === 'SAIDA')
+                    .reduce((sum, sub) => sum + parseFloat(sub.VALOR || 0), 0);
+
+                // Verifica se os valores dos subextratos batem com o principal
+                const valorPrincipal = parseFloat(item.VALOR);
+                const isValid =
+                    (item.TIPO_DE_TRANSACAO === 'ENTRADA' && totalSubEntradas === valorPrincipal) ||
+                    (item.TIPO_DE_TRANSACAO === 'SAIDA' && totalSubSaidas === valorPrincipal);
+
+                // Adiciona a classe de erro se não for válido
+                if (!isValid) {
+                    subextratos.forEach(sub => {
+                        const subRow = tbody.insertRow();
+                        subRow.dataset.subextrato = sub.ID_SUBEXTRATO;
+                        subRow.classList.add('subextrato-row', 'erro-subextrato'); // Classe para cor vermelha
+
+                        subRow.innerHTML = `
+                            <td>${formatDate(sub.DATA)}</td>
+                            <td>${sub.CATEGORIA || ''}</td>
+                            <td>${sub.NOME_FORNECEDOR || ''}</td>
+                            <td>${sub.OBSERVACAO || ''}</td>
+                            <td>${sub.DESCRICAO || ''}</td>
+                            <td>${sub.RUBRICA_CONTABIL || ''}</td>
+                            <td>${sub.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
+                            <td>${sub.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
+                            <td></td>
+                            <td>
+                                <button onclick="abrirPopupAnexos(${sub.ID_SUBEXTRATO})">
+                                    <i class="fa fa-paperclip"></i>
+                                </button>
+                            </td>   
+                            <td>
+                                <button onclick="editarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="edit-btn-extrato-opcoes">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deletarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="delete-btn-extrato-opcoes">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        `;
+                    });
+                } else {
+                    subextratos.forEach(sub => {
+                        const subRow = tbody.insertRow();
+                        subRow.dataset.subextrato = sub.ID_SUBEXTRATO;
+                        subRow.classList.add('subextrato-row'); // Classe padrão sem erro
+
+                        subRow.innerHTML = `
+                            <td>${formatDate(sub.DATA)}</td>
+                            <td>${sub.CATEGORIA || ''}</td>
+                            <td>${sub.NOME_FORNECEDOR || ''}</td>
+                            <td>${sub.OBSERVACAO || ''}</td>
+                            <td>${sub.DESCRICAO || ''}</td>
+                            <td>${sub.RUBRICA_CONTABIL || ''}</td>
+                            <td>${sub.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
+                            <td>${sub.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
+                            <td></td>
+                            <td>
+                                <button onclick="abrirPopupAnexos(${sub.ID_SUBEXTRATO})">
+                                    <i class="fa fa-paperclip"></i>
+                                </button>
+                            </td>   
+                            <td>
+                                <button onclick="editarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="edit-btn-extrato-opcoes">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deletarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="delete-btn-extrato-opcoes">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        `;
+                    });
+                }
+            }
         }
     }
 
@@ -1010,6 +1049,20 @@ async function atualizarTabela(dados, saldoInicial) {
     document.querySelector('.body-insercao').classList.remove('blur-background');
     document.querySelector('.popup-insercao-container').classList.remove('blur-background');
 }
+
+async function buscarAnexos(idExtrato) {
+    try {
+        const response = await fetch(`/insercao/anexos?idExtrato=${idExtrato}`);
+        if (!response.ok) {
+            throw new Error('Erro ao buscar anexos');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Erro ao carregar anexos:', error);
+        return [];
+    }
+}
+
 function formatarValorParaExibicaoSub(valor) {
     if (typeof valor === 'number') {
         valor = valor.toFixed(2); // Garante duas casas decimais
@@ -1409,11 +1462,9 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
 function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
     const row = buttonElement.closest('tr');
 
-    // Determina se o valor é entrada ou saída
     let tipo = null;
     let valorEn = null;
     let valorSa = null;
-
 
     if (row.querySelector('[name="valorEn"]').value) {
         tipo = 'ENTRADA';
@@ -1428,32 +1479,28 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
         return;
     }
 
-    // Pega os elementos <select> de categoria, fornecedor e rubrica contábil
     const categoriaSelect = row.querySelector('[name="categoria"]');
     const fornecedorSelect = row.querySelector('[name="fornecedor"]');
     const rubricaContabilSelect = row.querySelector('[name="rubricaContabil"]');
 
-    // Pega o texto (nome) das opções selecionadas, verificando se existem
     const categoriaNome = categoriaSelect.options[categoriaSelect.selectedIndex].text;
     const fornecedorNome = fornecedorSelect && fornecedorSelect.selectedIndex >= 0
         ? fornecedorSelect.options[fornecedorSelect.selectedIndex].text
-        : ''; // Caso não haja fornecedor selecionado, retorna string vazia
+        : '';
     const rubricaContabilNome = rubricaContabilSelect.options[rubricaContabilSelect.selectedIndex].text;
 
-    // Monta o objeto de dados
     const data = {
         Data: row.querySelector('[name="Data"]').value,
-        categoria: categoriaNome, // Nome da categoria
-        fornecedor: fornecedorNome, // Nome do fornecedor ou string vazia
+        categoria: categoriaNome,
+        fornecedor: fornecedorNome,
         descricao: row.querySelector('[name="descricao"]').value,
         observacao: row.querySelector('[name="observacao"]').value,
         valorEn: valorEn,
         valorSa: valorSa,
-        rubricaContabil: rubricaContabilNome, // Nome da rubrica contábil
+        rubricaContabil: rubricaContabilNome,
         id_extrato_principal: idExtratoPrincipal
     };
 
-    // Envia os dados ao backend
     fetch('/insercao/inserir-subextrato', {
         method: 'POST',
         headers: {
@@ -1683,11 +1730,12 @@ function editarSubextrato(idSubextrato, buttonElement) {
                     console.error('Erro ao buscar rubricas contábeis:', error);
                 });
         } else if (index > 5 && index < 8) { // Entrada ou Saída
-            const valorAtual = cell.textContent.trim();
+            const valorAtual = cell.textContent.trim() === '0' ? '' : cell.textContent.trim(); // Se o valor for '0', deixa em branco
             cell.innerHTML = `<input type="text" value="${valorAtual}" class="editavel">`;
 
             const input = cell.querySelector('input');
             input.style.width = '100%';
+
 
             if (index === 6 || index === 7) { // Formatar entrada e saída
                 input.addEventListener('input', function () {
@@ -1713,14 +1761,22 @@ function confirmarEdicaoSubextrato(idSubextrato, buttonElement) {
     const cells = row.querySelectorAll('td');
     const dadosEditados = {
         idSubextrato: idSubextrato,
-        data: cells[0].querySelector('input').value,
-        categoria: cells[1].querySelector('select').value,
-        descricao: cells[2].querySelector('input').value,
-        fornecedor: cells[3].querySelector('select').value,
-        rubricaContabil: cells[5].querySelector('select').value,
-        entrada: cells[6].querySelector('input').value,
-        saida: cells[7].querySelector('input').value
+        data: cells[0].querySelector('input') ? cells[0].querySelector('input').value : '',
+        categoria: cells[1].querySelector('select') ? cells[1].querySelector('select').value || '' : '',
+        descricao: cells[2].querySelector('input') ? cells[2].querySelector('input').value || '' : '',
+        fornecedor: cells[3].querySelector('select') ? cells[3].querySelector('select').value || '' : '',
+        rubricaContabil: cells[5].querySelector('select') ? cells[5].querySelector('select').value || '' : '',
+        entrada: cells[6].querySelector('input')
+            ? (cells[6].querySelector('input').value === '0,00' ? '' : parseFloat(cells[6].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || '')
+            : '',
+        saida: cells[7].querySelector('input')
+            ? (cells[7].querySelector('input').value === '0,00' ? '' : parseFloat(cells[7].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || '')
+            : ''
     };
+
+
+
+    console.log(dadosEditados)
 
     // Chamada à API para salvar a edição do subextrato
     fetch('/insercao/editar-subextrato', {
@@ -2193,9 +2249,7 @@ function uploadAnexo() {
     const anexoFile = document.getElementById('anexoFile').files[0];
     const idExtrato = document.getElementById('idExtratoAnexo').value;
     const tipoExtratoAnexo = document.getElementById('tipoExtratoAnexo').value; // Novo campo de dropdown
-    console.log(idExtrato)
-    console.log(anexoFile)
-    console.log(tipoExtratoAnexo)
+
     formData.append('anexo', anexoFile);
     formData.append('idExtrato', idExtrato);
     formData.append('tipoExtratoAnexo', tipoExtratoAnexo);
@@ -3384,12 +3438,9 @@ document.getElementById('excelFile').addEventListener('change', function() {
     }
 });
 
-
-function abrirPopupOpcao() {
-    var opcaoSelecionada = document.getElementById("popupOpcoes").value;
+function abrirPopupOpcao(opcaoSelecionada) {
     var url = "";
 
-    // Definir URL com base na opção selecionada
     if (opcaoSelecionada === "rubricas") {
         url = "/rubricas"; // Página de Rubricas
     } else if (opcaoSelecionada === "fornecedor") {
@@ -3398,25 +3449,24 @@ function abrirPopupOpcao() {
         url = "/dados"; // Página de Banco
     }
 
-    // Verificar se uma URL foi selecionada
     if (url) {
-        // Abrir popup e definir o src do iframe
         $("#popupOpcoesModal").dialog({
             modal: true,
             width: 800, // Ajuste conforme necessário
             height: 600, // Ajuste conforme necessário
             title: "Configuração",
-            open: function() {
-                // Carregar a página selecionada no iframe
+            open: function () {
                 $("#popupIframe").attr("src", url);
             },
-            close: function() {
-                // Limpar o src quando o popup for fechado
+            close: function () {
                 $("#popupIframe").attr("src", "");
+
+                initializePage();
             }
         });
     }
 }
+
 
 
 

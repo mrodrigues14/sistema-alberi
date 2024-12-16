@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Resumo Mensal</title>
+    <title>Alberi Consult</title>
+    <link rel="icon" href="/images/icone_alberi.png" type="image/png">
     <link rel="stylesheet" href="/paginaEstudos/resumoMensal/resumoMensal.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -12,17 +13,28 @@
     <script src="/paginaEstudos/resumoMensal/resumoMensal.js"></script>
 </head>
 <body>
-<div id="menu-container-estudos"></div>
 <div id="menu-container"></div>
+<div class="submenuEstudos">
+    <a href="/estudos/resumoMensal" class="submenu-item-estudos active">Resumo Mensal</a>
+    <a href="/estudos/resumoFin" class="submenu-item-estudos">Resumo Financeiro</a>
+    <a href="/estudos/resumoAnual" class="submenu-item-estudos">Resumo Anual</a>
+    <a href="/estudos/faturamento" class="submenu-item-estudos">Resumo Faturamento Mensal</a>
+    <a href="/estudos/resumoDaConta" class="submenu-item-estudos">Resumo da Conta</a>
+    <a href="/estudos/metas" class="submenu-item-estudos">Metas</a>
+</div>
 
-    <div id="containerData">
-        <div>
-            <label for="seletorMesAno">Mes/Ano </label>
-        </div>
-        <div>
-            <input type="text" id="seletorMesAno" name="mes_ano">
-        </div>
+
+<div class="mes-selector-container" id="mesSelectorWrapper">
+    <button class="arrow-button" onclick="scrollMeses('left')">&#8249;</button>
+    <div class="mes-selector" id="mesSelector">
+        <!-- Botões de meses serão gerados aqui -->
     </div>
+    <button class="arrow-button" onclick="scrollMeses('right')">&#8250;</button>
+</div>
+<input type="hidden" id="mesSelectorValue" value="">
+
+
+
     <div class="container">
         <div id="saldoInicial">
             <h1>Saldo Inicial</h1>

@@ -2,14 +2,15 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Lista de Empresas</title>
+    <title>Alberi Consult</title>
+    <link rel="icon" href="/images/icone_alberi.png" type="image/png">
     <link rel="stylesheet" href="/paginaCliente/paginaClienteStyle.css">
 </head>
 <body>
 <div id="menu-container"></div>
 
 <h1>Lista de Empresas</h1>
-<button id="add-client-btn" class="primary">Adicionar Empresa</button>
+<button id="add-client-btn" class="primary add-empresa">Adicionar Empresa</button>
 
 <!-- Modal -->
 <div id="modal" class="modal-overlay">
@@ -26,6 +27,7 @@
             <form id="add-client-form">
                 <input type="hidden" id="tipoCliente" name="tipoCliente" />
                 <div id="form-fisica" style="display: none;">
+                    <h1>Adicionar Pessoa Física</h1>
                     <input type="text" id="nomeFisica" name="nomeFisica" placeholder="Nome Completo"  />
                     <input type="text" id="apelidoFisica" name="apelidoFisica" placeholder="Apelido" />
                     <input type="text" id="cpfFisica" name="cpfFisica" placeholder="CPF"  />
@@ -34,6 +36,7 @@
                     <input type="text" id="cepFisica" name="cepFisica" placeholder="CEP" />
                 </div>
                 <div id="form-juridica" style="display: none;">
+                    <h1>Adicionar Pessoa Jurídica</h1>
                     <input type="text" id="nomeEmpresa" name="nomeEmpresa" placeholder="Nome da Empresa"  />
                     <input type="text" id="apelidoEmpresa" name="apelidoEmpresa" placeholder="Apelido" />
                     <input type="text" id="cnpj" name="cnpj" placeholder="CNPJ"  />
@@ -60,6 +63,100 @@
     <!-- Linhas serão geradas dinamicamente -->
     </tbody>
 </table>
+
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="toggleEditModal()">✖</button>
+        <h2>Editar Cliente</h2>
+        <form id="edit-client-form" class="form-editar-cliente">
+            <input type="hidden" id="edit-id-cliente" name="idCliente">
+            <input type="hidden" id="edit-tipo-cliente" name="tipoCliente">
+
+            <!-- Pessoa Física -->
+            <div id="edit-fisica" style="display: none;">
+                <div class="form-group">
+                    <label for="edit-nome-fisica">Nome:</label>
+                    <input type="text" id="edit-nome-fisica" name="nomeFisica">
+                </div>
+                <div class="form-group">
+                    <label for="edit-apelido-fisica">Apelido:</label>
+                    <input type="text" id="edit-apelido-fisica" name="apelidoFisica">
+                </div>
+                <div class="form-group">
+                    <label for="edit-telefone-fisica">Telefone:</label>
+                    <input type="text" id="edit-telefone-fisica" name="telefoneFisica">
+                </div>
+                <div class="form-group">
+                    <label for="edit-cpf-fisica">CPF:</label>
+                    <input type="text" id="edit-cpf-fisica" name="cpfFisica">
+                </div>
+                <div class="form-group">
+                    <label for="edit-endereco-fisica">Endereço:</label>
+                    <input type="text" id="edit-endereco-fisica" name="enderecoFisica">
+                </div>
+                <div class="form-group">
+                    <label for="edit-cep-fisica">CEP:</label>
+                    <input type="text" id="edit-cep-fisica" name="cepFisica">
+                </div>
+                <div class="form-group">
+                    <label for="edit-email-fisica">Email:</label>
+                    <input type="email" id="edit-email-fisica" name="emailFisica">
+                </div>
+            </div>
+
+            <!-- Pessoa Jurídica -->
+            <div id="edit-juridica" style="display: none;">
+                <div class="form-group">
+                    <label for="edit-nome-empresa">Nome da Empresa:</label>
+                    <input type="text" id="edit-nome-empresa" name="nomeEmpresa">
+                </div>
+                <div class="form-group">
+                    <label for="edit-apelido-fisica">Apelido:</label>
+                    <input type="text" id="edit-apelido-empresa" name="apelidoFisica">
+                </div>
+                <div class="form-group">
+                    <label for="edit-cnpj">CNPJ:</label>
+                    <input type="text" id="edit-cnpj" name="cnpj">
+                </div>
+                <div class="form-group">
+                    <label for="edit-telefone">Telefone:</label>
+                    <input type="text" id="edit-telefone" name="telefone">
+                </div>
+                <div class="form-group">
+                    <label for="edit-endereco">Endereço:</label>
+                    <input type="text" id="edit-endereco" name="endereco">
+                </div>
+                <div class="form-group">
+                    <label for="edit-cep">CEP:</label>
+                    <input type="text" id="edit-cep" name="cep">
+                </div>
+                <div class="form-group">
+                    <label for="edit-nome-responsavel">Nome do Responsável:</label>
+                    <input type="text" id="edit-nome-responsavel" name="nomeResponsavel">
+                </div>
+                <div class="form-group">
+                    <label for="edit-cpf-responsavel">CPF do Responsável:</label>
+                    <input type="text" id="edit-cpf-responsavel" name="cpfResponsavel">
+                </div>
+                <div class="form-group">
+                    <label for="edit-inscricao-estadual">Inscrição Estadual:</label>
+                    <input type="text" id="edit-inscricao-estadual" name="inscricaoEstadual">
+                </div>
+                <div class="form-group">
+                    <label for="edit-cnae-principal">CNAE Principal:</label>
+                    <input type="text" id="edit-cnae-principal" name="cnaePrincipal">
+                </div>
+                <div class="form-group">
+                    <label for="edit-socios">Sócios:</label>
+                    <textarea id="edit-socios" name="socios" rows="4" placeholder="Lista de sócios em JSON"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-button">Salvar</button>
+        </form>
+    </div>
+</div>
+
 <script src="/paginaCliente/paginaClienteScript.js"></script>
 </body>
 </html>

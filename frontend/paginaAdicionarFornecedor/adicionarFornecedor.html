@@ -13,15 +13,16 @@
 <!-- Lista de Fornecedores -->
 <div class="lista-fornecedores">
     <h2>Fornecedores</h2>
+    <div class="adicionar-fornecedor-container">
+        <button id="adicionar-fornecedor-btn" class="adicionar-fornecedor-btn" onclick="abrirPopup('popup-adicionar-fornecedor')">Adicionar Novo Fornecedor</button>
+        <button id="adicionar-subfornecedor-btn" class="adicionar-subfornecedor-btn">Adicionar Nova Subfornecedor</button>
+    </div>
     <ul id="fornecedor-lista" class="fornecedor-lista">
         <!-- Lista será populada dinamicamente -->
     </ul>
 </div>
 
-<div class="adicionar-fornecedor-container">
-    <button id="adicionar-fornecedor-btn" class="adicionar-fornecedor-btn" onclick="abrirPopup('popup-adicionar-fornecedor')">Adicionar Novo Fornecedor</button>
-    <button id="adicionar-subfornecedor-btn" class="adicionar-subfornecedor-btn">Adicionar Nova Subfornecedor</button>
-</div>
+
 
 <!-- Popup para Adicionar Fornecedor -->
 <div id="popup-adicionar-fornecedor" class="popup">

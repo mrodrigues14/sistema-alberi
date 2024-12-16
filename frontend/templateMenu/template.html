@@ -20,16 +20,11 @@
                 <a href="/tarefas"><button class="menu-item">Tarefas</button></a>
             </li>
             <li>
-                <button class="menu-item" onclick="toggleDropdown('estudosDropdown')">Estudos</button>
-                <div class="dropdown-content" id="estudosDropdown">
-                    <a href="/estudos/resumoMensal">Resumo Mensal</a>
-                    <a href="/estudos/resumoFin">Resumo financeiro</a>
-                    <a href="/estudos/resumoAnual">Resumo Anual</a>
-                    <a href="/estudos/faturamento">Reusmo Faturamento Mensal</a>
-                    <a href="/estudos/resumoDaConta">Resumo da Conta</a>
-                    <a href="/estudos/metas">Metas</a>
-                </div>
+                <a href="/estudos/resumoMensal">
+                    <button class="menu-item">Estudos</button>
+                </a>
             </li>
+
             <li>
                 <a href="/insercao" class="menu-item">Extrato bancário</a>
             </li>
@@ -37,12 +32,9 @@
                 <a href="/cliente" class="menu-item">Configuração de Cliente</a>
             </li>
             <li id="configUsuario">
-                <button class="menu-item" onclick="toggleDropdown('usuarioDropdown')">Configuração de Usuário</button>
-                <div class="dropdown-content" id="usuarioDropdown">
-                    <a href="/usuario/adicionarUsuario">Adicionar Usuário</a>
-                    <a href="/usuario/editarUsuario">Editar Usuário</a>
-                </div>
+                <a href="/usuario/adicionarUsuario" class="menu-item">Configuração de Usuário</a>
             </li>
+
 
             <li>
                 <a href="/report" id="report"><button class="menu-item" onclick="toggleDropdown('reportDropdown')"><li>Reportar Falha ou melhoria</li></button></a>

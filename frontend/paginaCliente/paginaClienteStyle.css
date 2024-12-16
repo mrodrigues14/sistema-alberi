@@ -54,13 +54,39 @@ tr:nth-child(even) {
     gap: 10px;
     justify-content: center;
 }
+#empresa-table th:nth-child(1),
+#empresa-table td:nth-child(1) {
+    text-align: left; /* Alinha a coluna "Nome" à esquerda */
+}
 
+#empresa-table th:nth-child(2),
+#empresa-table td:nth-child(2) {
+    text-align: center; /* Alinha a coluna "Ações" ao centro */
+    width: 100px; /* Define uma largura fixa para a coluna de Ações */
+}
 .actions span {
     cursor: pointer;
     font-size: 18px;
     transition: transform 0.2s, opacity 0.2s;
+    margin: 0 5px;
 }
 
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001; /* Garante que o modal fique acima de outros elementos */
+    display: none; /* Oculta o modal por padrão */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Mostra o modal */
+.modal.show {
+    display: block;
+    opacity: 1;
+}
 
 /* Estilos para o fundo do modal */
 .modal-overlay {
@@ -123,6 +149,9 @@ button.primary {
     margin-bottom: 10px;
 }
 
+.add-empresa{
+    margin-left: 60rem;
+}
 button.secondary {
     background-color: #e74c3c;
     color: white;
@@ -164,4 +193,64 @@ input, select {
     font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 5px;
+}
+
+
+.submit-button {
+    background-color: #46a14a;
+    color: white;
+}
+
+/* Estilo geral do formulário de edição */
+.form-editar-cliente {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaçamento entre os campos */
+    text-align: left;
+    margin-top: 10px;
+}
+
+/* Grupo de campo: rótulo e input */
+.form-editar-cliente .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Espaço entre label e input */
+}
+
+/* Estilo do rótulo */
+.form-editar-cliente .form-group label {
+    font-weight: bold;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+/* Estilo dos inputs e textarea */
+.form-editar-cliente .form-group input,
+.form-editar-cliente .form-group textarea {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Foco nos inputs */
+.form-editar-cliente .form-group input:focus,
+.form-editar-cliente .form-group textarea:focus {
+    border-color: #2c3e50;
+    outline: none;
+    box-shadow: 0 0 4px rgba(44, 62, 80, 0.3);
+}
+
+/* Estilização do botão */
+
+
+.botao-salvar-edicao:hover {
+    background-color: #34495e;
+    transform: scale(1.05);
+}
+
+.form-group{
+    margin-bottom: 10px;
 }

@@ -135,3 +135,33 @@ button[type="button"]:nth-child(2):hover {
 .popup-content button:hover {
     background-color: #45a049;
 }
+/* Submenu Container */
+.submenu-usuario {
+    display: flex;
+    justify-content: center;
+    background-color: #FFFFFF;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ccc;
+}
+
+/* Submenu Links */
+.submenu-item-usuario {
+    text-decoration: none;
+    color: #555;
+    margin: 0 15px;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.submenu-item-usuario:hover {
+    background-color: #2d3692;
+    color: #fff;
+}
+
+.submenu-item-usuario.active {
+    background-color: #2d3692;
+    color: #fff;
+}

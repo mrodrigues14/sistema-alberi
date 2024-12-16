@@ -248,23 +248,7 @@
     color: white;
 }
 
-#botão-deletar{
-    display: flex;
-    justify-content: right;
-    margin-right: 6.7vw;
-    margin-top: 1vw;
-    margin-bottom: 0;
-}
 
-#botão-deletar button {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #fff;
-    font-size: 16px;
-    text-align: center;
-}
 
 iframe {
     display: block;

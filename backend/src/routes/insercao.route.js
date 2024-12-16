@@ -243,18 +243,33 @@ router.post('/inserir-subextrato', async (req, res) => {
     try {
         const { Data, categoria, descricao, observacao, valorEn, valorSa, id_extrato_principal, fornecedor } = req.body;
 
-        await inserirSubextrato(id_extrato_principal, Data, categoria, descricao, observacao, fornecedor, valorEn, valorSa, (err, result) => {
-            if (err) {
-                console.error("Erro ao inserir subextrato:", err);
-                return res.status(500).send("Erro ao inserir subextrato");
+        inserirSubextrato(
+            id_extrato_principal,
+            Data,
+            categoria,
+            descricao,
+            observacao,
+            fornecedor,
+            valorEn,
+            valorSa,
+            (err, result) => {
+                if (err) {
+                    console.error("Erro ao inserir subextrato:", err);
+                    return res.status(500).send("Erro ao inserir subextrato");
+                }
+
+                res.status(201).json({
+                    message: "Subextrato inserido com sucesso",
+                    result
+                });
             }
-            res.status(201).json({ message: "Subextrato inserido com sucesso", result });
-        });
+        );
     } catch (error) {
         console.error("Erro durante a inserção do subextrato:", error);
         res.status(500).send("Erro ao inserir subextrato");
     }
 });
+
 
 router.get('/subextratos', (req, res) => {
     const { idExtrato } = req.query;
@@ -269,17 +284,28 @@ router.get('/subextratos', (req, res) => {
     });
 });
 
-router.post('/editar-subextrato', async (req, res) => {
+router.post('/editar-subextrato', (req, res) => {
     const { idSubextrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida } = req.body;
 
-    try {
-        await editarSubextrato(idSubextrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida);
-        res.status(200).json({ message: 'Subextrato editado com sucesso' });
-    } catch (error) {
-        console.error('Erro ao editar subextrato:', error);
-        res.status(500).json({ message: 'Erro ao editar subextrato' });
-    }
+    editarSubextrato(
+        idSubextrato,
+        data,
+        categoria,
+        descricao,
+        fornecedor,
+        rubricaContabil,
+        entrada,
+        saida,
+        (err, result) => {
+            if (err) {
+                console.error('Erro ao editar subextrato:', err);
+                return res.status(500).json({ message: 'Erro ao editar subextrato' });
+            }
+            res.status(200).json({ message: 'Subextrato editado com sucesso', result });
+        }
+    );
 });
+
 
 router.delete('/deletar-subextrato/:idSubextrato', (req, res) => {
     const { idSubextrato } = req.params;
