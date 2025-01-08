@@ -31,12 +31,25 @@
         <span class="close" onclick="fecharPopup('popup-adicionar-rubrica')">&times;</span>
         <h2>Adicionar Nova Rubrica Financeira</h2>
         <form id="form-adicionar-rubrica">
-            <input type="text" name="CATEGORIA" placeholder="Nome da Rubrica" required>
+            <label>
+                <input type="text" name="CATEGORIA" placeholder="Nome da Rubrica" required>
+            </label>
+            <div>
+                <label>
+                    <input type="checkbox" name="tipo" value="entrada">
+                    Entrada
+                </label>
+                <label>
+                    <input type="checkbox" name="tipo" value="saida">
+                    Saída
+                </label>
+            </div>
             <input type="hidden" name="idcliente" value="">
             <button type="submit">Adicionar</button>
         </form>
     </div>
 </div>
+
 
 <!-- Popup para Adicionar Sub-Rubrica Financeira -->
 <div id="popup-adicionar-subrubrica" class="popup">
@@ -48,12 +61,24 @@
                 <option value="" disabled selected>Selecione a Rubrica-Pai</option>
             </select>
             <input type="text" name="SUBCATEGORIA" placeholder="Nome da Sub-Rubrica" required>
+            <div>
+                <label>
+                    <input type="checkbox" name="tipo" value="entrada">
+                    Entrada
+                </label>
+                <label>
+                    <input type="checkbox" name="tipo" value="saida">
+                    Saída
+                </label>
+            </div>
             <input type="hidden" name="idcliente2" value="">
             <button type="submit">Adicionar</button>
         </form>
     </div>
 </div>
 
+
+<!-- Popup para Editar Rubrica Financeira --><!-- Popup para Editar Rubrica Financeira -->
 <!-- Popup para Editar Rubrica Financeira -->
 <div id="popup-editar-rubrica" class="popup">
     <div class="popup-content">
@@ -62,11 +87,22 @@
         <form id="form-editar-rubrica">
             <input type="hidden" name="idcliente" value="">
             <input type="hidden" name="categoriaAntiga" value="">
-            <input type="text" name="categoriaNova" placeholder="Novo nome da Rubrica" required>
+            <label for="categoriaNova">Novo nome da Rubrica:</label>
+            <input type="text" id="categoriaNova" name="categoriaNova" placeholder="Novo nome da Rubrica" required>
+            <div>
+                <label>
+                    <input type="checkbox" name="entrada" id="entrada"> Entrada
+                </label>
+                <label>
+                    <input type="checkbox" name="saida" id="saida"> Saída
+                </label>
+            </div>
             <button type="submit">Salvar</button>
         </form>
     </div>
 </div>
+
+
 
 <!-- Rubricas Contábeis -->
 <div class="lista-rubricas">

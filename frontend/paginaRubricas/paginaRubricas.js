@@ -1,4 +1,4 @@
-let idCliente; // Definido como variável global
+let idCliente;
 
 document.addEventListener('DOMContentLoaded', async function() {
     try {
@@ -7,16 +7,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('Erro ao carregar o template:', error);
     }
 
-    // Fetch and render Rubricas Financeiras
     const rubricas = await fetchRubricas(idCliente);
     const categorias = construirArvoreDeCategorias(rubricas);
     renderRubricas(categorias, 'rubrica-lista');
 
-    // Fetch and render Rubricas Contábeis
     const rubricasContabeis = await fetchRubricasContabeis();
     renderRubricasContabeis(rubricasContabeis);
 
-    // Set idCliente in the form fields after fetching
     document.querySelectorAll('input[name="idcliente"]').forEach(input => {
         input.value = idCliente;
     });
@@ -24,7 +21,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         input.value = idCliente;
     });
 
-    // Add event listeners to the buttons
     document.getElementById('adicionar-rubrica-btn').addEventListener('click', () => {
         abrirPopup('popup-adicionar-rubrica');
     });
@@ -37,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         abrirPopup('popup-adicionar-rubrica-contabil');
     });
 
-    // Add event listeners for form submissions
     document.getElementById('form-adicionar-rubrica').addEventListener('submit', adicionarRubricaFinanceira);
     document.getElementById('form-adicionar-subrubrica').addEventListener('submit', adicionarSubRubricaFinanceira);
     document.getElementById('form-adicionar-rubrica-contabil').addEventListener('submit', adicionarRubricaContabil);
@@ -59,7 +54,6 @@ async function fetchRubricas(idCliente) {
 
 }
 
-// Fetch para rubricas contábeis
 async function fetchRubricasContabeis() {
     const response = await fetch(`/categoria/dadosContabil`);
     return response.json();
@@ -70,7 +64,12 @@ function construirArvoreDeCategorias(categorias) {
     let arvore = [];
 
     categorias.forEach(categoria => {
-        mapa[categoria.IDCATEGORIA] = {...categoria, subcategorias: []};
+        mapa[categoria.IDCATEGORIA] = {
+            ...categoria,
+            subcategorias: [],
+            entrada: categoria.ENTRADA || false,
+            saida: categoria.SAIDA || false
+        };
     });
 
     Object.values(mapa).forEach(categoria => {
@@ -93,6 +92,7 @@ function renderRubricas(categorias, listaId) {
         adicionarCategoriaAoDom(categoria, listaElement);
     });
 }
+
 function toggleGastoMes(idCategoria, buttonElement) {
     const isSelected = buttonElement.classList.contains('selected');
     const newState = !isSelected; // Alterna o estado
@@ -185,7 +185,7 @@ function renderRubricasContabeis(rubricasContabeis) {
 function adicionarCategoriaAoDom(categoria, container, nivel = 0) {
     const listItem = document.createElement('li');
     listItem.classList.add('rubrica');
-
+    console.log(categoria)
     const span = document.createElement('span');
     span.textContent = categoria.NOME;
     listItem.appendChild(span);
@@ -206,6 +206,11 @@ function adicionarCategoriaAoDom(categoria, container, nivel = 0) {
             Rubrica Extra
         </button>
     `;
+
+    // Adicionar atributos de entrada e saída (não visíveis)
+    listItem.dataset.entrada = categoria.entrada;
+    listItem.dataset.saida = categoria.saida;
+
     listItem.appendChild(actions);
 
     listItem.style.paddingLeft = `${nivel * 20}px`;
@@ -218,10 +223,19 @@ function adicionarCategoriaAoDom(categoria, container, nivel = 0) {
         });
     }
 }
+
 function adicionarRubricaFinanceira(event) {
     event.preventDefault();
 
     const nomeRubrica = document.querySelector('#form-adicionar-rubrica input[name="CATEGORIA"]').value;
+    const entradaCheckbox = document.querySelector('#form-adicionar-rubrica input[name="tipo"][value="entrada"]').checked;
+    const saidaCheckbox = document.querySelector('#form-adicionar-rubrica input[name="tipo"][value="saida"]').checked;
+
+    // Validação para garantir que pelo menos um tipo seja selecionado
+    if (!entradaCheckbox && !saidaCheckbox) {
+        alert('Por favor, selecione pelo menos um tipo (Entrada ou Saída).');
+        return;
+    }
 
     fetch('/categoria', {
         method: 'POST',
@@ -230,7 +244,11 @@ function adicionarRubricaFinanceira(event) {
         },
         body: JSON.stringify({
             CATEGORIA: nomeRubrica,
-            idCliente: idCliente
+            idCliente: idCliente,
+            tipo: {
+                entrada: entradaCheckbox,
+                saida: saidaCheckbox
+            }
         })
     })
         .then(response => response.json())
@@ -247,11 +265,21 @@ function adicionarRubricaFinanceira(event) {
         });
 }
 
+
 function adicionarSubRubricaFinanceira(event) {
     event.preventDefault();
 
     const rubricaPai = document.querySelector('#form-adicionar-subrubrica select[name="categoriaPai"]').value;
     const nomeSubRubrica = document.querySelector('#form-adicionar-subrubrica input[name="SUBCATEGORIA"]').value;
+    const entradaCheckbox = document.querySelector('#form-adicionar-subrubrica input[name="tipo"][value="entrada"]').checked;
+    const saidaCheckbox = document.querySelector('#form-adicionar-subrubrica input[name="tipo"][value="saida"]').checked;
+    const idCliente = document.querySelector('#form-adicionar-subrubrica input[name="idcliente2"]').value;
+
+    // Validação para garantir que pelo menos um tipo seja selecionado
+    if (!entradaCheckbox && !saidaCheckbox) {
+        alert('Por favor, selecione pelo menos um tipo (Entrada ou Saída).');
+        return;
+    }
 
     fetch('/categoria/subcategoria', {
         method: 'POST',
@@ -261,7 +289,11 @@ function adicionarSubRubricaFinanceira(event) {
         body: JSON.stringify({
             categoriaPai: rubricaPai,
             SUBCATEGORIA: nomeSubRubrica,
-            idCliente: idCliente
+            idCliente: idCliente,
+            tipo: {
+                entrada: entradaCheckbox,
+                saida: saidaCheckbox
+            }
         })
     })
         .then(response => response.json())
@@ -343,25 +375,32 @@ function abrirPopupEdicao(categoria) {
     const popup = document.getElementById('popup-editar-rubrica');
     const form = document.getElementById('form-editar-rubrica');
 
-    // Preencha o formulário com os dados da categoria selecionada
+    console.log(categoria);
     form.elements['categoriaAntiga'].value = categoria.IDCATEGORIA;
     form.elements['categoriaNova'].value = categoria.NOME;
 
-    // Abre o popup de edição
+    const entradaCheckbox = form.elements['entrada'];
+    const saidaCheckbox = form.elements['saida'];
+
+    entradaCheckbox.checked = categoria.ENTRADA;
+    saidaCheckbox.checked = categoria.SAIDA;
+
     popup.style.display = 'flex';
 }
+
 
 // Funções para rubricas contábeis
 function editarRubricaContabil(idRubricaContabil) {
     fetch(`/categoria/editarContabil/${idRubricaContabil}`)
         .then(response => response.json())
         .then(rubricaContabil => {
-            abrirPopupEdicaoContabil(rubricaContabil);
+            abrirPopupEdicao(rubricaContabil);
         })
         .catch(error => {
             console.error('Erro ao buscar a rubrica contábil:', error);
         });
 }
+
 
 function abrirPopupEdicaoContabil(rubricaContabil) {
     const popup = document.getElementById('popup-editar-rubrica-contabil');

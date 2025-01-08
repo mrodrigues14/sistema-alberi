@@ -38,10 +38,20 @@ router.post('/atualizarOpcoes', (req, res) => {
 
 
 router.post('/', (req, res) => {
-    const { CATEGORIA, idCliente } = req.body;
-    console.log(CATEGORIA, idCliente);
+    const { CATEGORIA, idCliente, tipo } = req.body;
+    const { entrada, saida } = tipo;
 
-    adicionarOuAssociarCategoria(CATEGORIA, idCliente, (err, result) => {
+    console.log(`Categoria: ${CATEGORIA}, Cliente: ${idCliente}, Entrada: ${entrada}, Saída: ${saida}`);
+
+    // Exemplo de lógica para validar ou processar os tipos
+    if (!entrada && !saida) {
+        return res.status(400).json({
+            success: false,
+            message: "Pelo menos um tipo (Entrada ou Saída) deve ser selecionado.",
+        });
+    }
+
+    adicionarOuAssociarCategoria(CATEGORIA, idCliente, entrada, saida, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ success: false, message: "Erro ao adicionar categoria" });
@@ -50,10 +60,11 @@ router.post('/', (req, res) => {
         // Enviando mensagem de sucesso como JSON
         res.status(200).json({
             success: true,
-            message: `Rubrica ${CATEGORIA} adicionada com sucesso!`
+            message: `Rubrica ${CATEGORIA} adicionada com sucesso! Entrada: ${entrada}, Saída: ${saida}`,
         });
     });
 });
+
 
 
 router.post('/delete' , (req, res) => {
@@ -69,9 +80,10 @@ router.post('/delete' , (req, res) => {
 });
 
 router.post('/subcategoria', (req, res) => {
-    const { idcliente2, categoriaPai, SUBCATEGORIA } = req.body;
+    const { idcliente2, categoriaPai, SUBCATEGORIA, tipo } = req.body;
+    const { entrada, saida } = tipo;
 
-    adicionarSubcategoria(idcliente2, categoriaPai, SUBCATEGORIA, (err, result) => {
+    adicionarSubcategoria(idcliente2, categoriaPai, SUBCATEGORIA, entrada, saida, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ success: false, message: "Erro ao adicionar subcategoria" });
@@ -83,6 +95,7 @@ router.post('/subcategoria', (req, res) => {
         });
     });
 });
+
 
 
 router.post('/editar' , (req, res) => {
