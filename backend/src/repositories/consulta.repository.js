@@ -9,12 +9,13 @@ function buscar(banco, data, cliente, callback) {
     mysqlConn.query(`SELECT IDEXTRATO, DATA, 
                     IFNULL(
                         (
-                            SELECT CAT.NOME 
-                            FROM CATEGORIA CAT 
-                            INNER JOIN RELACAOCLIENTECATEGORIA RCC 
-                            ON CAT.IDCATEGORIA = RCC.ID_CATEGORIA
-                            WHERE CAT.IDCATEGORIA = EXTRATO.CATEGORIA 
-                            AND RCC.ID_CLIENTE = EXTRATO.ID_CLIENTE
+                            SELECT MIN(CAT.NOME)
+                            FROM CATEGORIA CAT
+                                     INNER JOIN RELACAOCLIENTECATEGORIA RCC
+                                                ON CAT.IDCATEGORIA = RCC.ID_CATEGORIA
+                            WHERE CAT.IDCATEGORIA = EXTRATO.CATEGORIA
+                              AND RCC.ID_CLIENTE = EXTRATO.ID_CLIENTE
+
                         ),
                         EXTRATO.CATEGORIA
                     ) AS CATEGORIA, 

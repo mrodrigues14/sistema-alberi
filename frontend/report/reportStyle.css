@@ -177,6 +177,8 @@ button {
     align-items: center;
     opacity: 0; /* Inicialmente invisível */
     transition: opacity 0.5s ease; /* Adiciona uma transição suave */
+    overflow-y: auto;
+
 }
 
 .popup.show {

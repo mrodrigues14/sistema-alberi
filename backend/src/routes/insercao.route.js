@@ -285,13 +285,14 @@ router.get('/subextratos', (req, res) => {
 });
 
 router.post('/editar-subextrato', (req, res) => {
-    const { idSubextrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida } = req.body;
+    const { idSubextrato, data, categoria, descricao, observacao, fornecedor, rubricaContabil, entrada, saida } = req.body;
 
     editarSubextrato(
         idSubextrato,
         data,
         categoria,
         descricao,
+        observacao,
         fornecedor,
         rubricaContabil,
         entrada,

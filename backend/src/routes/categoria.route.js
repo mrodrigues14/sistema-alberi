@@ -143,8 +143,8 @@ router.post('/addContabil', (req, res) => {
 });
 
 router.post('/editarContabil', (req, res) => {
-    const { idRubricaContabil, rubricaContabilNova } = req.body;
-    editarRubricaContabil(idRubricaContabil, rubricaContabilNova, (err, result) => {
+    const { idRubricaContabil, rubricaContabilNovoNome } = req.body;
+    editarRubricaContabil(idRubricaContabil, rubricaContabilNovoNome, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Erro ao editar rubrica contábil");

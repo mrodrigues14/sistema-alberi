@@ -148,36 +148,46 @@ function initializePage() {
         });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const mesSelector = document.getElementById('mesSelector');
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();  // 0-based (Janeiro é 0, Fevereiro é 1, etc.)
-    const currentYear = currentDate.getFullYear();
+    let currentYear = currentDate.getFullYear();
+    let currentMonth = currentDate.getMonth(); // 0-based (Janeiro é 0, Fevereiro é 1, etc.)
 
-    function gerarMeses() {
-        for (let ano = currentYear - 1; ano <= currentYear + 1; ano++) {
-            for (let mes = 0; mes < 12; mes++) {
-                const button = document.createElement('button');
-                button.classList.add('mes-button');
-                const monthName = new Date(ano, mes).toLocaleString('pt-BR', { month: 'long' });
-                button.textContent = `${monthName}/${ano}`;
-                button.dataset.mesAno = `${String(mes + 1).padStart(2, '0')}-${ano}`;
-                button.addEventListener('click', function() {
-                    selecionarMesAno(button.dataset.mesAno);
-                });
-                mesSelector.appendChild(button);
+    function gerarMeses(ano, startMonth = 0, endMonth = 11, prepend = false) {
+        const fragment = document.createDocumentFragment();
+        for (let mes = startMonth; mes <= endMonth; mes++) {
+            const button = document.createElement('button');
+            button.classList.add('mes-button');
+            const monthName = new Date(ano, mes).toLocaleString('pt-BR', { month: 'long' });
+            button.textContent = `${monthName}/${ano}`;
+            button.dataset.mesAno = `${String(mes + 1).padStart(2, '0')}-${ano}`;
+            button.addEventListener('click', function () {
+                selecionarMesAno(button.dataset.mesAno);
+            });
 
-                if (ano === currentYear && mes === currentMonth) {
-                    button.classList.add('active');
-                    selecionarMesAno(button.dataset.mesAno);
-                }
+            fragment.appendChild(button);
+
+            if (ano === currentYear && mes === currentMonth) {
+                button.classList.add('active');
+                selecionarMesAno(button.dataset.mesAno);
             }
+        }
+
+        if (prepend) {
+            mesSelector.prepend(fragment);
+        } else {
+            mesSelector.appendChild(fragment);
         }
     }
 
-    gerarMeses();
-});
+    // Gera os meses iniciais
+    gerarMeses(currentYear - 1);
+    gerarMeses(currentYear);
+    gerarMeses(currentYear + 1);
 
+    window.gerarMeses = gerarMeses; // Exporta para ser acessível por outras funções
+});
 
 function selecionarMesAno(mesAno) {
     const monthButtons = document.querySelectorAll('.mes-button');
@@ -195,15 +205,39 @@ function selecionarMesAno(mesAno) {
 }
 
 function scrollMeses(direcao) {
-    const mesSelector = document.getElementById('mesSelectorValue');
+    const mesSelector = document.getElementById('mesSelector');
     const scrollAmount = 150;
 
     if (direcao === 'left') {
         mesSelector.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+
+        // Gera mais meses se o scroll estiver no início
+        if (mesSelector.scrollLeft <= 0) {
+            const firstMonthButton = mesSelector.querySelector('.mes-button:first-child');
+            const [firstMonth, firstYear] = firstMonthButton.dataset.mesAno.split('-').map(Number);
+            const prevYear = firstMonth === 1 ? firstYear - 1 : firstYear;
+            const prevStartMonth = firstMonth === 1 ? 11 : 0;
+            const prevEndMonth = firstMonth === 1 ? 11 : firstMonth - 2;
+
+            gerarMeses(prevYear, prevStartMonth, prevEndMonth, true);
+        }
     } else if (direcao === 'right') {
         mesSelector.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+
+        // Gera mais meses se o scroll estiver no final
+        if (mesSelector.scrollLeft + mesSelector.clientWidth >= mesSelector.scrollWidth - 1) {
+            const lastMonthButton = mesSelector.querySelector('.mes-button:last-child');
+            const [lastMonth, lastYear] = lastMonthButton.dataset.mesAno.split('-').map(Number);
+            const nextYear = lastMonth === 12 ? lastYear + 1 : lastYear;
+            const nextStartMonth = lastMonth === 12 ? 0 : lastMonth;
+            const nextEndMonth = 11;
+
+            gerarMeses(nextYear, nextStartMonth, nextEndMonth, false);
+        }
     }
 }
+
+
 
 function construirArvoreDeCategorias(categorias) {
     let mapa = {};
@@ -246,6 +280,10 @@ datepicker.addEventListener('input', function() {
     this.value = value.slice(0, 10); // Limita ao formato dd-mm-aaaa
 });
 
+function formatarDataParaAmericano(data) {
+    const [dia, mes, ano] = data.split('/');
+    return `${ano}-${mes}-${dia}`;
+}
 
 document.getElementById('meuFormulario').addEventListener('submit', async function(event) {
     event.preventDefault(); // Previne o envio padrão do formulário
@@ -254,10 +292,7 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
     const formData = new FormData(this);
     let Data = formData.get('Data'); // Data inicial
 
-    function formatarDataParaAmericano(data) {
-        const [dia, mes, ano] = data.split('/');
-        return `${ano}-${mes}-${dia}`;
-    }
+
     Data = formatarDataParaAmericano(Data);
     const categoria = formData.get('categoria'); // ID da categoria
     const descricao = formData.get('descricao');
@@ -880,32 +915,27 @@ async function atualizarTabela(dados, saldoInicial) {
     tbody.innerHTML = '';
 
     let saldo = saldoInicial;
+    let processedCount = 0; // Contador de itens processados
+
     for (const item of dados) {
-        if (!item.ID_SUBEXTRATO) {
-            const row = tbody.insertRow();
-            row.dataset.idextrato = item.IDEXTRATO;
+        const subextratos = await buscarSubextratos(item.IDEXTRATO);
 
-            // Data
-            row.insertCell().textContent = formatDate(item.DATA);
+        // Cria a linha do extrato principal
+        const row = tbody.insertRow();
+        row.dataset.idextrato = item.IDEXTRATO;
 
-            // Rubrica Financeira (Categoria)
+        if (subextratos.length === 0) {
+            // Sem subextratos: exibir todos os campos
+            row.insertCell().textContent = formatDate(item.DATA); // Data
+
             const categoriaCell = row.insertCell();
             const categoriaText = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
             categoriaCell.textContent = categoriaText || '';
 
-            // Fornecedor
-            const fornecedorCell = row.insertCell();
-            fornecedorCell.textContent = item.NOME_FORNECEDOR || '';
-
-            // Observação
-            row.insertCell().textContent = item.DESCRICAO;
-
-            // Nome no Extrato
-            row.insertCell().textContent = item.NOME_NO_EXTRATO;
-
-            // Rubrica Contábil
-            const rubricaCell = row.insertCell();
-            rubricaCell.textContent = item.RUBRICA_CONTABIL || '';
+            row.insertCell().textContent = item.NOME_FORNECEDOR || ''; // Fornecedor
+            row.insertCell().textContent = item.DESCRICAO || ''; // Observação
+            row.insertCell().textContent = item.NOME_NO_EXTRATO || ''; // Nome no Extrato
+            row.insertCell().textContent = item.RUBRICA_CONTABIL || ''; // Rubrica Contábil
 
             // Entrada e Saída
             const entradaCell = row.insertCell();
@@ -914,6 +944,74 @@ async function atualizarTabela(dados, saldoInicial) {
             saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
 
             // Saldo
+            saldo += (parseFloat(item.VALOR) || 0) * (item.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
+            row.insertCell().textContent = formatarValorParaExibicao(saldo);
+
+            // Anexos e Ferramentas
+            const anexosCell = row.insertCell();
+            anexosCell.innerHTML = `
+                <button onclick="abrirPopupAnexos(${item.IDEXTRATO})">
+                    <i class="fa-solid fa-circle-plus"></i>
+                </button>
+            `;
+
+            const anexos = await buscarAnexos(item.IDEXTRATO);
+            if (anexos.length > 0) {
+                anexos.forEach(anexo => {
+                    const anexoButton = document.createElement('button');
+                    anexoButton.textContent = anexo.TIPO_EXTRATO_ANEXO; // Exibe o tipo (CP, DC/NF, etc.)
+                    anexoButton.classList.add('anexo-button');
+                    anexoButton.onclick = () => window.open(`/consulta/download-anexo/${anexo.NOME_ARQUIVO}`, '_blank');
+
+                    anexosCell.insertBefore(anexoButton, anexosCell.firstChild);
+                });
+            }
+
+            const deleteCell = row.insertCell();
+            deleteCell.innerHTML = `
+                <div class="dropdown-extrato-opcoes">
+                    <div class="dropdown-content-extrato-opcoes">
+                        <button onclick="abrirLinhaSubextrato(this)"><i class="fa-solid fa-divide"></i></button>
+                        <button onclick="editarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="edit-btn-extrato-opcoes">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="select-btn-extrato-opcoes">
+                            <i class="fas fa-hand-pointer"></i>
+                        </button>
+                        <form action="insercao/deletar-extrato" method="post" onsubmit="return confirm('Tem certeza que deseja deletar este extrato?');">
+                            <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
+                            <button type="submit" class="delete-btn-extrato-opcoes">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            processedCount++;
+
+            // Para o spinner e remove os efeitos de carregamento após 20 itens
+            if (processedCount >= 20) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.querySelector('.body-insercao').classList.remove('blur-background');
+                document.querySelector('.popup-insercao-container').classList.remove('blur-background');
+            }
+        } else {
+            row.insertCell().textContent = formatDate(item.DATA); // Data
+
+            // Campos ocultados em branco
+            row.insertCell(); // Categoria
+            row.insertCell(); // Fornecedor
+            row.insertCell(); // Observação
+
+            row.insertCell().textContent = item.NOME_NO_EXTRATO || ''; // Nome no Extrato
+            row.insertCell().textContent = item.RUBRICA_CONTABIL || ''; // Rubrica Contábil
+
+            const entradaCell = row.insertCell();
+            const saidaCell = row.insertCell();
+            entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
+            saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
+
             saldo += (parseFloat(item.VALOR) || 0) * (item.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
             row.insertCell().textContent = formatarValorParaExibicao(saldo);
 
@@ -937,117 +1035,97 @@ async function atualizarTabela(dados, saldoInicial) {
                 });
             }
 
-            // Ferramentas (Editar, Selecionar, Deletar)
             const deleteCell = row.insertCell();
             deleteCell.innerHTML = `
-                <div class="dropdown-extrato-opcoes">
-                    <div class="dropdown-content-extrato-opcoes">
-                        <button onclick="abrirLinhaSubextrato(this)"><i class="fa-solid fa-divide"></i></button>
-                        <button onclick="editarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="edit-btn-extrato-opcoes">
+        <div class="dropdown-extrato-opcoes">
+            <div class="dropdown-content-extrato-opcoes">
+                <button onclick="abrirLinhaSubextrato(this)"><i class="fa-solid fa-divide"></i></button>
+                <button onclick="editarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="edit-btn-extrato-opcoes">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="select-btn-extrato-opcoes">
+                    <i class="fas fa-hand-pointer"></i>
+                </button>
+                <form action="insercao/deletar-extrato" method="post" onsubmit="return confirm('Tem certeza que deseja deletar este extrato?');">
+                    <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
+                    <button type="submit" class="delete-btn-extrato-opcoes">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    `;
+            processedCount++;
+
+            // Para o spinner e remove os efeitos de carregamento após 20 itens
+            if (processedCount >= 20) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.querySelector('.body-insercao').classList.remove('blur-background');
+                document.querySelector('.popup-insercao-container').classList.remove('blur-background');
+            }
+        }
+
+        // Renderiza os subextratos
+        if (subextratos.length > 0) {
+            let totalEntradas = 0;
+            let totalSaidas = 0;
+
+            subextratos.forEach(sub => {
+                if (sub.TIPO_DE_TRANSACAO === 'ENTRADA') {
+                    totalEntradas += parseFloat(sub.VALOR || 0);
+                } else if (sub.TIPO_DE_TRANSACAO === 'SAIDA') {
+                    totalSaidas += parseFloat(sub.VALOR || 0);
+                }
+            });
+
+            const valorPrincipal = parseFloat(item.VALOR) || 0;
+            const discrepancia =
+                (item.TIPO_DE_TRANSACAO === 'ENTRADA' && totalEntradas !== valorPrincipal) ||
+                (item.TIPO_DE_TRANSACAO === 'SAIDA' && totalSaidas !== valorPrincipal);
+
+            subextratos.forEach(sub => {
+                const subRow = tbody.insertRow();
+                subRow.dataset.subextrato = sub.ID_SUBEXTRATO;
+                subRow.dataset.idextratoprincipal = item.IDEXTRATO;
+                subRow.classList.add('subextrato-row');
+                if (discrepancia) {
+                    subRow.classList.add('erro-subextrato'); // Adiciona erro visual
+                }
+
+                subRow.innerHTML = `
+                    <td>${formatDate(sub.DATA)}</td>
+                    <td>${sub.CATEGORIA || ''}</td>
+                    <td>${sub.NOME_FORNECEDOR || ''}</td>
+                    <td>${sub.OBSERVACAO || ''}</td>
+                    <td>${sub.DESCRICAO || ''}</td>
+                    <td>${sub.RUBRICA_CONTABIL || ''}</td>
+                    <td>${sub.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
+                    <td>${sub.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
+                    <td></td>
+                    <td>
+                        <button onclick="abrirPopupAnexos(${sub.ID_SUBEXTRATO})">
+                            <i class="fa fa-paperclip"></i>
+                        </button>
+                    </td>
+                    <td>
+                        <button onclick="editarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="edit-btn-extrato-opcoes">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="select-btn-extrato-opcoes">
-                            <i class="fas fa-hand-pointer"></i>
+                        <button onclick="deletarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="delete-btn-extrato-opcoes">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
-                        <form action="insercao/deletar-extrato" method="post" onsubmit="return confirm('Tem certeza que deseja deletar este extrato?');">
-                            <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
-                            <button type="submit" class="delete-btn-extrato-opcoes">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            `;
-
-            // Buscar os subextratos associados a este extrato principal
-            const subextratos = await buscarSubextratos(item.IDEXTRATO);
-            if (subextratos.length > 0) {
-                const totalSubEntradas = subextratos
-                    .filter(sub => sub.TIPO_DE_TRANSACAO === 'ENTRADA')
-                    .reduce((sum, sub) => sum + parseFloat(sub.VALOR || 0), 0);
-
-                const totalSubSaidas = subextratos
-                    .filter(sub => sub.TIPO_DE_TRANSACAO === 'SAIDA')
-                    .reduce((sum, sub) => sum + parseFloat(sub.VALOR || 0), 0);
-
-                // Verifica se os valores dos subextratos batem com o principal
-                const valorPrincipal = parseFloat(item.VALOR);
-                const isValid =
-                    (item.TIPO_DE_TRANSACAO === 'ENTRADA' && totalSubEntradas === valorPrincipal) ||
-                    (item.TIPO_DE_TRANSACAO === 'SAIDA' && totalSubSaidas === valorPrincipal);
-
-                // Adiciona a classe de erro se não for válido
-                if (!isValid) {
-                    subextratos.forEach(sub => {
-                        const subRow = tbody.insertRow();
-                        subRow.dataset.subextrato = sub.ID_SUBEXTRATO;
-                        subRow.classList.add('subextrato-row', 'erro-subextrato'); // Classe para cor vermelha
-
-                        subRow.innerHTML = `
-                            <td>${formatDate(sub.DATA)}</td>
-                            <td>${sub.CATEGORIA || ''}</td>
-                            <td>${sub.NOME_FORNECEDOR || ''}</td>
-                            <td>${sub.OBSERVACAO || ''}</td>
-                            <td>${sub.DESCRICAO || ''}</td>
-                            <td>${sub.RUBRICA_CONTABIL || ''}</td>
-                            <td>${sub.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
-                            <td>${sub.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
-                            <td></td>
-                            <td>
-                                <button onclick="abrirPopupAnexos(${sub.ID_SUBEXTRATO})">
-                                    <i class="fa fa-paperclip"></i>
-                                </button>
-                            </td>   
-                            <td>
-                                <button onclick="editarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="edit-btn-extrato-opcoes">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="deletarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="delete-btn-extrato-opcoes">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        `;
-                    });
-                } else {
-                    subextratos.forEach(sub => {
-                        const subRow = tbody.insertRow();
-                        subRow.dataset.subextrato = sub.ID_SUBEXTRATO;
-                        subRow.classList.add('subextrato-row'); // Classe padrão sem erro
-
-                        subRow.innerHTML = `
-                            <td>${formatDate(sub.DATA)}</td>
-                            <td>${sub.CATEGORIA || ''}</td>
-                            <td>${sub.NOME_FORNECEDOR || ''}</td>
-                            <td>${sub.OBSERVACAO || ''}</td>
-                            <td>${sub.DESCRICAO || ''}</td>
-                            <td>${sub.RUBRICA_CONTABIL || ''}</td>
-                            <td>${sub.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
-                            <td>${sub.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicaoSub(sub.VALOR) : ''}</td>
-                            <td></td>
-                            <td>
-                                <button onclick="abrirPopupAnexos(${sub.ID_SUBEXTRATO})">
-                                    <i class="fa fa-paperclip"></i>
-                                </button>
-                            </td>   
-                            <td>
-                                <button onclick="editarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="edit-btn-extrato-opcoes">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="deletarSubextrato(${sub.ID_SUBEXTRATO}, this)" class="delete-btn-extrato-opcoes">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        `;
-                    });
-                }
-            }
+                    </td>
+                `;
+            });
         }
     }
 
     // Esconde o spinner de carregamento
-    document.getElementById('loadingSpinner').style.display = 'none';
-    document.querySelector('.body-insercao').classList.remove('blur-background');
-    document.querySelector('.popup-insercao-container').classList.remove('blur-background');
+    if (processedCount < 20) {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.querySelector('.body-insercao').classList.remove('blur-background');
+        document.querySelector('.popup-insercao-container').classList.remove('blur-background');
+    }
 }
 
 async function buscarAnexos(idExtrato) {
@@ -1124,53 +1202,134 @@ function editarLinha(buttonElement) {
         if (index === 0) { // Data (primeira coluna)
             const dataAtual = cell.textContent.trim();
             let dataFormatada = '';
+
+            // Verifica e formata a data inicial no formato dd/mm/aaaa
             if (dataAtual.includes('/')) {
                 const [dia, mes, ano] = dataAtual.split('/');
                 if (dia && mes && ano) {
-                    dataFormatada = `${ano}-${mes}-${dia}`;
+                    dataFormatada = `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`;
                 }
-            } else {
-                dataFormatada = dataAtual;
+            } else if (dataAtual.includes('-')) {
+                const [ano, mes, dia] = dataAtual.split('-');
+                if (ano && mes && dia) {
+                    dataFormatada = `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`;
+                }
             }
 
             const inputData = document.createElement('input');
-            inputData.type = 'date';
-            inputData.value = dataFormatada;
+            inputData.type = 'text'; // Define o campo como texto para aceitar formatação personalizada
+            inputData.value = dataFormatada; // Preenche com a data formatada
             inputData.classList.add('editavel');
+            inputData.placeholder = 'dd/mm/aaaa'; // Define o placeholder
             inputData.style.width = '100%';
+
+            // Formata automaticamente enquanto o usuário digita
+            inputData.addEventListener('input', function () {
+                let value = this.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+                if (value.length > 2) value = value.slice(0, 2) + '/' + value.slice(2); // Adiciona o primeiro "/"
+                if (value.length > 5) value = value.slice(0, 5) + '/' + value.slice(5); // Adiciona o segundo "/"
+                this.value = value.slice(0, 10); // Limita ao formato dd/mm/aaaa
+            });
+
+            // Valida a data ao perder o foco
+            inputData.addEventListener('blur', function () {
+                const valor = inputData.value.trim();
+                const match = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); // Valida o formato dd/mm/aaaa
+
+                if (match) {
+                    const [_, dia, mes, ano] = match;
+
+                    // Validações adicionais (dias e meses válidos)
+                    if (parseInt(dia, 10) > 31 || parseInt(mes, 10) > 12) {
+                        alert('Data inválida. Verifique o dia e o mês.');
+                        this.value = '';
+                        return;
+                    }
+
+                    this.value = `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`; // Ajusta o formato final
+                } else {
+                    alert('Data inválida. Por favor, use o formato dd/mm/aaaa.');
+                    this.value = ''; // Limpa o campo se a data for inválida
+                }
+            });
 
             cell.innerHTML = '';
             cell.appendChild(inputData);
-
         } else if (index === 1) { // Categoria (segunda coluna)
-            const categoriaAtual = cell.textContent.trim();
+            const categoriaAtual = cell.textContent.trim(); // Obtém a categoria atual
             const selectCategoria = document.createElement('select');
-            selectCategoria.classList.add('styled-select'); // Adicionando a classe
+            selectCategoria.classList.add('styled-select'); // Adicionando a classe estilizada
             selectCategoria.style.width = '100%';
 
+            // Busca as categorias disponíveis
             fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(categorias => {
                     const optionDefault = document.createElement('option');
                     optionDefault.value = '';
-                    optionDefault.textContent = 'Selecione uma Rubrica';
+                    optionDefault.textContent = 'Selecione uma Categoria';
                     selectCategoria.appendChild(optionDefault);
 
-                    const categoriasTree = construirArvoreDeCategorias(categorias);
-                    adicionarCategoriasAoSelect(selectCategoria, categoriasTree);
+                    const categoriasTree = construirArvoreDeCategorias(categorias); // Cria a estrutura de árvore
+                    adicionarCategoriasAoSelect(selectCategoria, categoriasTree); // Preenche o dropdown com as categorias
+                    console.log()
+                    // Verifica se a categoria atual está na lista
+                    const categoriaEncontrada = Array.from(selectCategoria.options).find(option => option.text === categoriaAtual);
 
-                    const categoriaSelecionada = Array.from(selectCategoria.options).find(option => option.text.trim() === categoriaAtual);
-                    if (categoriaSelecionada) {
-                        categoriaSelecionada.selected = true;
+                    if (categoriaEncontrada) {
+                        categoriaEncontrada.selected = true; // Seleciona a categoria encontrada
+                    } else {
+                        // Adiciona uma opção temporária para exibir a categoria atual
+                        const optionTemp = document.createElement('option');
+                        optionTemp.value = '';
+                        optionTemp.textContent = categoriaAtual; // Mostra o nome da categoria atual
+                        optionTemp.selected = true; // Mantém como selecionado
+                        optionTemp.disabled = true; // Impede a seleção da opção
+                        optionTemp.classList.add('not-found'); // Classe para estilização
+                        selectCategoria.appendChild(optionTemp);
+
+                        // Adiciona a classe de erro ao dropdown
+                        selectCategoria.classList.add('error');
+                        selectCategoria.title = 'Categoria atual não está na lista!';
                     }
 
-                    cell.innerHTML = '';
-                    cell.appendChild(selectCategoria);
+                    cell.innerHTML = ''; // Limpa o conteúdo atual da célula
+                    cell.appendChild(selectCategoria); // Adiciona o campo de seleção na célula
+
+                    // Remove o erro se o usuário selecionar uma categoria válida
+                    selectCategoria.addEventListener('change', () => {
+                        const categoriaSelecionada = selectCategoria.selectedOptions[0].text.trim();
+                        if (Array.from(selectCategoria.options).some(option => option.text.trim() === categoriaSelecionada)) {
+                            selectCategoria.classList.remove('error');
+                            selectCategoria.title = ''; // Remove o título de erro
+                        }
+                    });
                 })
                 .catch(error => {
                     console.error('Erro ao buscar categorias:', error);
                 });
 
+            // Adiciona estilos para destacar categorias não encontradas
+            const style = document.createElement('style');
+            style.textContent = `
+        .styled-select.error {
+            border: 2px solid red;
+            animation: shake 0.3s;
+        }
+
+        .styled-select .not-found {
+            color: red;
+            font-style: italic;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+    `;
+            document.head.appendChild(style);
         } else if (index === 2) { // Fornecedor (terceira coluna)
             const fornecedorAtual = cell.textContent.trim();
             const selectFornecedor = document.createElement('select');
@@ -1299,8 +1458,13 @@ function confirmarEdicao(buttonElement) {
         valor = parseFloat(cells[7].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || null;
     }
 
-    console.log(valor)
-    const categoria = cells[1].querySelector('select').value || dadosOriginais[1]; // Mantém o valor original da categoria se não selecionado
+    const selectCategoria = cells[1].querySelector('select'); // Obtém o elemento select
+    const categoriaSelecionada = selectCategoria.selectedOptions[0]; // Obtém a opção selecionada
+
+    // Captura o texto exibido da opção selecionada
+    const categoriaNome = categoriaSelecionada.textContent.trim();
+
+    console.log('Categoria selecionada:', categoriaNome); // Apenas para debug
 
     // Obtém o nome da rubrica contábil selecionada
     const rubricaContabilCell = cells[5]; // Rubrica Contábil (sexta coluna)
@@ -1308,10 +1472,11 @@ function confirmarEdicao(buttonElement) {
         ? rubricaContabilCell.querySelector('select').options[rubricaContabilCell.querySelector('select').selectedIndex].textContent.trim()
         : dadosOriginais[5]; // Usa o valor original se nenhum for selecionado
 
+    const dataEditFormatada = formatarDataParaAmericano(cells[0].querySelector('input').value)
     const dadosEditados = {
         id: row.dataset.idextrato,
-        data: cells[0].querySelector('input').value, // Pegando o valor da data do input
-        categoria: categoria, // Rubrica Financeira
+        data: dataEditFormatada , // Pegando o valor da data do input
+        categoria: categoriaNome, // Rubrica Financeira
         fornecedor: fornecedor, // Nome do fornecedor
         descricao: cells[3].querySelector('input').value || dadosOriginais[3], // Observação
         nome_no_extrato: cells[4].querySelector('input').value || dadosOriginais[4], // Nome no Extrato
@@ -1322,21 +1487,7 @@ function confirmarEdicao(buttonElement) {
 
     console.log(dadosEditados)
 
-    if (categoria && (categoria.toLowerCase() === 'investimento' || categoria.toLowerCase() === 'resgate')) {
-        abrirPopupResgateInvestimento(
-            categoria,
-            tipo === 'ENTRADA' ? valor : 0,
-            tipo === 'SAIDA' ? valor : 0,
-            dadosEditados.data,
-            fornecedor,
-            dadosEditados.descricao,
-            dadosEditados.nome_no_extrato,
-            IDCLIENTE
-        );
-    } else {
-        // Envia a edição normal sem pop-up
-        enviarEdicaoExtrato(dadosEditados);
-    }
+    enviarEdicaoExtrato(dadosEditados);
 }
 
 function enviarEdicaoExtrato(dadosEditados) {
@@ -1405,28 +1556,31 @@ async function buscarSubextratos(idExtratoPrincipal) {
 
 function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
     const tbody = row.parentElement;
-    const extratoData = row.querySelector('td').textContent.trim(); // Obtém a data da linha principal (primeira célula)
 
     const newRow = document.createElement('tr');
     newRow.dataset.subextrato = idExtratoPrincipal;
     newRow.classList.add('subextrato-row');
 
-    // Define `originalData` como array vazio e `originalButtons` como HTML atual
-    newRow.dataset.originalData = JSON.stringify([]);
-    newRow.dataset.originalButtons = newRow.innerHTML;
-
     newRow.innerHTML = `
-        <td><input type="date" name="Data" class="editavel" value="${extratoData.split('/').reverse().join('-')}" style="width: 100%;"></td>
         <td>
-            <select name="categoria" class="styled-select" style="width: 100%;" id="subextratoCategoria"></select>
+            <input type="text" name="Data" class="editavel" placeholder="dd/mm/aaaa" required style="width: 100%;">
         </td>
         <td>
-            <select name="fornecedor" class="styled-select" style="width: 100%;" id="subextratoFornecedor"></select>
+            <select name="categoria" class="styled-select" style="width: 100%;" id="subextratoCategoria" required>
+                <option value="" >Selecione uma Categoria</option>
+            </select>
+        </td>
+        <td>
+            <select name="fornecedor" class="styled-select" style="width: 100%;" id="subextratoFornecedor">
+                <option value="" >Selecione um Fornecedor</option>
+            </select>
         </td>
         <td><input type="text" name="descricao" class="editavel" placeholder="Descrição" style="width: 100%;"></td>
         <td><input type="text" name="observacao" class="editavel" placeholder="Observação" style="width: 100%;"></td>
         <td>
-            <select name="rubricaContabil" class="styled-select" style="width: 100%;" id="subextratoRubricaContabil"></select>
+            <select name="rubricaContabil" class="styled-select" style="width: 100%;" id="subextratoRubricaContabil">
+                <option value="" >Selecione uma Rubrica</option>
+            </select>
         </td>
         <td><input type="text" name="valorEn" class="editavel" placeholder="Entrada" style="width: 100%;"></td>
         <td><input type="text" name="valorSa" class="editavel" placeholder="Saída" style="width: 100%;"></td>
@@ -1441,6 +1595,37 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
     `;
 
     row.insertAdjacentElement('afterend', newRow);
+
+    // Configuração do campo de data
+    const inputData = newRow.querySelector('input[name="Data"]');
+    inputData.addEventListener('input', function () {
+        let value = this.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+        if (value.length > 2) value = value.slice(0, 2) + '/' + value.slice(2); // Adiciona o primeiro "/"
+        if (value.length > 5) value = value.slice(0, 5) + '/' + value.slice(5); // Adiciona o segundo "/"
+        this.value = value.slice(0, 10); // Limita ao formato dd/mm/aaaa
+    });
+
+    inputData.addEventListener('blur', function () {
+        const valor = this.value.trim();
+        const match = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); // Valida o formato dd/mm/aaaa
+
+        if (match) {
+            const [_, dia, mes, ano] = match;
+
+            // Validações adicionais (dias e meses válidos)
+            if (parseInt(dia, 10) > 31 || parseInt(mes, 10) > 12) {
+                alert('Data inválida. Verifique o dia e o mês.');
+                this.value = '';
+                return;
+            }
+
+            this.value = `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`; // Ajusta o formato final
+        } else {
+            alert('Data inválida. Por favor, use o formato dd/mm/aaaa.');
+            this.value = ''; // Limpa o campo se a data for inválida
+        }
+    });
+
     // Popula os campos de categoria, fornecedor e rubrica contábil
     popularSelectCategoria(document.getElementById('subextratoCategoria'));
     popularSelectFornecedor(document.getElementById('subextratoFornecedor'));
@@ -1462,6 +1647,7 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
 function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
     const row = buttonElement.closest('tr');
 
+    // Valida valores de entrada ou saída
     let tipo = null;
     let valorEn = null;
     let valorSa = null;
@@ -1474,30 +1660,45 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
         valorSa = parseFloat(row.querySelector('[name="valorSa"]').value.replace(/\./g, '').replace(',', '.')) || null;
     }
 
-    if (!tipo && valorEn === null || !tipo && valorSa === null) {
+    if (!tipo && valorEn === null && valorSa === null) {
         alert('Por favor, insira um valor válido para entrada ou saída.');
         return;
     }
 
+    // Validação dos campos obrigatórios
+    const dataField = row.querySelector('[name="Data"]');
     const categoriaSelect = row.querySelector('[name="categoria"]');
     const fornecedorSelect = row.querySelector('[name="fornecedor"]');
     const rubricaContabilSelect = row.querySelector('[name="rubricaContabil"]');
 
+    if (!dataField.value.trim()) {
+        alert('Por favor, insira uma data válida.');
+        return;
+    }
+
     const categoriaNome = categoriaSelect.options[categoriaSelect.selectedIndex].text;
-    const fornecedorNome = fornecedorSelect && fornecedorSelect.selectedIndex >= 0
-        ? fornecedorSelect.options[fornecedorSelect.selectedIndex].text
-        : '';
+    const fornecedorNome = fornecedorSelect.options[fornecedorSelect.selectedIndex].text;
     const rubricaContabilNome = rubricaContabilSelect.options[rubricaContabilSelect.selectedIndex].text;
 
+    if (categoriaNome === 'Selecione uma Categoria') {
+        alert('Por favor, selecione uma categoria válida.');
+        return;
+    }
+
+    // Os campos de fornecedor e rubrica contábil podem ser deixados em branco
+    const fornecedor = fornecedorNome !== 'Selecione um Fornecedor' ? fornecedorNome : '';
+    const rubricaContabil = rubricaContabilNome !== 'Selecione uma Rubrica' ? rubricaContabilNome : '';
+
+    // Dados formatados para envio
     const data = {
-        Data: row.querySelector('[name="Data"]').value,
+        Data: formatarDataParaAmericano(dataField.value.trim()),
         categoria: categoriaNome,
-        fornecedor: fornecedorNome,
+        fornecedor: fornecedor,
         descricao: row.querySelector('[name="descricao"]').value,
         observacao: row.querySelector('[name="observacao"]').value,
         valorEn: valorEn,
         valorSa: valorSa,
-        rubricaContabil: rubricaContabilNome,
+        rubricaContabil: rubricaContabil,
         id_extrato_principal: idExtratoPrincipal
     };
 
@@ -1512,10 +1713,10 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
             if (!response.ok) throw new Error('Erro ao inserir subextrato');
             return response.json();
         })
-        .then(result => {
+        .then(async result => {
             alert(result.message);
-            atualizarTabelaComSubextrato(idExtratoPrincipal);
-            row.remove();
+            atualizarTabelaComSubextrato(idExtratoPrincipal); // Atualiza subextratos na tabela principal
+            row.remove(); // Remove a linha de edição após confirmação
         })
         .catch(error => {
             console.error(error);
@@ -1523,10 +1724,18 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
         });
 }
 
-
 function atualizarTabelaComSubextrato(idExtratoPrincipal) {
-    console.log("idprincpal")
-    console.log(idExtratoPrincipal)
+    console.log("idPrincipal", idExtratoPrincipal);
+
+    // Função interna para formatar os valores no formato 2.300,30
+    function formatarValorComPonto(valor) {
+        if (!valor) return '0,00';
+        return parseFloat(valor)
+            .toFixed(2) // Garante duas casas decimais
+            .replace('.', ',') // Substitui o ponto decimal por vírgula
+            .replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Adiciona os pontos como separadores de milhar
+    }
+
     fetch(`/insercao/subextratos?idExtrato=${idExtratoPrincipal}`)
         .then(response => response.json())
         .then(data => {
@@ -1545,11 +1754,41 @@ function atualizarTabelaComSubextrato(idExtratoPrincipal) {
                 nextRow = extratoRow.nextElementSibling;
             }
 
-            // Adiciona os novos subextratos após a linha do extrato principal
+            // Define o tipo de transação com base nos valores de entrada e saída
+            const entradaCell = extratoRow.querySelector("td:nth-last-child(5)").textContent.trim();
+            const saidaCell = extratoRow.querySelector("td:nth-last-child(4)").textContent.trim();
+            const tipoTransacao = entradaCell ? 'ENTRADA' : saidaCell ? 'SAIDA' : '';
+
+            // Calcula o valor principal
+            const valorPrincipal = parseFloat((entradaCell || saidaCell).replace(/\./g, '').replace(',', '.')) || 0;
+
+            let totalEntradas = 0;
+            let totalSaidas = 0;
+
+            // Soma os valores de entradas e saídas dos subextratos
+            data.forEach(subextrato => {
+                const valorSub = parseFloat(subextrato.VALOR) || 0;
+                if (subextrato.TIPO_DE_TRANSACAO === 'ENTRADA') {
+                    totalEntradas += valorSub;
+                } else if (subextrato.TIPO_DE_TRANSACAO === 'SAIDA') {
+                    totalSaidas += valorSub;
+                }
+            });
+
+            // Verifica se há discrepância
+            const discrepancia =
+                (tipoTransacao === 'ENTRADA' && totalEntradas !== valorPrincipal) ||
+                (tipoTransacao === 'SAIDA' && totalSaidas !== valorPrincipal);
+
+            // Adiciona as linhas de subextrato com a verificação de discrepância
             data.forEach(subextrato => {
                 const subRow = document.createElement('tr');
                 subRow.dataset.subextrato = subextrato.ID_SUBEXTRATO;
-                subRow.classList.add('subextrato-row'); // Preserva a classe de estilo
+                subRow.classList.add('subextrato-row');
+
+                if (discrepancia) {
+                    subRow.classList.add('erro-subextrato'); // Adiciona erro visual se houver discrepância
+                }
 
                 subRow.innerHTML = `
                     <td>${formatDate(subextrato.DATA)}</td>
@@ -1558,8 +1797,8 @@ function atualizarTabelaComSubextrato(idExtratoPrincipal) {
                     <td>${subextrato.OBSERVACAO || ''}</td>
                     <td>${subextrato.DESCRICAO || ''}</td>
                     <td>${subextrato.RUBRICA_CONTABIL || ''}</td>
-                    <td class="text-right">${subextrato.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(subextrato.VALOR) : ''}</td>
-                    <td class="text-right">${subextrato.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(subextrato.VALOR) : ''}</td>
+                    <td class="text-right">${subextrato.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorComPonto(subextrato.VALOR) : ''}</td>
+                    <td class="text-right">${subextrato.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorComPonto(subextrato.VALOR) : ''}</td>
                     <td></td>
                     <td>
                         <button onclick="abrirPopupAnexos(${subextrato.ID_SUBEXTRATO})">
@@ -1579,6 +1818,16 @@ function atualizarTabelaComSubextrato(idExtratoPrincipal) {
                 // Insere a nova linha de subextrato logo após a linha do extrato principal
                 extratoRow.insertAdjacentElement('afterend', subRow);
             });
+
+            // Aplica a classe de erro na linha principal, se houver discrepância
+            if (discrepancia) {
+                extratoRow.classList.add('erro-principal');
+            } else {
+                extratoRow.classList.remove('erro-principal');
+            }
+
+            console.log(`Discrepância: ${discrepancia ? 'Sim' : 'Não'}`);
+            console.log(`Total Entradas: ${formatarValorComPonto(totalEntradas)}, Total Saídas: ${formatarValorComPonto(totalSaidas)}, Valor Principal: ${formatarValorComPonto(valorPrincipal)}`);
         })
         .catch(error => {
             console.error('Erro ao atualizar subextratos:', error);
@@ -1759,13 +2008,24 @@ function editarSubextrato(idSubextrato, buttonElement) {
 function confirmarEdicaoSubextrato(idSubextrato, buttonElement) {
     const row = buttonElement.closest('tr');
     const cells = row.querySelectorAll('td');
+
+    // Obter o idExtratoPrincipal a partir do dataset ou de outra referência
+    const idExtratoPrincipal = row.dataset.idextratoprincipal; // Certifique-se de definir isso ao criar a linha
+
     const dadosEditados = {
         idSubextrato: idSubextrato,
         data: cells[0].querySelector('input') ? cells[0].querySelector('input').value : '',
-        categoria: cells[1].querySelector('select') ? cells[1].querySelector('select').value || '' : '',
-        descricao: cells[2].querySelector('input') ? cells[2].querySelector('input').value || '' : '',
-        fornecedor: cells[3].querySelector('select') ? cells[3].querySelector('select').value || '' : '',
-        rubricaContabil: cells[5].querySelector('select') ? cells[5].querySelector('select').value || '' : '',
+        categoria: cells[1].querySelector('select')
+            ? (cells[1].querySelector('select').selectedOptions[0]?.text.trim() || '')
+            : '',
+        observacao:cells[3].querySelector('input') ? cells[3].querySelector('input').value || '' : '',
+        descricao: cells[4].querySelector('input') ? cells[4].querySelector('input').value || '' : '',
+        fornecedor: cells[2].querySelector('select')
+            ? (cells[2].querySelector('select').selectedOptions[0]?.text.trim() || '')
+            : '',
+        rubricaContabil: cells[5].querySelector('select')
+            ? (cells[5].querySelector('select').selectedOptions[0]?.text.trim() || '')
+            : '',
         entrada: cells[6].querySelector('input')
             ? (cells[6].querySelector('input').value === '0,00' ? '' : parseFloat(cells[6].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || '')
             : '',
@@ -1774,9 +2034,7 @@ function confirmarEdicaoSubextrato(idSubextrato, buttonElement) {
             : ''
     };
 
-
-
-    console.log(dadosEditados)
+    console.log(dadosEditados);
 
     // Chamada à API para salvar a edição do subextrato
     fetch('/insercao/editar-subextrato', {
@@ -1790,7 +2048,7 @@ function confirmarEdicaoSubextrato(idSubextrato, buttonElement) {
         })
         .then(result => {
             alert(result.message);
-            atualizarTabelaComSubextrato(dadosEditados.idExtratoPrincipal); // Atualiza a tabela imediatamente
+            atualizarTabelaComSubextrato(idExtratoPrincipal); // Atualiza a tabela usando o idExtratoPrincipal
         })
         .catch(error => {
             console.error(error);

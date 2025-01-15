@@ -81,6 +81,7 @@ function loadAndDisplayUsername() {
                             showNoEmpresasMessage(error.message);
                         });
                 }
+
             } else {
                 window.location.href = '/';
             }
@@ -265,9 +266,7 @@ function closeNoEmpresasMessage() {
 function showAdminOptions() {
     let userRoles = localStorage.getItem('userRoles');
     const currentPage = window.location.pathname;
-    console.log(currentPage)
     const redirectionFlag = localStorage.getItem('redirectionDone');
-    console.log(redirectionFlag)
     const elementsToHideForRoles = {
         'Usuário Interno': ['rubricas', 'configCliente', 'configUsuario'],
         'Usuário Externo': ['rubricas', 'menuAdicionarUsuario', 'cliente', 'bancos', 'Estudos', 'Extrato', 'configCliente', 'configUsuario', 'menuTarefas'],
@@ -350,6 +349,32 @@ function logout() {
             console.error('Erro:', error);
         });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    highlightActiveMenuItem();
+});
+
+function highlightActiveMenuItem() {
+    const currentPath = window.location.pathname; // Obtém o caminho atual da URL
+    console.log(currentPath)
+    const menuItems = document.querySelectorAll('.menu-inline li a'); // Seleciona todos os links do menu
+
+    menuItems.forEach(item => {
+        const href = item.getAttribute('href'); // Obtém o href do link
+        if (currentPath.startsWith(href)) {
+            const menuButton = item.querySelector('.menu-item');
+            if (menuButton) {
+                menuButton.classList.add('active'); // Adiciona a classe 'active' ao botão correspondente
+            }
+        } else {
+            const menuButton = item.querySelector('.menu-item');
+            if (menuButton) {
+                menuButton.classList.remove('active'); // Remove a classe 'active' de outros itens
+            }
+        }
+    });
+}
+
 
 window.onclick = function(event) {
     if (!event.target.matches('.dropbtn')) {

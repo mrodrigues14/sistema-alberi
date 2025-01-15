@@ -100,12 +100,12 @@ function toggleGastoMes(idCategoria, buttonElement) {
     fetch('/categoria/atualizarOpcoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idCategoria, GASTO_MES: newState, GASTO_EXTRA: null })
+        body: JSON.stringify({ idCategoria, GASTO_MES: newState, GASTO_EXTRA: null }) // GASTO_EXTRA é sempre null ao selecionar GASTO_MES
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualiza visualmente o botão
+                // Atualiza visualmente o botão atual
                 buttonElement.classList.toggle('selected', newState);
 
                 // Desmarcar botão Gasto Extra
@@ -127,12 +127,12 @@ function toggleGastoExtra(idCategoria, buttonElement) {
     fetch('/categoria/atualizarOpcoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idCategoria, GASTO_MES: null, GASTO_EXTRA: newState })
+        body: JSON.stringify({ idCategoria, GASTO_MES: null, GASTO_EXTRA: newState }) // GASTO_MES é sempre null ao selecionar GASTO_EXTRA
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualiza visualmente o botão
+                // Atualiza visualmente o botão atual
                 buttonElement.classList.toggle('selected', newState);
 
                 // Desmarcar botão Gasto do Mês
@@ -146,6 +146,7 @@ function toggleGastoExtra(idCategoria, buttonElement) {
         })
         .catch(error => console.error("Erro:", error));
 }
+
 
 
 // Renderização de rubricas contábeis (sem subcategorias)
@@ -389,7 +390,6 @@ function abrirPopupEdicao(categoria) {
 }
 
 
-// Funções para rubricas contábeis
 function editarRubricaContabil(idRubricaContabil) {
     fetch(`/categoria/editarContabil/${idRubricaContabil}`)
         .then(response => response.json())
@@ -518,17 +518,17 @@ document.addEventListener('click', () => {
 
 function toggleGastoMesContabil(idRubricaContabil, buttonElement) {
     const isSelected = buttonElement.classList.contains('selected');
-    const newState = !isSelected;
+    const newState = !isSelected; // Alterna o estado
 
     fetch('/categoria/atualizarOpcoesContabil', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idRubricaContabil, GASTO_MES: newState, GASTO_EXTRA: null })
+        body: JSON.stringify({ idRubricaContabil, GASTO_MES: newState, GASTO_EXTRA: null }) // GASTO_EXTRA é sempre null ao selecionar GASTO_MES
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualiza o botão atual
+                // Atualiza visualmente o botão atual
                 buttonElement.classList.toggle('selected', newState);
 
                 // Desmarcar botão Gasto Extra
@@ -545,17 +545,17 @@ function toggleGastoMesContabil(idRubricaContabil, buttonElement) {
 
 function toggleGastoExtraContabil(idRubricaContabil, buttonElement) {
     const isSelected = buttonElement.classList.contains('selected');
-    const newState = !isSelected;
+    const newState = !isSelected; // Alterna o estado
 
     fetch('/categoria/atualizarOpcoesContabil', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idRubricaContabil, GASTO_MES: null, GASTO_EXTRA: newState })
+        body: JSON.stringify({ idRubricaContabil, GASTO_MES: null, GASTO_EXTRA: newState }) // GASTO_MES é sempre null ao selecionar GASTO_EXTRA
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualiza o botão atual
+                // Atualiza visualmente o botão atual
                 buttonElement.classList.toggle('selected', newState);
 
                 // Desmarcar botão Gasto do Mês
@@ -570,5 +570,55 @@ function toggleGastoExtraContabil(idRubricaContabil, buttonElement) {
         .catch(error => console.error("Erro:", error));
 }
 
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Gerenciar comportamento das checkboxes de Entrada e Saída no formulário de rubricas
+    const entradaCheckboxRubrica = document.querySelector('#form-adicionar-rubrica input[name="tipo"][value="entrada"]');
+    const saidaCheckboxRubrica = document.querySelector('#form-adicionar-rubrica input[name="tipo"][value="saida"]');
+
+    entradaCheckboxRubrica.addEventListener('change', function () {
+        if (this.checked) {
+            saidaCheckboxRubrica.checked = false;
+        }
+    });
+
+    saidaCheckboxRubrica.addEventListener('change', function () {
+        if (this.checked) {
+            entradaCheckboxRubrica.checked = false;
+        }
+    });
+
+    // Gerenciar comportamento das checkboxes de Entrada e Saída no formulário de sub-rubricas
+    const entradaCheckboxSubrubrica = document.querySelector('#form-adicionar-subrubrica input[name="tipo"][value="entrada"]');
+    const saidaCheckboxSubrubrica = document.querySelector('#form-adicionar-subrubrica input[name="tipo"][value="saida"]');
+
+    entradaCheckboxSubrubrica.addEventListener('change', function () {
+        if (this.checked) {
+            saidaCheckboxSubrubrica.checked = false;
+        }
+    });
+
+    saidaCheckboxSubrubrica.addEventListener('change', function () {
+        if (this.checked) {
+            entradaCheckboxSubrubrica.checked = false;
+        }
+    });
+
+    // Gerenciar comportamento das checkboxes no formulário de edição de rubricas
+    const entradaCheckboxEditarRubrica = document.querySelector('#form-editar-rubrica input[name="entrada"]');
+    const saidaCheckboxEditarRubrica = document.querySelector('#form-editar-rubrica input[name="saida"]');
+
+    entradaCheckboxEditarRubrica.addEventListener('change', function () {
+        if (this.checked) {
+            saidaCheckboxEditarRubrica.checked = false;
+        }
+    });
+
+    saidaCheckboxEditarRubrica.addEventListener('change', function () {
+        if (this.checked) {
+            entradaCheckboxEditarRubrica.checked = false;
+        }
+    });
+});
 
 

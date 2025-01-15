@@ -50,6 +50,10 @@ body {
     color: #fff;
 }
 
+.menu-item.active {
+    background-color: #2d3692 !important; /* Cor de fundo do item ativo */
+    color: #fff; /* Cor do texto do item ativo */
+}
 .dropdown-content a:hover {
     background-color: #ddd;
 }

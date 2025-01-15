@@ -856,6 +856,9 @@ select.fornecedor-select {
     width: 100%;
     overflow-x: auto;
 }
+.erro-subextrato {
+    background-color: rgba(255, 0, 0, 0.2); /* Fundo vermelho claro */
+}
 
 .editavel {
     width: 100%;

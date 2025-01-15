@@ -187,15 +187,15 @@ function inserirSubdivisao(idExtratoPrincipal, data, categoria, descricao, nomeE
 }
 
 
-function editarSubextrato(idExtrato, data, categoria, descricao, fornecedor, rubricaContabil, entrada, saida, callback) {
+function editarSubextrato(idExtrato, data, categoria, observacao, descricao, fornecedor, rubricaContabil, entrada, saida, callback) {
     const query = `
-        UPDATE SUBEXTRATO 
-        SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, ID_SUBEXTRATO = ?, RUBRICA_CONTABIL = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?
+        UPDATE SUBEXTRATO
+        SET DATA = ?, CATEGORIA = ?, DESCRICAO = ?, OBSERVACAO = ?, RUBRICA_CONTABIL = ?, TIPO_DE_TRANSACAO = ?, VALOR = ?
         WHERE ID_SUBEXTRATO = ?
     `;
     const tipoTransacao = entrada > 0 ? 'ENTRADA' : 'SAIDA';
     const valor = entrada > 0 ? entrada : saida;
-    const values = [data, categoria, descricao, fornecedor, rubricaContabil, tipoTransacao, valor, idExtrato];
+    const values = [data, categoria, descricao, observacao, rubricaContabil, tipoTransacao, valor, idExtrato];
 
     console.log('Query:', query);
     console.log('Values:', values);
@@ -206,7 +206,7 @@ function editarSubextrato(idExtrato, data, categoria, descricao, fornecedor, rub
             callback(err, null);
         } else {
             if (result.affectedRows === 0) {
-                console.warn('Nenhuma linha foi atualizada. Verifique os valores do IDEXTRATO e dados fornecidos.');
+                console.warn('Nenhuma linha foi atualizada. Verifique os valores do ID_SUBEXTRATO e dados fornecidos.');
             }
             console.log('Resultado da atualização:', result);
             callback(null, result);
@@ -280,18 +280,8 @@ function verificarSaldoInicial(clienteId, bancoId, data, callback) {
 
 function inserirSubextrato(idExtratoPrincipal, data, categoria, descricao, observacao, fornecedor, valorEn, valorSa, callback) {
     const queryInserirSubextrato = `
-        INSERT INTO SUBEXTRATO (ID_EXTRATO_PRINCIPAL, DATA, CATEGORIA, DESCRICAO, OBSERVACAO, ID_FORNECEDOR, TIPO_DE_TRANSACAO, VALOR) 
+        INSERT INTO SUBEXTRATO (ID_EXTRATO_PRINCIPAL, DATA, CATEGORIA, DESCRICAO, OBSERVACAO, ID_FORNECEDOR, TIPO_DE_TRANSACAO, VALOR)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    const queryVerificarSubextratos = `
-        SELECT COUNT(*) AS total FROM SUBEXTRATO WHERE ID_EXTRATO_PRINCIPAL = ?
-    `;
-
-    const queryInvalidarLinha = `
-        UPDATE EXTRATO 
-        SET CATEGORIA = NULL, FORNECEDOR = NULL, RUBRICA_CONTABIL = NULL 
-        WHERE IDEXTRATO = ?
     `;
 
     const tipoTransacao = valorEn > 0 ? 'ENTRADA' : 'SAIDA';
@@ -310,78 +300,38 @@ function inserirSubextrato(idExtratoPrincipal, data, categoria, descricao, obser
                 return callback(err, null);
             }
 
-            // Verifica se já existem subextratos
-            connection.query(queryVerificarSubextratos, [idExtratoPrincipal], (err, result) => {
+            // Insere o novo subextrato
+            connection.query(queryInserirSubextrato, [
+                idExtratoPrincipal,
+                data,
+                categoria,
+                descricao,
+                observacao,
+                fornecedor,
+                tipoTransacao,
+                valor
+            ], (err, resultSubextrato) => {
                 if (err) {
                     return connection.rollback(() => {
                         connection.release(); // Libera a conexão após rollback
-                        console.error('Erro ao verificar subextratos:', err.message);
+                        console.error('Erro ao inserir subextrato:', err.message);
                         callback(err, null);
                     });
                 }
 
-                const totalSubextratos = result[0].total;
-
-                // Insere o novo subextrato
-                connection.query(queryInserirSubextrato, [
-                    idExtratoPrincipal,
-                    data,
-                    categoria,
-                    descricao,
-                    observacao,
-                    fornecedor,
-                    tipoTransacao,
-                    valor
-                ], (err, resultSubextrato) => {
+                // Confirma a transação após a inserção
+                connection.commit(err => {
                     if (err) {
                         return connection.rollback(() => {
                             connection.release(); // Libera a conexão após rollback
-                            console.error('Erro ao inserir subextrato:', err.message);
+                            console.error('Erro ao confirmar transação:', err.message);
                             callback(err, null);
                         });
                     }
 
-                    // Apenas invalida a linha principal se não houver subextratos antes
-                    if (totalSubextratos === 0) {
-                        connection.query(queryInvalidarLinha, [idExtratoPrincipal], (err, resultInvalidacao) => {
-                            if (err) {
-                                return connection.rollback(() => {
-                                    connection.release(); // Libera a conexão após rollback
-                                    console.error('Erro ao invalidar linha principal:', err.message);
-                                    callback(err, null);
-                                });
-                            }
-
-                            connection.commit(err => {
-                                if (err) {
-                                    return connection.rollback(() => {
-                                        connection.release(); // Libera a conexão após rollback
-                                        console.error('Erro ao confirmar transação:', err.message);
-                                        callback(err, null);
-                                    });
-                                }
-
-                                // Transação concluída com sucesso
-                                connection.release(); // Libera a conexão
-                                callback(null, { subextrato: resultSubextrato, invalidacao: resultInvalidacao });
-                            });
-                        });
-                    } else {
-                        // Se já houver subextratos, apenas confirme a transação
-                        connection.commit(err => {
-                            if (err) {
-                                return connection.rollback(() => {
-                                    connection.release(); // Libera a conexão após rollback
-                                    console.error('Erro ao confirmar transação:', err.message);
-                                    callback(err, null);
-                                });
-                            }
-
-                            // Transação concluída com sucesso
-                            connection.release(); // Libera a conexão
-                            callback(null, { subextrato: resultSubextrato, invalidacao: null });
-                        });
-                    }
+                    // Transação concluída com sucesso
+                    connection.release(); // Libera a conexão
+                    callback(null, { subextrato: resultSubextrato });
                 });
             });
         });
