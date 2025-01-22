@@ -12,5 +12,8 @@
     <orderEntry type="library" name="d3.v7" level="application" />
     <orderEntry type="library" name="@lottiefiles/lottie-player" level="application" />
     <orderEntry type="library" name="email" level="application" />
+    <orderEntry type="library" name="pdf.js" level="application" />
+    <orderEntry type="library" name="Sortable" level="application" />
+    <orderEntry type="library" name="xlsx" level="application" />
   </component>
 </module>

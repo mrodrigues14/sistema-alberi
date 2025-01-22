@@ -2596,7 +2596,7 @@ function downloadTemplate() {
 
 //-----------------------------------extratos automaticos---------------------//
 //funcao principal
-async function processarExtrato(nomeBanco = '') {
+async function processarExtrato(nomeBanco) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf, .xlsx, .xls';
@@ -2606,14 +2606,14 @@ async function processarExtrato(nomeBanco = '') {
             alert('Por favor, selecione um arquivo.');
             return;
         }
-
+        console.log(nomeBanco)
+        console.log(file)
         const fileName = file.name.toLowerCase();
         const fileExtension = fileName.split('.').pop();
 
         if (fileExtension === 'pdf') {
             const typedArray = new Uint8Array(await file.arrayBuffer());
             const pdf = await pdfjsLib.getDocument(typedArray).promise;
-
             const data = [];
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
@@ -2622,13 +2622,14 @@ async function processarExtrato(nomeBanco = '') {
                     data.push(item.str);
                 });
             }
-
+            console.log(data)
+            console.log(nomeBanco)
             // Processamento de PDFs baseado no nomeBanco
-            if (nomeBanco.includes('banco do brasil')) {
+            if (nomeBanco.toLowerCase().includes('banco do brasil')) {
                 // Banco do Brasil
                 const linhasExtrato = data.some(item => item.includes("BB Cash - Conta corrente - Consulta autorizaveis - Extrato de conta corrente" || "Consultas - Extrato de conta corrente"))
-                    ? processarDadosDoExtratoBancoDoBrasil2(data)
-                    : processarDadosDoExtratoBancoDoBrasil(data);
+                    ? processarDadosDoExtratoBancoDoBrasil(data)
+                    : processarDadosDoExtratoBancoDoBrasil2(data);
                 mostrarExtratoPopup(linhasExtrato);
 
             } else if (nomeBanco.includes('itau')) {
@@ -2643,6 +2644,7 @@ async function processarExtrato(nomeBanco = '') {
                 const linhasExtrato = data.some(item => item.includes("Bradesco Internet Banking"))
                     ? processarDadosDoExtratoBradesco1(data)
                     : processarDadosDoExtratoBradesco2(data);
+                console.log(linhasExtrato)
                 mostrarExtratoPopup(linhasExtrato);
 
             } else if (nomeBanco.includes('mercado pago')) {
@@ -2664,10 +2666,13 @@ async function processarExtrato(nomeBanco = '') {
 
             } else if (nomeBanco.includes('santander')) {
                 // Santander
-                const linhasExtrato = processarDadosDoExtratoBancoDoSantander(data);
+                const linhasExtrato = data.some(item => item.includes("Internet Banking Empresarial"))
+                    ? processarDadosSantander2(data) // Se for "Internet Banking Empresarial"
+                    : processarDadosDoExtratoBancoDoSantander(data); // Outros formatos do Santander
+                console.log(linhasExtrato);
                 mostrarExtratoPopup(linhasExtrato);
-
-            } else {
+            }
+            else {
                 console.error('Banco não identificado no PDF ou o banco selecionado não corresponde ao conteúdo.');
             }
 
@@ -2707,7 +2712,7 @@ function processarDadosDoExtratoBancoDoSantander(data) {
     const valueRegex = /-?\d+,\d{2}/;
     const saldoRegex = /saldo\s*\(R\$\)/i;
     const saldoAnteriorRegex = /Saldo anterior/i;
-
+    console.log(data)
     let linhaAtual = null;
     let dentroDoIntervaloSaldo = false;
 
@@ -2758,6 +2763,63 @@ function processarDadosDoExtratoBancoDoSantander(data) {
     }
 
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+}
+
+function processarDadosSantander2(data) {
+    const extrato = [];
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/; // Regex para datas
+    const valueRegex = /\d{1,3}(\.\d{3})*,\d{2}/; // Regex para valores numéricos
+
+    let linhaAtual = null;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        if (text.match(dateRegex)) {
+            // Inicia uma nova linha para a data
+            if (linhaAtual && linhaAtual.data && linhaAtual.descricao && linhaAtual.valor) {
+                extrato.push(linhaAtual);
+            }
+
+            linhaAtual = {
+                data: text,
+                descricao: '',
+                valor: null,
+                tipo: null,
+            };
+        } else if (linhaAtual && text === "-" && data[i + 1]?.trim() === "R") {
+            // Marca como saída se "-" estiver imediatamente antes do "R$"
+            linhaAtual.tipo = "saida";
+        } else if (text === "Saldo do dia") {
+        // Ignora a linha quando for "Saldo do dia"
+        linhaAtual = null;
+        } else if (linhaAtual && valueRegex.test(text)) {
+            // Captura o valor e formata no estilo brasileiro
+            const valorStr = text.replace(/\./g, '').replace(',', '.');
+            linhaAtual.valor = parseFloat(valorStr).toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+
+            // Define como entrada se ainda não foi marcado como saída
+            if (!linhaAtual.tipo) {
+                linhaAtual.tipo = "entrada";
+            }
+        } else if (linhaAtual && text) {
+            // Captura a descrição e limpa símbolos e códigos indesejados
+            linhaAtual.descricao += ` ${text}`.trim();
+            linhaAtual.descricao = linhaAtual.descricao
+                .replace(/R\$||-/g, '') // Remove "R$", "", "-" da descrição
+                .trim();
+        }
+    }
+
+    // Adiciona a última linha válida
+    if (linhaAtual && linhaAtual.data && linhaAtual.descricao && linhaAtual.valor) {
+        extrato.push(linhaAtual);
+    }
+
+    return extrato;
 }
 
 //sicoob
@@ -3105,6 +3167,8 @@ function processarDadosDoExtratoBradesco2(data) {
 
 //banco do brasil
 function processarDadosDoExtratoBancoDoBrasil(data) {
+    console.log(data)
+
     const extrato = [];
     const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
     const valueRegex = /-?\d+,\d{2}/;
@@ -3151,59 +3215,80 @@ function processarDadosDoExtratoBancoDoBrasil(data) {
 }
 function processarDadosDoExtratoBancoDoBrasil2(data) {
     const extrato = [];
-    const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
-    const valueRegex = /-?\d{1,3}(\.\d{3})*,\d{2} [CD]/;
-    const saldoRegex = /saldo anterior/i;
-    const finalizacaoExtratoRegex = /S A L D O/i;
+    const dateRegex = /\d{2}\/\d{2}\/\d{4}/; // Regex para datas
+    const valueRegex = /-?\d{1,3}(\.\d{3})*,\d{2} [CD]/; // Regex para valores
+    const saldoRegex = /saldo anterior/i; // Regex para identificar saldo anterior
+    const finalizacaoExtratoRegex = /S A L D O/i; // Regex para identificar fim do extrato
 
     let dentroDoIntervaloSaldo = false;
-    let linhaAtual = null
-    console.log(extrato)
+    let linhaAtual = null;
+    let ultimaData = null; // Guarda a última data processada
+    let encontrouValor = false; // Marca se já encontrou um valor no dia
+
     for (let i = 0; i < data.length; i++) {
         const text = data[i].trim();
 
         if (text.match(finalizacaoExtratoRegex)) {
-            break;
+            break; // Fim do extrato
         }
 
         if (text.match(saldoRegex)) {
-            dentroDoIntervaloSaldo = true;
+            dentroDoIntervaloSaldo = true; // Começa após o saldo anterior
             continue;
-        }
-
-        if (dentroDoIntervaloSaldo && text.match(finalizacaoExtratoRegex)) {
-            break;
         }
 
         if (dentroDoIntervaloSaldo) {
             if (text.match(dateRegex)) {
+                // Nova data
                 if (linhaAtual && linhaAtual.data && linhaAtual.descricao && linhaAtual.valor) {
                     extrato.push(linhaAtual);
                 }
+
+                // Inicia uma nova transação
+                ultimaData = text;
                 linhaAtual = {
                     data: text,
                     descricao: '',
                     valor: null,
                     tipo: null
                 };
+                encontrouValor = false; // Reseta o controle de valores para o novo dia
             } else if (text.match(valueRegex) && linhaAtual) {
+                // Captura o valor e o tipo (C ou D)
                 const valorStr = text.slice(0, -2).replace(/\./g, '').replace(',', '.');
                 const tipo = text.endsWith('C') ? 'entrada' : 'saida';
+
+                // Se já encontrou um valor no dia, verifica se é o saldo final
+                if (encontrouValor && linhaAtual.data === ultimaData) {
+                    continue; // Ignora o saldo final
+                }
+
+                // Registra o valor atual e formata no estilo brasileiro
                 linhaAtual.valor = formatarValorFinanceiro(parseFloat(valorStr));
                 linhaAtual.tipo = tipo;
+                encontrouValor = true; // Marca que encontrou um valor
             } else if (linhaAtual && !text.match(/^\d+$/)) {
-                linhaAtual.descricao += ` ${text}`.trim();
+                // Limpa números/códigos antes da descrição
+                const descricaoLimpa = text.replace(/^\d{3,}.*?\s/, ''); // Remove códigos longos no início
+                linhaAtual.descricao += ` ${descricaoLimpa}`.trim();
             }
         }
     }
 
+    // Adiciona a última linha válida
     if (linhaAtual && linhaAtual.data && linhaAtual.descricao && linhaAtual.valor) {
         extrato.push(linhaAtual);
     }
 
-    console.log(extrato);
-
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
+}
+
+function formatarValorFinanceiro(valor) {
+    return valor
+        .toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
 }
 
 //itau
@@ -3681,11 +3766,12 @@ function mostrarOpcoesInsercao() {
 
 function executarMetodoAutomatizado() {
     var metodoAutomatizado = document.getElementById('metodoAutomatizado').value;
+    var nomeBanco = document.getElementById('seletorBanco').options[document.getElementById('seletorBanco').selectedIndex].text;
 
     if (metodoAutomatizado === 'insercaoExcel') {
         processarExtrato("extratoTemplate");
     } else if (metodoAutomatizado === 'leituraAutomatica') {
-        processarExtrato();
+        processarExtrato(nomeBanco);
     }
 }
 

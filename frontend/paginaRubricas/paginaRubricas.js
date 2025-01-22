@@ -94,25 +94,27 @@ function renderRubricas(categorias, listaId) {
 }
 
 function toggleGastoMes(idCategoria, buttonElement) {
+    const listItem = buttonElement.closest('.rubrica');
+    const buttonExtra = listItem.querySelector('.btn-gasto-extra');
+
+    // Verifica se "Rubrica Extra" já está selecionada
+    if (buttonExtra && buttonExtra.classList.contains('selected')) {
+        alert("Você só pode selecionar uma opção de cada vez!");
+        return; // Impede a seleção
+    }
+
     const isSelected = buttonElement.classList.contains('selected');
     const newState = !isSelected; // Alterna o estado
 
     fetch('/categoria/atualizarOpcoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idCategoria, GASTO_MES: newState, GASTO_EXTRA: null }) // GASTO_EXTRA é sempre null ao selecionar GASTO_MES
+        body: JSON.stringify({ idCategoria, GASTO_MES: newState, GASTO_EXTRA: null }) // GASTO_EXTRA sempre null
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualiza visualmente o botão atual
-                buttonElement.classList.toggle('selected', newState);
-
-                // Desmarcar botão Gasto Extra
-                const buttonExtra = document.querySelector(`[data-id="${idCategoria}"].btn-gasto-extra`);
-                if (buttonExtra) {
-                    buttonExtra.classList.remove('selected');
-                }
+                buttonElement.classList.toggle('selected', newState); // Atualiza visualmente
             } else {
                 console.error("Erro ao atualizar Gasto do Mês.");
             }
@@ -121,25 +123,27 @@ function toggleGastoMes(idCategoria, buttonElement) {
 }
 
 function toggleGastoExtra(idCategoria, buttonElement) {
+    const listItem = buttonElement.closest('.rubrica');
+    const buttonMes = listItem.querySelector('.btn-gasto-mes');
+
+    // Verifica se "Rubrica do Mês" já está selecionada
+    if (buttonMes && buttonMes.classList.contains('selected')) {
+        alert("Você só pode selecionar uma opção de cada vez!");
+        return; // Impede a seleção
+    }
+
     const isSelected = buttonElement.classList.contains('selected');
     const newState = !isSelected; // Alterna o estado
 
     fetch('/categoria/atualizarOpcoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idCategoria, GASTO_MES: null, GASTO_EXTRA: newState }) // GASTO_MES é sempre null ao selecionar GASTO_EXTRA
+        body: JSON.stringify({ idCategoria, GASTO_MES: null, GASTO_EXTRA: newState }) // GASTO_MES sempre null
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualiza visualmente o botão atual
-                buttonElement.classList.toggle('selected', newState);
-
-                // Desmarcar botão Gasto do Mês
-                const buttonMes = document.querySelector(`[data-id="${idCategoria}"].btn-gasto-mes`);
-                if (buttonMes) {
-                    buttonMes.classList.remove('selected');
-                }
+                buttonElement.classList.toggle('selected', newState); // Atualiza visualmente
             } else {
                 console.error("Erro ao atualizar Gasto Extra.");
             }
@@ -152,28 +156,32 @@ function toggleGastoExtra(idCategoria, buttonElement) {
 // Renderização de rubricas contábeis (sem subcategorias)
 function renderRubricasContabeis(rubricasContabeis) {
     const listaElement = document.getElementById('rubrica-contabil-lista');
-    listaElement.innerHTML = '';
+    listaElement.innerHTML = ''; // Limpa a lista antes de renderizar
 
     rubricasContabeis.forEach(rubrica => {
         const listItem = document.createElement('li');
         listItem.classList.add('rubrica');
 
+        // Cria o nome da rubrica
         const span = document.createElement('span');
         span.textContent = rubrica.NOME;
         listItem.appendChild(span);
 
+        // Cria a seção de ações
         const actions = document.createElement('div');
         actions.classList.add('actions');
         actions.innerHTML = `
             <button class="edit" onclick="editarRubricaContabil(${rubrica.ID_RUBRICA_CONTABIL})">✏️</button>
             <button class="delete" onclick="deletarRubricaContabil(${rubrica.ID_RUBRICA_CONTABIL})">🗑️</button>
             <button 
-                class="toggle-button-rubrica ${rubrica.GASTO_MES ? 'selected' : ''}" 
+                class="toggle-button-rubrica btn-gasto-mes-contabil ${rubrica.GASTO_MES ? 'selected' : ''}" 
+                data-id="${rubrica.ID_RUBRICA_CONTABIL}" 
                 onclick="toggleGastoMesContabil(${rubrica.ID_RUBRICA_CONTABIL}, this)">
                 Rubrica do Mês
             </button>
             <button 
-                class="toggle-button-rubrica ${rubrica.GASTO_EXTRA ? 'selected' : ''}" 
+                class="toggle-button-rubrica btn-gasto-extra-contabil ${rubrica.GASTO_EXTRA ? 'selected' : ''}" 
+                data-id="${rubrica.ID_RUBRICA_CONTABIL}" 
                 onclick="toggleGastoExtraContabil(${rubrica.ID_RUBRICA_CONTABIL}, this)">
                 Rubrica Extra
             </button>
@@ -183,10 +191,11 @@ function renderRubricasContabeis(rubricasContabeis) {
         listaElement.appendChild(listItem);
     });
 }
+
 function adicionarCategoriaAoDom(categoria, container, nivel = 0) {
     const listItem = document.createElement('li');
     listItem.classList.add('rubrica');
-    console.log(categoria)
+
     const span = document.createElement('span');
     span.textContent = categoria.NOME;
     listItem.appendChild(span);
@@ -197,23 +206,20 @@ function adicionarCategoriaAoDom(categoria, container, nivel = 0) {
         <button class="edit" onclick="editarCategoria(${categoria.IDCATEGORIA})">✏️</button>
         <button class="delete" onclick="deletarCategoria(${categoria.IDCATEGORIA})">🗑️</button>
         <button 
-            class="toggle-button-rubrica ${categoria.GASTO_MES ? 'selected' : ''}" 
+            class="toggle-button-rubrica btn-gasto-mes ${categoria.GASTO_MES ? 'selected' : ''}" 
+            data-id="${categoria.IDCATEGORIA}" 
             onclick="toggleGastoMes(${categoria.IDCATEGORIA}, this)">
             Rubrica do Mês
         </button>
         <button 
-            class="toggle-button-rubrica ${categoria.GASTO_EXTRA ? 'selected' : ''}" 
+            class="toggle-button-rubrica btn-gasto-extra ${categoria.GASTO_EXTRA ? 'selected' : ''}" 
+            data-id="${categoria.IDCATEGORIA}" 
             onclick="toggleGastoExtra(${categoria.IDCATEGORIA}, this)">
             Rubrica Extra
         </button>
     `;
 
-    // Adicionar atributos de entrada e saída (não visíveis)
-    listItem.dataset.entrada = categoria.entrada;
-    listItem.dataset.saida = categoria.saida;
-
     listItem.appendChild(actions);
-
     listItem.style.paddingLeft = `${nivel * 20}px`;
 
     container.appendChild(listItem);
@@ -389,7 +395,6 @@ function abrirPopupEdicao(categoria) {
     popup.style.display = 'flex';
 }
 
-
 function editarRubricaContabil(idRubricaContabil) {
     fetch(`/categoria/editarContabil/${idRubricaContabil}`)
         .then(response => response.json())
@@ -400,7 +405,6 @@ function editarRubricaContabil(idRubricaContabil) {
             console.error('Erro ao buscar a rubrica contábil:', error);
         });
 }
-
 
 function abrirPopupEdicaoContabil(rubricaContabil) {
     const popup = document.getElementById('popup-editar-rubrica-contabil');
@@ -517,59 +521,62 @@ document.addEventListener('click', () => {
 });
 
 function toggleGastoMesContabil(idRubricaContabil, buttonElement) {
+    const rubricaElement = buttonElement.closest('.rubrica');
+    const extraButton = rubricaElement.querySelector('.btn-gasto-extra-contabil');
+
+    // Verifica se "Rubrica Extra" já está selecionada
+    if (extraButton && extraButton.classList.contains('selected')) {
+        alert("Você só pode selecionar uma opção de cada vez!");
+        return; // Impede a seleção
+    }
+
     const isSelected = buttonElement.classList.contains('selected');
     const newState = !isSelected; // Alterna o estado
 
     fetch('/categoria/atualizarOpcoesContabil', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idRubricaContabil, GASTO_MES: newState, GASTO_EXTRA: null }) // GASTO_EXTRA é sempre null ao selecionar GASTO_MES
+        body: JSON.stringify({ idRubricaContabil, GASTO_MES: newState, GASTO_EXTRA: false }) // GASTO_EXTRA sempre false
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualiza visualmente o botão atual
-                buttonElement.classList.toggle('selected', newState);
-
-                // Desmarcar botão Gasto Extra
-                const buttonExtra = document.querySelector(`[data-id="${idRubricaContabil}"].btn-gasto-extra-contabil`);
-                if (buttonExtra) {
-                    buttonExtra.classList.remove('selected');
-                }
+                buttonElement.classList.toggle('selected', newState); // Atualiza visualmente
             } else {
-                console.error("Erro ao atualizar Rubrica do Mês.");
+                console.error("Erro ao atualizar Rubrica do Mês:", data.message || "Erro desconhecido.");
             }
         })
-        .catch(error => console.error("Erro:", error));
+        .catch(error => console.error("Erro na requisição:", error));
 }
 
 function toggleGastoExtraContabil(idRubricaContabil, buttonElement) {
+    const rubricaElement = buttonElement.closest('.rubrica');
+    const mesButton = rubricaElement.querySelector('.btn-gasto-mes-contabil');
+
+    // Verifica se "Rubrica do Mês" já está selecionada
+    if (mesButton && mesButton.classList.contains('selected')) {
+        alert("Você só pode selecionar uma opção de cada vez!");
+        return; // Impede a seleção
+    }
+
     const isSelected = buttonElement.classList.contains('selected');
     const newState = !isSelected; // Alterna o estado
 
     fetch('/categoria/atualizarOpcoesContabil', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idRubricaContabil, GASTO_MES: null, GASTO_EXTRA: newState }) // GASTO_MES é sempre null ao selecionar GASTO_EXTRA
+        body: JSON.stringify({ idRubricaContabil, GASTO_MES: false, GASTO_EXTRA: newState }) // GASTO_MES sempre false
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualiza visualmente o botão atual
-                buttonElement.classList.toggle('selected', newState);
-
-                // Desmarcar botão Gasto do Mês
-                const buttonMes = document.querySelector(`[data-id="${idRubricaContabil}"].btn-gasto-mes-contabil`);
-                if (buttonMes) {
-                    buttonMes.classList.remove('selected');
-                }
+                buttonElement.classList.toggle('selected', newState); // Atualiza visualmente
             } else {
-                console.error("Erro ao atualizar Rubrica Extra.");
+                console.error("Erro ao atualizar Rubrica Extra:", data.message || "Erro desconhecido.");
             }
         })
-        .catch(error => console.error("Erro:", error));
+        .catch(error => console.error("Erro na requisição:", error));
 }
-
 
 document.addEventListener('DOMContentLoaded', function () {
     // Gerenciar comportamento das checkboxes de Entrada e Saída no formulário de rubricas
