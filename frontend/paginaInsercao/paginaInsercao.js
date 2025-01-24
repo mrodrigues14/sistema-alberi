@@ -684,7 +684,7 @@ function carregarCategoriasEFornecedores() {
         });
 }
 
-async function buscarDados() {
+async function buscarDados(fromEdit = false) {
     const idBancoElement = document.getElementById('seletorBanco');
     const idBanco = IDBANCO || (idBancoElement ? idBancoElement.value : null);
 
@@ -698,17 +698,98 @@ async function buscarDados() {
 
     console.log('Buscando dados para o banco:', idBanco, 'e data:', dataFormatada, 'e empresa:', idEmpresa);
 
+    // Salva a posição de rolagem antes de atualizar
+    const scrollPosition = fromEdit ? window.scrollY : 0;
+
     try {
         const saldoInicial = await fetchSaldoInicial();
 
         const response = await fetch(`/consulta/dados?banco=${idBanco}&data=${dataFormatada}&empresa=${idEmpresa}`);
         const data = await response.json();
-        await atualizarTabela(data, saldoInicial);
+
+        if (fromEdit) {
+            // Atualiza apenas os dados das linhas existentes
+            atualizarLinhasExistentes(data, saldoInicial);
+        } else {
+            // Carrega os dados completamente (limpa e recria)
+            configurarCarregamentoIncremental(data, saldoInicial);
+        }
+
         fetchSaldoFinal();
+
+        // Restaura a posição de rolagem após a atualização, se acionado por edição
+        if (fromEdit) {
+            setTimeout(() => window.scrollTo(0, scrollPosition), 0);
+        }
     } catch (error) {
         console.error('Erro ao buscar os dados:', error);
     }
 }
+
+function atualizarLinhasExistentes(dados, saldoInicial) {
+    const tbody = document.getElementById('extrato-body');
+    const linhasExistentes = Array.from(tbody.querySelectorAll('tr'));
+
+    let saldo = saldoInicial;
+
+    dados.forEach(item => {
+        // Localiza a linha correspondente na tabela
+        const linhaExistente = linhasExistentes.find(row => row.dataset.idextrato == item.IDEXTRATO);
+
+        if (linhaExistente) {
+            // Atualiza os dados da linha existente
+            const cells = linhaExistente.querySelectorAll('td');
+            cells[0].textContent = formatDate(item.DATA); // Data
+            cells[1].textContent = item.CATEGORIA || ''; // Categoria
+            cells[2].textContent = item.NOME_FORNECEDOR || ''; // Fornecedor
+            cells[3].textContent = item.DESCRICAO || ''; // Observação
+            cells[4].textContent = item.NOME_NO_EXTRATO || ''; // Nome no Extrato
+            cells[5].textContent = item.RUBRICA_CONTABIL || ''; // Rubrica Contábil
+
+            // Atualiza os valores de entrada e saída
+            cells[6].textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : '';
+            cells[7].textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : '';
+
+            // Recalcula e atualiza o saldo
+            saldo += (parseFloat(item.VALOR) || 0) * (item.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
+            cells[8].textContent = formatarValorParaExibicao(saldo);
+        }
+    });
+}
+
+// Função para configurar o carregamento incremental
+function configurarCarregamentoIncremental(dados, saldoInicial) {
+    let startIndex = 0;
+    const batchSize = 20; // Número de linhas carregadas por vez
+    let saldoAcumulado = saldoInicial; // Saldo contínuo, começa com o saldo inicial
+
+    // Função para carregar o próximo lote de dados
+    async function carregarMais() {
+        if (startIndex >= dados.length) return; // Não há mais dados para carregar
+
+        const endIndex = Math.min(startIndex + batchSize, dados.length);
+        const dadosLote = dados.slice(startIndex, endIndex);
+
+        // Atualiza a tabela com o lote de dados e passa o saldo acumulado
+        saldoAcumulado = await atualizarTabela(dadosLote, saldoAcumulado);
+
+        startIndex = endIndex; // Atualiza o índice de início para o próximo lote
+    }
+
+    // Adiciona o evento de scroll para carregar mais dados ao chegar ao fim da página
+    window.onscroll = async function () {
+        if (
+            window.innerHeight + window.scrollY >= document.body.offsetHeight &&
+            startIndex < dados.length
+        ) {
+            await carregarMais();
+        }
+    };
+
+    // Carrega o primeiro lote de dados
+    carregarMais();
+}
+
 
 
 let editMode = false;
@@ -912,7 +993,6 @@ async function atualizarTabela(dados, saldoInicial) {
     document.querySelector('.popup-insercao-container').classList.add('blur-background');
 
     const tbody = document.getElementById('extrato-body');
-    tbody.innerHTML = '';
 
     let saldo = saldoInicial;
     let processedCount = 0; // Contador de itens processados
@@ -924,145 +1004,68 @@ async function atualizarTabela(dados, saldoInicial) {
         const row = tbody.insertRow();
         row.dataset.idextrato = item.IDEXTRATO;
 
-        if (subextratos.length === 0) {
-            // Sem subextratos: exibir todos os campos
-            row.insertCell().textContent = formatDate(item.DATA); // Data
+        row.insertCell().textContent = formatDate(item.DATA); // Data
+        row.insertCell().textContent = item.CATEGORIA || ''; // Categoria
+        row.insertCell().textContent = item.NOME_FORNECEDOR || ''; // Fornecedor
+        row.insertCell().textContent = item.DESCRICAO || ''; // Observação
+        row.insertCell().textContent = item.NOME_NO_EXTRATO || ''; // Nome no Extrato
+        row.insertCell().textContent = item.RUBRICA_CONTABIL || ''; // Rubrica Contábil
 
-            const categoriaCell = row.insertCell();
-            const categoriaText = item.SUBCATEGORIA ? `${item.CATEGORIA} - ${item.SUBCATEGORIA}` : item.CATEGORIA;
-            categoriaCell.textContent = categoriaText || '';
+        const entradaCell = row.insertCell();
+        const saidaCell = row.insertCell();
+        entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
+        saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
 
-            row.insertCell().textContent = item.NOME_FORNECEDOR || ''; // Fornecedor
-            row.insertCell().textContent = item.DESCRICAO || ''; // Observação
-            row.insertCell().textContent = item.NOME_NO_EXTRATO || ''; // Nome no Extrato
-            row.insertCell().textContent = item.RUBRICA_CONTABIL || ''; // Rubrica Contábil
+        saldo += (parseFloat(item.VALOR) || 0) * (item.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
+        row.insertCell().textContent = formatarValorParaExibicao(saldo);
 
-            // Entrada e Saída
-            const entradaCell = row.insertCell();
-            const saidaCell = row.insertCell();
-            entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
-            saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
+        // Anexos e Ferramentas
+        const anexosCell = row.insertCell();
+        anexosCell.innerHTML = `
+            <button onclick="abrirPopupAnexos(${item.IDEXTRATO})">
+                <i class="fa-solid fa-circle-plus"></i>
+            </button>
+        `;
 
-            // Saldo
-            saldo += (parseFloat(item.VALOR) || 0) * (item.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
-            row.insertCell().textContent = formatarValorParaExibicao(saldo);
+        const anexos = await buscarAnexos(item.IDEXTRATO);
+        if (anexos.length > 0) {
+            anexos.forEach(anexo => {
+                const anexoButton = document.createElement('button');
+                anexoButton.textContent = anexo.TIPO_EXTRATO_ANEXO; // Exibe o tipo (CP, DC/NF, etc.)
+                anexoButton.classList.add('anexo-button');
+                anexoButton.onclick = () => window.open(`/consulta/download-anexo/${anexo.NOME_ARQUIVO}`, '_blank');
+                anexosCell.insertBefore(anexoButton, anexosCell.firstChild);
+            });
+        }
 
-            // Anexos e Ferramentas
-            const anexosCell = row.insertCell();
-            anexosCell.innerHTML = `
-                <button onclick="abrirPopupAnexos(${item.IDEXTRATO})">
-                    <i class="fa-solid fa-circle-plus"></i>
-                </button>
-            `;
-
-            const anexos = await buscarAnexos(item.IDEXTRATO);
-            if (anexos.length > 0) {
-                anexos.forEach(anexo => {
-                    const anexoButton = document.createElement('button');
-                    anexoButton.textContent = anexo.TIPO_EXTRATO_ANEXO; // Exibe o tipo (CP, DC/NF, etc.)
-                    anexoButton.classList.add('anexo-button');
-                    anexoButton.onclick = () => window.open(`/consulta/download-anexo/${anexo.NOME_ARQUIVO}`, '_blank');
-
-                    anexosCell.insertBefore(anexoButton, anexosCell.firstChild);
-                });
-            }
-
-            const deleteCell = row.insertCell();
-            deleteCell.innerHTML = `
-                <div class="dropdown-extrato-opcoes">
-                    <div class="dropdown-content-extrato-opcoes">
-                        <button onclick="abrirLinhaSubextrato(this)"><i class="fa-solid fa-divide"></i></button>
-                        <button onclick="editarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="edit-btn-extrato-opcoes">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="select-btn-extrato-opcoes">
-                            <i class="fas fa-hand-pointer"></i>
-                        </button>
-                        <form action="insercao/deletar-extrato" method="post" onsubmit="return confirm('Tem certeza que deseja deletar este extrato?');">
-                            <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
-                            <button type="submit" class="delete-btn-extrato-opcoes">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            `;
-
-            processedCount++;
-
-            // Para o spinner e remove os efeitos de carregamento após 20 itens
-            if (processedCount >= 20) {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                document.querySelector('.body-insercao').classList.remove('blur-background');
-                document.querySelector('.popup-insercao-container').classList.remove('blur-background');
-            }
-        } else {
-            row.insertCell().textContent = formatDate(item.DATA); // Data
-
-            // Campos ocultados em branco
-            row.insertCell(); // Categoria
-            row.insertCell(); // Fornecedor
-            row.insertCell(); // Observação
-
-            row.insertCell().textContent = item.NOME_NO_EXTRATO || ''; // Nome no Extrato
-            row.insertCell().textContent = item.RUBRICA_CONTABIL || ''; // Rubrica Contábil
-
-            const entradaCell = row.insertCell();
-            const saidaCell = row.insertCell();
-            entradaCell.textContent = item.TIPO_DE_TRANSACAO === 'ENTRADA' ? formatarValorParaExibicao(item.VALOR) : "";
-            saidaCell.textContent = item.TIPO_DE_TRANSACAO === 'SAIDA' ? formatarValorParaExibicao(item.VALOR) : "";
-
-            saldo += (parseFloat(item.VALOR) || 0) * (item.TIPO_DE_TRANSACAO === 'ENTRADA' ? 1 : -1);
-            row.insertCell().textContent = formatarValorParaExibicao(saldo);
-
-            // Anexos
-            const anexosCell = row.insertCell();
-            anexosCell.innerHTML = `
-                <button onclick="abrirPopupAnexos(${item.IDEXTRATO})">
-                    <i class="fa-solid fa-circle-plus"></i>
-                </button>
-            `;
-
-            const anexos = await buscarAnexos(item.IDEXTRATO);
-            if (anexos.length > 0) {
-                anexos.forEach(anexo => {
-                    const anexoButton = document.createElement('button');
-                    anexoButton.textContent = anexo.TIPO_EXTRATO_ANEXO; // Exibe o tipo (CP, DC/NF, etc.)
-                    anexoButton.classList.add('anexo-button');
-                    anexoButton.onclick = () => window.open(`/consulta/download-anexo/${anexo.NOME_ARQUIVO}`, '_blank');
-
-                    anexosCell.insertBefore(anexoButton, anexosCell.firstChild);
-                });
-            }
-
-            const deleteCell = row.insertCell();
-            deleteCell.innerHTML = `
-        <div class="dropdown-extrato-opcoes">
-            <div class="dropdown-content-extrato-opcoes">
-                <button onclick="abrirLinhaSubextrato(this)"><i class="fa-solid fa-divide"></i></button>
-                <button onclick="editarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="edit-btn-extrato-opcoes">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="select-btn-extrato-opcoes">
-                    <i class="fas fa-hand-pointer"></i>
-                </button>
-                <form action="insercao/deletar-extrato" method="post" onsubmit="return confirm('Tem certeza que deseja deletar este extrato?');">
-                    <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
-                    <button type="submit" class="delete-btn-extrato-opcoes">
-                        <i class="fas fa-trash-alt"></i>
+        const deleteCell = row.insertCell();
+        deleteCell.innerHTML = `
+            <div class="dropdown-extrato-opcoes">
+                <div class="dropdown-content-extrato-opcoes">
+                    <button onclick="abrirLinhaSubextrato(this)"><i class="fa-solid fa-divide"></i></button>
+                    <button onclick="editarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="edit-btn-extrato-opcoes">
+                        <i class="fas fa-edit"></i>
                     </button>
-                </form>
+                    <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="select-btn-extrato-opcoes">
+                        <i class="fas fa-hand-pointer"></i>
+                    </button>
+                    <form action="insercao/deletar-extrato" method="post" onsubmit="return confirm('Tem certeza que deseja deletar este extrato?');">
+                        <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
+                        <button type="submit" class="delete-btn-extrato-opcoes">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
-    `;
-            processedCount++;
+        `;
 
-            // Para o spinner e remove os efeitos de carregamento após 20 itens
-            if (processedCount >= 20) {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                document.querySelector('.body-insercao').classList.remove('blur-background');
-                document.querySelector('.popup-insercao-container').classList.remove('blur-background');
-            }
+        processedCount++;
+
+        // Para o spinner e remove os efeitos de carregamento após 20 itens
+        if (processedCount >= 20) {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.querySelector('.body-insercao').classList.remove('blur-background');
+            document.querySelector('.popup-insercao-container').classList.remove('blur-background');
         }
 
         // Renderiza os subextratos
@@ -1121,11 +1124,10 @@ async function atualizarTabela(dados, saldoInicial) {
     }
 
     // Esconde o spinner de carregamento
-    if (processedCount < 20) {
-        document.getElementById('loadingSpinner').style.display = 'none';
-        document.querySelector('.body-insercao').classList.remove('blur-background');
-        document.querySelector('.popup-insercao-container').classList.remove('blur-background');
-    }
+    document.getElementById('loadingSpinner').style.display = 'none';
+    document.querySelector('.body-insercao').classList.remove('blur-background');
+    document.querySelector('.popup-insercao-container').classList.remove('blur-background');
+    return saldo;
 }
 
 async function buscarAnexos(idExtrato) {
@@ -1188,7 +1190,116 @@ function deletarSubextrato(idSubextrato, buttonElement) {
             });
     }
 }
+function criarDropdownPersonalizado(lista, tipo, abrirPopupOpcao, valorAtual = '') {
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.width = '100%';
 
+    // Campo de pesquisa
+    const inputSearch = document.createElement('input');
+    inputSearch.type = 'text';
+    inputSearch.placeholder = `Pesquisar ${tipo}...`;
+    inputSearch.value = valorAtual; // Define o texto inicial como o valor atual
+    inputSearch.style.width = '100%';
+    inputSearch.style.padding = '5px';
+    inputSearch.style.boxSizing = 'border-box';
+
+    // Estilo inicial para o caso de valor não encontrado
+    let valorEncontrado = lista.some(item => item.nome === valorAtual);
+    if (!valorEncontrado && valorAtual) {
+        inputSearch.style.border = '2px solid red';
+        inputSearch.title = `${tipo} atual não está na lista!`;
+    }
+
+    // Lista de opções
+    const dropdown = document.createElement('div');
+    dropdown.style.position = 'absolute';
+    dropdown.style.width = '100%';
+    dropdown.style.border = '1px solid #ccc';
+    dropdown.style.borderRadius = '4px';
+    dropdown.style.background = '#fff';
+    dropdown.style.maxHeight = '150px';
+    dropdown.style.overflowY = 'auto';
+    dropdown.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+    dropdown.style.zIndex = '1000';
+    dropdown.style.display = 'none'; // Inicialmente escondido
+
+    // Adicionar opções da lista
+    lista.forEach(item => {
+        const option = document.createElement('div');
+        option.textContent = item.nome; // Usa a propriedade "nome" do objeto
+        option.dataset.id = item.id; // Armazena o ID da categoria
+        option.style.padding = '5px 10px';
+        option.style.cursor = 'pointer';
+        option.style.borderBottom = '1px solid #eee';
+        option.addEventListener('mouseover', () => (option.style.background = '#f0f0f0'));
+        option.addEventListener('mouseout', () => (option.style.background = '#fff'));
+        option.addEventListener('click', () => {
+            inputSearch.value = item.nome; // Define o nome selecionado no campo de busca
+            inputSearch.dataset.selectedId = item.id; // Armazena o ID selecionado
+            dropdown.style.display = 'none'; // Fecha o dropdown
+            inputSearch.style.border = ''; // Remove a borda vermelha
+            inputSearch.title = ''; // Remove o título de erro
+        });
+        dropdown.appendChild(option);
+    });
+
+    // Adicionar o valor atual (se não encontrado) como uma opção em vermelho
+    if (!valorEncontrado && valorAtual) {
+        const optionAtual = document.createElement('div');
+        optionAtual.textContent = valorAtual;
+        optionAtual.style.padding = '5px 10px';
+        optionAtual.style.color = 'red'; // Texto vermelho
+        optionAtual.style.fontStyle = 'italic';
+        optionAtual.style.cursor = 'default';
+        optionAtual.title = `${tipo} atual não está na lista!`;
+        dropdown.appendChild(optionAtual);
+    }
+
+    // Opção para adicionar novo
+    const adicionarNovo = document.createElement('div');
+    adicionarNovo.textContent = 'Adicionar Novo';
+    adicionarNovo.style.padding = '5px 10px';
+    adicionarNovo.style.cursor = 'pointer';
+    adicionarNovo.style.fontWeight = 'bold';
+    adicionarNovo.style.background = '#f9f9f9';
+    adicionarNovo.style.borderTop = '1px solid #eee';
+    adicionarNovo.addEventListener('click', () => {
+        abrirPopupOpcao(tipo); // Chama a função do popup
+        dropdown.style.display = 'none'; // Fecha o dropdown
+    });
+    dropdown.appendChild(adicionarNovo);
+
+    // Filtrar opções ao digitar no campo de busca
+    inputSearch.addEventListener('input', () => {
+        const searchTerm = inputSearch.value.toLowerCase();
+        Array.from(dropdown.children).forEach(option => {
+            if (option.textContent.toLowerCase().includes(searchTerm) || option === adicionarNovo) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+    });
+
+    // Exibir dropdown ao focar no campo de pesquisa
+    inputSearch.addEventListener('focus', () => {
+        dropdown.style.display = 'block';
+    });
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', (event) => {
+        if (!container.contains(event.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    // Monta o container
+    container.appendChild(inputSearch);
+    container.appendChild(dropdown);
+
+    return container;
+}
 
 function editarLinha(buttonElement) {
     const row = buttonElement.closest('tr');
@@ -1265,49 +1376,30 @@ function editarLinha(buttonElement) {
             fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(categorias => {
-                    const optionDefault = document.createElement('option');
-                    optionDefault.value = '';
-                    optionDefault.textContent = 'Selecione uma Categoria';
-                    selectCategoria.appendChild(optionDefault);
+                    console.log(categorias);
+                    const listaCategorias = categorias.map(categoria => ({
+                        id: categoria.IDCATEGORIA,
+                        nome: categoria.NOME,
+                    }));
+                    console.log(listaCategorias);
+                    // Criar dropdown personalizado
+                    const valorAtual = cell.textContent.trim(); // Pega o valor da célula antes de editar
 
-                    const categoriasTree = construirArvoreDeCategorias(categorias); // Cria a estrutura de árvore
-                    adicionarCategoriasAoSelect(selectCategoria, categoriasTree); // Preenche o dropdown com as categorias
-                    console.log()
-                    // Verifica se a categoria atual está na lista
-                    const categoriaEncontrada = Array.from(selectCategoria.options).find(option => option.text === categoriaAtual);
+                    const dropdownCategorias = criarDropdownPersonalizado(
+                        listaCategorias,
+                        'Categoria',
+                        (tipo) => abrirPopupOpcao(tipo),
+                        valorAtual
+                    );
 
-                    if (categoriaEncontrada) {
-                        categoriaEncontrada.selected = true; // Seleciona a categoria encontrada
-                    } else {
-                        // Adiciona uma opção temporária para exibir a categoria atual
-                        const optionTemp = document.createElement('option');
-                        optionTemp.value = '';
-                        optionTemp.textContent = categoriaAtual; // Mostra o nome da categoria atual
-                        optionTemp.selected = true; // Mantém como selecionado
-                        optionTemp.disabled = true; // Impede a seleção da opção
-                        optionTemp.classList.add('not-found'); // Classe para estilização
-                        selectCategoria.appendChild(optionTemp);
-
-                        // Adiciona a classe de erro ao dropdown
-                        selectCategoria.classList.add('error');
-                        selectCategoria.title = 'Categoria atual não está na lista!';
-                    }
-
-                    cell.innerHTML = ''; // Limpa o conteúdo atual da célula
-                    cell.appendChild(selectCategoria); // Adiciona o campo de seleção na célula
-
-                    // Remove o erro se o usuário selecionar uma categoria válida
-                    selectCategoria.addEventListener('change', () => {
-                        const categoriaSelecionada = selectCategoria.selectedOptions[0].text.trim();
-                        if (Array.from(selectCategoria.options).some(option => option.text.trim() === categoriaSelecionada)) {
-                            selectCategoria.classList.remove('error');
-                            selectCategoria.title = ''; // Remove o título de erro
-                        }
-                    });
+                    cell.innerHTML = ''; // Limpa a célula
+                    cell.appendChild(dropdownCategorias);
                 })
                 .catch(error => {
                     console.error('Erro ao buscar categorias:', error);
                 });
+
+
 
             // Adiciona estilos para destacar categorias não encontradas
             const style = document.createElement('style');
@@ -1341,29 +1433,26 @@ function editarLinha(buttonElement) {
             fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(fornecedores => {
-                    const optionDefault = document.createElement('option');
-                    optionDefault.value = '';
-                    optionDefault.textContent = 'Selecione um Fornecedor';
-                    selectFornecedor.appendChild(optionDefault);
+                    const listaFornecedores = fornecedores.map(fornecedor => fornecedor.NOME_TIPO);
 
-                    fornecedores.forEach(fornecedor => {
-                        const option = document.createElement('option');
-                        option.value = fornecedor.IDFORNECEDOR;
-                        option.textContent = fornecedor.NOME_TIPO;
-                        selectFornecedor.appendChild(option);
-                    });
+                    const valorAtual = cell.textContent.trim(); // Pega o valor da célula antes de editar
 
-                    const fornecedorSelecionado = Array.from(selectFornecedor.options).find(option => option.text.trim() === fornecedorAtual);
-                    if (fornecedorSelecionado) {
-                        fornecedorSelecionado.selected = true;
-                    }
+                    // Criar dropdown personalizado
+                    const dropdownFornecedores = criarDropdownPersonalizado(
+                        listaFornecedores, // Lista de fornecedores
+                        'Fornecedor',      // Tipo
+                        (tipo) => abrirPopupOpcao(tipo), // Callback para abrir o popup
+                        valorAtual         // Valor atual da célula
+                    );
 
-                    cell.innerHTML = '';
-                    cell.appendChild(selectFornecedor);
+
+                    cell.innerHTML = ''; // Limpa a célula
+                    cell.appendChild(dropdownFornecedores);
                 })
                 .catch(error => {
                     console.error('Erro ao buscar fornecedores:', error);
                 });
+
 
         } else if (index === 5) { // Rubrica Contábil (sexta coluna)
             const rubricaContabilAtual = cell.textContent.trim();
@@ -1374,29 +1463,29 @@ function editarLinha(buttonElement) {
             fetch(`/insercao/listar-rubricas-contabeis`)
                 .then(response => response.json())
                 .then(rubricasContabeis => {
-                    const optionDefault = document.createElement('option');
-                    optionDefault.value = '';
-                    optionDefault.textContent = '';
-                    selectRubricaContabil.appendChild(optionDefault);
+                    // Formata a lista de rubricas no formato esperado pelo dropdown personalizado
+                    const listaRubricas = rubricasContabeis.map(rubrica => ({
+                        id: rubrica.IDRUBRICA,
+                        nome: rubrica.NOME
+                    }));
 
-                    rubricasContabeis.forEach(rubrica => {
-                        const option = document.createElement('option');
-                        option.value = rubrica.IDRUBRICA;
-                        option.textContent = rubrica.NOME;
-                        selectRubricaContabil.appendChild(option);
-                    });
+                    const valorAtual = cell.textContent.trim(); // Valor atual da célula antes de editar
 
-                    const rubricaSelecionada = Array.from(selectRubricaContabil.options).find(option => option.text.trim() === rubricaContabilAtual);
-                    if (rubricaSelecionada) {
-                        rubricaSelecionada.selected = true;
-                    }
+                    // Cria o dropdown personalizado para rubricas
+                    const dropdownRubricas = criarDropdownPersonalizado(
+                        listaRubricas, // Lista de rubricas
+                        'Rubrica',     // Tipo
+                        (tipo) => abrirPopupOpcao(tipo), // Callback para abrir o popup "Adicionar Novo"
+                        valorAtual      // Valor atual da célula
+                    );
 
-                    cell.innerHTML = '';
-                    cell.appendChild(selectRubricaContabil);
+                    cell.innerHTML = ''; // Limpa a célula
+                    cell.appendChild(dropdownRubricas); // Adiciona o dropdown na célula
                 })
                 .catch(error => {
                     console.error('Erro ao buscar rubricas contábeis:', error);
                 });
+
         } else if (index > 0 && index < 8) {
             const cellText = cell.textContent.trim();
             cell.innerHTML = `<input type="text" value="${cellText}" class="editavel">`;
@@ -1458,24 +1547,44 @@ function confirmarEdicao(buttonElement) {
         valor = parseFloat(cells[7].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || null;
     }
 
-    const selectCategoria = cells[1].querySelector('select'); // Obtém o elemento select
-    const categoriaSelecionada = selectCategoria.selectedOptions[0]; // Obtém a opção selecionada
+    const categoriaCell = cells[1]; // Categoria (segunda coluna)
+    let categoriaNome;
 
-    // Captura o texto exibido da opção selecionada
-    const categoriaNome = categoriaSelecionada.textContent.trim();
+    if (categoriaCell.querySelector('input')) {
+        // Caso o dropdown seja um campo de input, captura o valor do input
+        categoriaNome = categoriaCell.querySelector('input').value.trim();
+    } else if (categoriaCell.querySelector('select')) {
+        const selectCategoria = categoriaCell.querySelector('select');
+        const categoriaSelecionada = selectCategoria.selectedOptions[0]; // Obtém a opção selecionada
+        categoriaNome = categoriaSelecionada ? categoriaSelecionada.textContent.trim() : dadosOriginais[1];
+    } else {
+        categoriaNome = dadosOriginais[1]; // Usa o valor original se nenhum for selecionado
+    }
 
     console.log('Categoria selecionada:', categoriaNome); // Apenas para debug
 
     // Obtém o nome da rubrica contábil selecionada
     const rubricaContabilCell = cells[5]; // Rubrica Contábil (sexta coluna)
-    const rubricaContabil = rubricaContabilCell.querySelector('select')
-        ? rubricaContabilCell.querySelector('select').options[rubricaContabilCell.querySelector('select').selectedIndex].textContent.trim()
-        : dadosOriginais[5]; // Usa o valor original se nenhum for selecionado
+    let rubricaContabil;
 
-    const dataEditFormatada = formatarDataParaAmericano(cells[0].querySelector('input').value)
+    if (rubricaContabilCell.querySelector('input')) {
+        // Caso o dropdown seja um campo de input, captura o valor do input
+        rubricaContabil = rubricaContabilCell.querySelector('input').value.trim();
+    } else if (rubricaContabilCell.querySelector('select')) {
+        const selectRubrica = rubricaContabilCell.querySelector('select');
+        const rubricaSelecionada = selectRubrica.selectedOptions[0]; // Obtém a opção selecionada
+        rubricaContabil = rubricaSelecionada ? rubricaSelecionada.textContent.trim() : dadosOriginais[5];
+    } else {
+        rubricaContabil = dadosOriginais[5]; // Usa o valor original se nenhum for selecionado
+    }
+
+    // Formata a data
+    const dataEditFormatada = formatarDataParaAmericano(cells[0].querySelector('input').value);
+
+    // Monta o objeto com os dados editados
     const dadosEditados = {
         id: row.dataset.idextrato,
-        data: dataEditFormatada , // Pegando o valor da data do input
+        data: dataEditFormatada, // Pegando o valor da data do input
         categoria: categoriaNome, // Rubrica Financeira
         fornecedor: fornecedor, // Nome do fornecedor
         descricao: cells[3].querySelector('input').value || dadosOriginais[3], // Observação
@@ -1485,13 +1594,14 @@ function confirmarEdicao(buttonElement) {
         valor: valor // Apenas o valor, seja de entrada ou saída
     };
 
-    console.log(dadosEditados)
+    console.log(dadosEditados);
 
-    enviarEdicaoExtrato(dadosEditados);
+    // Envia os dados para o backend
+    enviarEdicaoExtrato(dadosEditados, buttonElement);
 }
 
-function enviarEdicaoExtrato(dadosEditados) {
-    console.log(dadosEditados)
+function enviarEdicaoExtrato(dadosEditados, buttonElement) {
+    console.log(dadosEditados);
     fetch('consulta/editar/extrato', {
         method: 'POST',
         headers: {
@@ -1509,17 +1619,20 @@ function enviarEdicaoExtrato(dadosEditados) {
             console.log(data);
             if (data.affectedRows > 0) {
                 alert('Edição confirmada com sucesso!');
-                buscarDados(); // Atualiza a tabela após a edição
             } else {
                 alert('Nenhuma mudança foi detectada.');
             }
+            cancelarEdicao(buttonElement);
+            // Atualiza a tabela preservando o scroll
+            buscarDados(true);
         })
         .catch(error => {
             console.error('Erro ao confirmar a edição:', error);
             alert('Erro ao confirmar a edição. Por favor, tente novamente.');
-            cancelarEdicao(buttonElement);
         });
 }
+
+
 
 function cancelarEdicao(buttonElement) {
     const row = buttonElement.closest('tr');
