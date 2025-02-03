@@ -3,41 +3,41 @@ const mysqlConn = require("../base/database");
 function buscar(banco, data, cliente, callback) {
     const [ano, mes] = data.split('-');
     const dataInicio = `${ano}-${mes}-01`;
-    const dataFim = new Date(ano, mes, 0).toISOString().split('T')[0];
+    // Calcula o primeiro dia do mês seguinte:
+    const dataFim = new Date(ano, parseInt(mes), 1).toISOString().split('T')[0];
     const parametros = [banco, dataInicio, dataFim, cliente];
 
-    mysqlConn.query(`SELECT IDEXTRATO, DATA, 
-                    IFNULL(
-                        (
-                            SELECT MIN(CAT.NOME)
-                            FROM CATEGORIA CAT
-                                     INNER JOIN RELACAOCLIENTECATEGORIA RCC
-                                                ON CAT.IDCATEGORIA = RCC.ID_CATEGORIA
-                            WHERE CAT.IDCATEGORIA = EXTRATO.CATEGORIA
-                              AND RCC.ID_CLIENTE = EXTRATO.ID_CLIENTE
-
-                        ),
-                        EXTRATO.CATEGORIA
-                    ) AS CATEGORIA, 
-                    IFNULL(SUBCAT.NOME, '') AS SUBCATEGORIA, 
-                    DESCRICAO, 
-                    NOME_NO_EXTRATO, 
-                    TIPO_DE_TRANSACAO, 
-                    VALOR, 
-                    CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO, 
-                    C.NOME AS NOME_CLIENTE, 
-                    EXTRATO.ID_FORNECEDOR, 
-                    IFNULL(F.NOME, EXTRATO.FORNECEDOR) AS NOME_FORNECEDOR, 
-                    EXTRATO.RUBRICA_CONTABIL,
-                    EXTRATO.RUBRICA_DO_MES 
-                    FROM EXTRATO
-                    INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
-                    INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
-                    LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR
-                    LEFT JOIN CATEGORIA CAT ON EXTRATO.CATEGORIA = CAT.IDCATEGORIA
-                    LEFT JOIN CATEGORIA SUBCAT ON CAT.ID_CATEGORIA_PAI = SUBCAT.IDCATEGORIA
-                    WHERE ID_BANCO = ? AND DATA >= ? AND DATA < ? AND ID_CLIENTE = ?
-                    ORDER BY ORDEM, DATA`, parametros,
+    mysqlConn.query(`SELECT IDEXTRATO, DATA,
+                            IFNULL(
+                                    (
+                                        SELECT MIN(CAT.NOME)
+                                        FROM CATEGORIA CAT
+                                                 INNER JOIN RELACAOCLIENTECATEGORIA RCC
+                                                            ON CAT.IDCATEGORIA = RCC.ID_CATEGORIA
+                                        WHERE CAT.IDCATEGORIA = EXTRATO.CATEGORIA
+                                          AND RCC.ID_CLIENTE = EXTRATO.ID_CLIENTE
+                                    ),
+                                    EXTRATO.CATEGORIA
+                            ) AS CATEGORIA,
+                            IFNULL(SUBCAT.NOME, '') AS SUBCATEGORIA,
+                            DESCRICAO,
+                            NOME_NO_EXTRATO,
+                            TIPO_DE_TRANSACAO,
+                            VALOR,
+                            CONCAT(B.NOME, ' - ', B.TIPO) AS NOME_BANCO,
+                            C.NOME AS NOME_CLIENTE,
+                            EXTRATO.ID_FORNECEDOR,
+                            IFNULL(F.NOME, EXTRATO.FORNECEDOR) AS NOME_FORNECEDOR,
+                            EXTRATO.RUBRICA_CONTABIL,
+                            EXTRATO.RUBRICA_DO_MES
+                     FROM EXTRATO
+                              INNER JOIN BANCO B ON EXTRATO.ID_BANCO = B.IDBANCO
+                              INNER JOIN CLIENTE C ON EXTRATO.ID_CLIENTE = C.IDCLIENTE
+                              LEFT JOIN FORNECEDOR F ON EXTRATO.ID_FORNECEDOR = F.IDFORNECEDOR
+                              LEFT JOIN CATEGORIA CAT ON EXTRATO.CATEGORIA = CAT.IDCATEGORIA
+                              LEFT JOIN CATEGORIA SUBCAT ON CAT.ID_CATEGORIA_PAI = SUBCAT.IDCATEGORIA
+                     WHERE ID_BANCO = ? AND DATA >= ? AND DATA < ? AND ID_CLIENTE = ?
+                     ORDER BY ORDEM, DATA`, parametros,
         function (err, result, fields) {
             if (err) {
                 callback(err, null);

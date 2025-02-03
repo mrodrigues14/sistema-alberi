@@ -389,10 +389,6 @@ function excelDateToJSDate(excelDate) {
     return convertedDate;
 }
 
-function formatarValorFinanceiro(valor) {
-    return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 function formatarValorParaInsercao(valor) {
     return parseFloat(valor.replace(/\./g, '').replace(',', '.')).toFixed(2);
 }
@@ -692,7 +688,7 @@ async function buscarDados(fromEdit = false) {
     const mesAno = document.getElementById('mesSelectorValue').value;
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
 
-
+    console.log(dataFormatada);
     // Salva a posição de rolagem antes de atualizar
     const scrollPosition = fromEdit ? window.scrollY : 0;
 
@@ -2768,42 +2764,50 @@ async function processarExtrato(nomeBanco) {
                     : processarDadosDoExtratoBancoDoBrasil2(data);
                 mostrarExtratoPopup(linhasExtrato);
 
-            } else if (nomeBanco.includes('itau')) {
+            } else if (nomeBanco.toLowerCase().includes('itau')) {
                 // Itaú
                 const linhasExtrato = data.some(item => item.includes("Total contratado. O uso do Limite da Conta e Limite da Conta adicional poderá ter cobrança de juros + IOF."))
                     ? processarDadosDoExtratoItauPersonalite(data)
                     : processarDadosDoExtratoItau(data);
                 mostrarExtratoPopup(linhasExtrato);
 
-            } else if (nomeBanco.includes('bradesco')) {
+            } else if (nomeBanco.toLowerCase().includes('bradesco')) {
                 // Bradesco
                 const linhasExtrato = data.some(item => item.includes("Bradesco Internet Banking"))
                     ? processarDadosDoExtratoBradesco1(data)
                     : processarDadosDoExtratoBradesco2(data);
                 mostrarExtratoPopup(linhasExtrato);
 
-            } else if (nomeBanco.includes('mercado pago')) {
+            } else if (nomeBanco.toLowerCase().includes('mercado pago')) {
                 // Mercado Pago
                 const linhasExtrato = data.some(item => item.includes("DETALHE DOS MOVIMENTOS"))
                     ? processarDadosDoExtratoMercadoPago1(data)
                     : processarDadosDoExtratoMercadoPago2(data);
                 mostrarExtratoPopup(linhasExtrato);
 
-            } else if (nomeBanco.includes('stone')) {
+            } else if (nomeBanco.toLowerCase().includes('stone')) {
                 // Stone
                 const linhasExtrato = processarDadosDoExtratoStone(data);
                 mostrarExtratoPopup(linhasExtrato);
 
-            } else if (nomeBanco.includes('sicoob')) {
+            } else if (nomeBanco.toLowerCase().includes('sicoob')) {
                 // Sicoob
                 const linhasExtrato = processarDadosDoExtratoSicoob(data);
                 mostrarExtratoPopup(linhasExtrato);
 
-            } else if (nomeBanco.includes('santander')) {
+            } else if (nomeBanco.toLowerCase().includes('santander')) {
                 // Santander
                 const linhasExtrato = data.some(item => item.includes("Internet Banking Empresarial"))
                     ? processarDadosSantander2(data) // Se for "Internet Banking Empresarial"
                     : processarDadosDoExtratoBancoDoSantander(data); // Outros formatos do Santander
+                mostrarExtratoPopup(linhasExtrato);
+            } else if (nomeBanco.toLowerCase().includes('sicredi')) {
+                // Santander
+                const linhasExtrato = processarDadosSicredi(data);
+                mostrarExtratoPopup(linhasExtrato);
+            } else if (nomeBanco.toLowerCase().includes('nubank')) {
+                // Santander
+                const linhasExtrato = processarDadosNubank(data);
                 mostrarExtratoPopup(linhasExtrato);
             }
             else {
@@ -2838,6 +2842,220 @@ async function processarExtrato(nomeBanco) {
 }
 
 //funcoes auxiliares
+
+//nubank
+
+function processarDadosNubank(data) {
+    const resultado = [];
+    let currentDate = "";
+    // Regex para identificar datas no formato "DD MÊS AAAA" (ex.: "03 DEZ 2024")
+    const dateRegex = /^[0-9]{1,2}\s+[A-ZÀ-Ú]{3,}\s+\d{4}$/;
+    // Regex para identificar valores monetários: aceita valores inteiros ou com decimais (ex.: "2", "172,00", "+ 15.814,00")
+    const moneyRegex = /^[+\-]?\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?$/;
+
+    // Palavras-chave que indicam o início de uma transação
+    const transactionKeywords = [
+        "Transferência enviada",
+        "Transferência recebida",
+        "Transferência Recebida",
+        "Pagamento de boleto efetuado",
+        "Depósito recebido",
+        "Pagamento de fatura",
+        "Compra no débito"
+    ];
+
+    // Função para formatar datas de "DD MÊS AAAA" para "DD/MM/AAAA"
+    function formatarData(dataStr) {
+        const tokens = dataStr.split(" ").filter(t => t.trim() !== "");
+        let day, month, year;
+        if (tokens.length === 3) {
+            [day, month, year] = tokens;
+        } else {
+            // Exemplo: "01 DE DEZEMBRO DE 2024"
+            day = tokens[0];
+            year = tokens[tokens.length - 1];
+            month = tokens.find(token => {
+                const upper = token.toUpperCase();
+                return upper === "JAN" || upper === "JANEIRO" ||
+                    upper === "FEV" || upper === "FEVEREIRO" ||
+                    upper === "MAR" || upper === "MARÇO" || upper === "MARCO" ||
+                    upper === "ABR" || upper === "ABRIL" ||
+                    upper === "MAI" || upper === "MAIO" ||
+                    upper === "JUN" || upper === "JUNHO" ||
+                    upper === "JUL" || upper === "JULHO" ||
+                    upper === "AGO" || upper === "AGOSTO" ||
+                    upper === "SET" || upper === "SETEMBRO" ||
+                    upper === "OUT" || upper === "OUTUBRO" ||
+                    upper === "NOV" || upper === "NOVEMBRO" ||
+                    upper === "DEZ" || upper === "DEZEMBRO";
+            });
+            if (!month) {
+                month = tokens[1]; // fallback
+            }
+        }
+        month = month.toUpperCase();
+        const monthMap = {
+            'JAN': '01',
+            'JANEIRO': '01',
+            'FEV': '02',
+            'FEVEREIRO': '02',
+            'MAR': '03',
+            'MARÇO': '03',
+            'MARCO': '03',
+            'ABR': '04',
+            'ABRIL': '04',
+            'MAI': '05',
+            'MAIO': '05',
+            'JUN': '06',
+            'JUNHO': '06',
+            'JUL': '07',
+            'JULHO': '07',
+            'AGO': '08',
+            'AGOSTO': '08',
+            'SET': '09',
+            'SETEMBRO': '09',
+            'OUT': '10',
+            'OUTUBRO': '10',
+            'NOV': '11',
+            'NOVEMBRO': '11',
+            'DEZ': '12',
+            'DEZEMBRO': '12'
+        };
+        const mesFormatado = monthMap[month] || month;
+        if (day.length === 1) day = '0' + day;
+        return `${day}/${mesFormatado}/${year}`;
+    }
+
+    for (let i = 0; i < data.length; i++) {
+        let text = data[i].trim();
+        if (!text) continue; // pula linhas vazias
+
+        // Se for uma data, atualiza a variável currentDate formatada
+        if (dateRegex.test(text)) {
+            currentDate = formatarData(text);
+            continue;
+        }
+
+        // Ignora marcadores e cabeçalhos que não fazem parte de transações
+        if (
+            text === "Total de entradas" ||
+            text === "Total de saídas" ||
+            text === "Saldo do dia" ||
+            text === "VALORES EM $" ||
+            text === "CNPJ" ||
+            text === "Agência" ||
+            text === "Conta" ||
+            text === "a"
+        ) {
+            if (i + 1 < data.length && moneyRegex.test(data[i + 1].trim())) {
+                i++;
+            }
+            continue;
+        }
+
+        // Verifica se a linha inicia com alguma das palavras-chave definidas para transação
+        const isTransaction = transactionKeywords.some(keyword =>
+            text.startsWith(keyword)
+        );
+        if (isTransaction) {
+            let linhaAtual = { data: currentDate, descricao: text, valor: null, tipo: null };
+
+            // Define o tipo da transação
+            if (text.includes("recebida") || text.includes("Depósito") || text.includes("Recebida")) {
+                linhaAtual.tipo = "entrada";
+            } else if (text.includes("enviada") || text.includes("Pagamento") || text.includes("Compra")) {
+                linhaAtual.tipo = "saida";
+            }
+
+            // Acumula linhas adicionais na descrição até encontrar um valor ou outro marcador
+            let descricaoExtra = "";
+            while (i + 1 < data.length) {
+                let prox = data[i + 1].trim();
+                if (!prox) {
+                    i++;
+                    continue;
+                }
+                if (
+                    moneyRegex.test(prox) ||
+                    dateRegex.test(prox) ||
+                    transactionKeywords.some(keyword => prox.startsWith(keyword)) ||
+                    prox === "Total de entradas" ||
+                    prox === "Total de saídas" ||
+                    prox === "Saldo do dia"
+                ) {
+                    break;
+                }
+                descricaoExtra += " " + prox;
+                i++;
+            }
+            linhaAtual.descricao += descricaoExtra;
+
+            // Verifica se a próxima linha é um valor monetário
+            if (i + 1 < data.length && moneyRegex.test(data[i + 1].trim())) {
+                let candidate = data[i + 1].trim();
+                // Se o candidato for muito curto (por exemplo, "2") e a linha seguinte tiver vírgula, usa a linha seguinte
+                if (candidate.length <= 2 && i + 2 < data.length && moneyRegex.test(data[i + 2].trim()) && data[i + 2].includes(',')) {
+                    i += 2;
+                    linhaAtual.valor = data[i].trim();
+                } else {
+                    i++;
+                    linhaAtual.valor = candidate;
+                }
+            }
+            resultado.push(linhaAtual);
+        }
+    }
+    return resultado;
+}
+
+//sicredi
+function processarDadosSicredi(data) {
+    const extrato = [];
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    const valueRegex = /^-?\d{1,3}(?:\.\d{3})*,\d{2}$/;
+    let linhaAtual = null;
+    let capturandoDescricao = false;
+    let capturandoValor = false;    let proximoEhValor = false;
+    let ignorarProximo = false;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        if (text.match(dateRegex)) {
+            if (linhaAtual && linhaAtual.valor !== null) {
+                extrato.push(linhaAtual);
+            }
+            linhaAtual = { data: text, descricao: '', valor: null, tipo: null };
+            capturandoDescricao = true;
+            capturandoValor = false;
+            ignorarProximo = false;
+        }
+        else if (linhaAtual && capturandoDescricao) {
+            if (text === '') {
+                continue; // Pula o espaço vazio após a data
+            }
+            linhaAtual.descricao = text.replace(/\d+/g, '').trim();
+            capturandoDescricao = false;
+            ignorarProximo = true;
+        }
+        else if (ignorarProximo) {
+            ignorarProximo = false;
+            proximoEhValor = true;
+        }
+        else if (linhaAtual && proximoEhValor && text.match(valueRegex)) {
+            const valorNumerico = parseFloat(text.replace(/\./g, '').replace(',', '.'));
+            linhaAtual.valor = Math.abs(valorNumerico).toFixed(2).replace('.', ',');
+            linhaAtual.tipo = valorNumerico < 0 ? 'saida' : 'entrada';
+            proximoEhValor = false;
+        }
+    }
+
+    if (linhaAtual && linhaAtual.valor !== null) {
+        extrato.push(linhaAtual);
+    }
+
+    return extrato;
+}
 
 //santander
 function processarDadosDoExtratoBancoDoSantander(data) {
@@ -3187,7 +3405,6 @@ function processarDadosDoExtratoMercadoPago2(data) {
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
 
-
 //bradesco
 function processarDadosDoExtratoBradesco1(data) {
     const extrato = [];
@@ -3409,7 +3626,6 @@ function processarDadosDoExtratoBancoDoBrasil2(data) {
 
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
-
 function formatarValorFinanceiro(valor) {
     return valor
         .toLocaleString('pt-BR', {
@@ -3545,7 +3761,6 @@ function excelDateToJSDate(excelDate) {
     const year = date.getUTCFullYear(); // Ano
     return `${day}/${month}/${year}`;
 }
-
 function processarDadosDoExcelCaixa(data) {
     const extrato = [];
     const valorRegex = /(\d{1,3}(\.\d{3})*,\d{2})\s([CD])/;
