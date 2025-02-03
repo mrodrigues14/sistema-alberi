@@ -2802,12 +2802,16 @@ async function processarExtrato(nomeBanco) {
                     : processarDadosDoExtratoBancoDoSantander(data); // Outros formatos do Santander
                 mostrarExtratoPopup(linhasExtrato);
             } else if (nomeBanco.toLowerCase().includes('sicredi')) {
-                // Santander
                 const linhasExtrato = processarDadosSicredi(data);
                 mostrarExtratoPopup(linhasExtrato);
             } else if (nomeBanco.toLowerCase().includes('nubank')) {
-                // Santander
                 const linhasExtrato = processarDadosNubank(data);
+                mostrarExtratoPopup(linhasExtrato);
+            } else if (nomeBanco.toLowerCase().includes('c6')) {
+                const linhasExtrato = processarDadosC6(data);
+                mostrarExtratoPopup(linhasExtrato);
+            } else if (nomeBanco.toLowerCase().includes('caixa')) {
+                const linhasExtrato = processarCartoesCaixa(data);
                 mostrarExtratoPopup(linhasExtrato);
             }
             else {
@@ -2843,8 +2847,62 @@ async function processarExtrato(nomeBanco) {
 
 //funcoes auxiliares
 
-//nubank
+//c6
+function processarDadosC6(data) {
+    const extrato = [];
+    const dateRegex = /^(\d{2}) ([a-z]{3})$/i;
+    const valueRegex = /^\d{1,3}(?:\.\d{3})*,\d{2}$/;
+    const meses = {
+        "jan": "01", "fev": "02", "mar": "03", "abr": "04",
+        "mai": "05", "jun": "06", "jul": "07", "ago": "08",
+        "set": "09", "out": "10", "nov": "11", "dez": "12"
+    };
 
+    let capturando = false;
+    let anoAtual = "2024"; // Ajuste se necessário
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        if (text.includes("Subtotal deste cartão")) {
+            capturando = true;
+            continue;
+        }
+
+        if (text.includes("Formas de pagamento")) {
+            break;
+        }
+
+        const match = text.match(dateRegex);
+        if (capturando && match) {
+            let dia = match[1];
+            let mes = meses[match[2].toLowerCase()] || "01";
+            let dataFormatada = `${dia}/${mes}/${anoAtual}`;
+
+            let descricao = data[i + 2]?.trim();
+            let valor = data[i + 4]?.trim();
+
+            let tipo = "saida";
+            if (descricao && descricao.toLowerCase().includes("inclusao de pagamento")) {
+                tipo = "entrada";
+            }
+
+            if (descricao && valor.match(valueRegex)) {
+                extrato.push({
+                    data: dataFormatada,
+                    descricao: descricao,
+                    valor: valor,
+                    tipo: tipo
+                });
+                i += 4;
+            }
+        }
+    }
+
+    return extrato;
+}
+
+//nubank
 function processarDadosNubank(data) {
     const resultado = [];
     let currentDate = "";
@@ -3786,6 +3844,55 @@ function processarDadosDoExcelCaixa(data) {
             tipo: tipo
         });
     });
+
+    return extrato;
+}
+
+function processarCartoesCaixa(data) {
+    const extrato = [];
+    const dateRegex = /^(\d{2})\/(\d{2})$/; // Captura datas no formato dd/mm (ex: 19/10)
+    const valueRegex = /^(\d{1,3}(?:\.\d{3})*,\d{2})([DC])$/; // Captura valores seguidos de D ou C
+
+    let capturando = false;
+    let anoAtual = "2024"; // Definir ano apropriado
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        if (text.includes("Demonstrativo")) {
+            capturando = true;
+            continue;
+        }
+
+        if (!capturando) continue;
+
+        if (text.includes("Total final") || text.includes("Valor total desta fatura")) {
+            break;
+        }
+
+        if (text.match(dateRegex)) {
+            let [_, dia, mes] = text.match(dateRegex);
+            let dataFormatada = `${dia}/${mes}/${anoAtual}`;
+
+            let descricao = data[i + 2]?.trim();
+            let cidade = data[i + 4]?.trim();
+            let valorMatch = data[i + 6]?.trim().match(valueRegex);
+
+            if (valorMatch) {
+                let valor = valorMatch[1]; // Valor numérico
+                let tipo = valorMatch[2] === "D" ? "saida" : "entrada"; // Define se é saída ou entrada
+
+                extrato.push({
+                    data: dataFormatada,
+                    descricao: descricao,
+                    valor: valor,
+                    tipo: tipo
+                });
+
+                i += 6; // Avança para evitar capturas erradas
+            }
+        }
+    }
 
     return extrato;
 }
