@@ -24,16 +24,17 @@ router.get('/listar', (req, res) => {
 });
 
 router.post('/adicionar', (req, res) => {
-    const {nomeFornecedor, cnpj, cpf, tipoProduto, idcliente} = req.body;
-    console.log(nomeFornecedor, cnpj, cpf, tipoProduto, idcliente);
-    adicionarFornecedor(nomeFornecedor, cnpj, cpf, tipoProduto, idcliente,(err, result) => {
-        if(err) {
+    const { nomeFornecedor, cnpj, cpf, tipoProduto, entrada, saida, idcliente } = req.body;
+
+    const entradaBoolean = entrada === 'true' || entrada === true;
+    const saidaBoolean = saida === 'true' || saida === true;
+
+    adicionarFornecedor(nomeFornecedor, cnpj, cpf, tipoProduto, entradaBoolean, saidaBoolean, idcliente, (err, result) => {
+        if (err) {
             console.error(err);
-            res.status(500).send('Erro ao adicionar fornecedor');
+            return res.status(400).send(err.message);
         }
-        else {
-            res.redirect(`/fornecedor?successMsg=Fornecedor ${nomeFornecedor} adicionado com sucesso!`);
-        }
+        res.redirect(`/fornecedor?successMsg=Fornecedor ${nomeFornecedor} adicionado com sucesso!`);
     });
 });
 
@@ -53,14 +54,17 @@ router.post('/remover', (req, res) => {
 
 
 router.post('/editar', (req, res) => {
-    const { idFornecedor, nomeFornecedor, cnpj, cpf, tipoProduto, idcliente } = req.body;
-    editarFornecedor(idFornecedor, nomeFornecedor, cnpj, cpf, tipoProduto, idcliente, (err, result) => {
-        if(err) {
+    const { idFornecedor, nomeFornecedor, cnpj, cpf, tipoProduto, entrada, saida, idcliente } = req.body;
+
+    const entradaBoolean = entrada === 'true' || entrada === true;
+    const saidaBoolean = saida === 'true' || saida === true;
+
+    editarFornecedor(idFornecedor, nomeFornecedor, cnpj, cpf, tipoProduto, entradaBoolean, saidaBoolean, idcliente, (err, result) => {
+        if (err) {
             console.error(err);
-            res.status(500).send('Erro ao editar fornecedor');
-        } else {
-            res.json({ success: true, message: `Fornecedor ${nomeFornecedor} editado com sucesso!` });
+            return res.status(400).send(err.message);
         }
+        res.json({ success: true, message: `Fornecedor ${nomeFornecedor} editado com sucesso!` });
     });
 });
 

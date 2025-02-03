@@ -201,8 +201,17 @@ function selecionarMesAno(mesAno) {
     const mesSelectorValue = document.getElementById('mesSelectorValue');
     mesSelectorValue.value = mesAno;
 
+    limparTabela(); // Limpa a tabela antes de buscar novos dados
     buscarDados();
 }
+
+function limparTabela() {
+    const tbody = document.getElementById('extrato-body');
+    if (tbody) {
+        tbody.innerHTML = ''; // Remove todas as linhas da tabela
+    }
+}
+
 
 function scrollMeses(direcao) {
     const mesSelector = document.getElementById('mesSelector');
@@ -328,7 +337,6 @@ document.getElementById('meuFormulario').addEventListener('submit', async functi
         rubrica_do_mes: 0 // Inclui o valor da Rubrica do Mês (1 ou 0)
     };
 
-    console.log(dadosParaInserir); // Verifique os dados no console antes de enviar
 
     // Envia os dados ao backend
     try {
@@ -524,13 +532,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function formatarValorFinanceiroInput(valor) {
-    valor = valor.replace(/\D/g, '');
-    valor = (valor / 100).toFixed(2) + '';
-    valor = valor.replace(".", ",");
-    valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-    return valor;
-}
 
 function initializePageConsulta() {
     const nomeEmpresa = getStoredEmpresaName();
@@ -539,9 +540,7 @@ function initializePageConsulta() {
         .then(response => response.json())
         .then(data => {
             if (data && data.length > 0) {
-                console.log('Dados da empresa recebidos:', data);
                 idEmpresa = data[0].IDCLIENTE;
-                console.log('idEmpresa definido como:', idEmpresa);
 
                 fetch(`/insercao/dados?idcliente=${idEmpresa}`)
                     .then(response => response.json())
@@ -651,7 +650,6 @@ function carregarCategoriasEFornecedores() {
     fetch(`/insercao/dados-categoria?idcliente=${idEmpresa}`)
         .then(response => response.json())
         .then(categorias => {
-            console.log("Dados recebidos no front-end:", categorias);
 
             categorias.forEach(categoria => {
                 categoriasMap.set(categoria.IDCATEGORIA, categoria);
@@ -667,7 +665,6 @@ function carregarCategoriasEFornecedores() {
                 }
             });
 
-            console.log("Mapa de categorias:", categoriasMap);
         })
         .catch(error => {
             console.error('Erro ao buscar dados:', error);
@@ -680,7 +677,6 @@ function carregarCategoriasEFornecedores() {
             data.forEach(fornecedor => {
                 fornecedoresMap.set(fornecedor.NOME_TIPO.toLowerCase().trim(), fornecedor.IDFORNECEDOR);
             });
-            console.log(fornecedoresMap)
         });
 }
 
@@ -696,7 +692,6 @@ async function buscarDados(fromEdit = false) {
     const mesAno = document.getElementById('mesSelectorValue').value;
     const dataFormatada = formatDateToFirstOfMonth(mesAno);
 
-    console.log('Buscando dados para o banco:', idBanco, 'e data:', dataFormatada, 'e empresa:', idEmpresa);
 
     // Salva a posição de rolagem antes de atualizar
     const scrollPosition = fromEdit ? window.scrollY : 0;
@@ -708,10 +703,8 @@ async function buscarDados(fromEdit = false) {
         const data = await response.json();
 
         if (fromEdit) {
-            // Atualiza apenas os dados das linhas existentes
             atualizarLinhasExistentes(data, saldoInicial);
         } else {
-            // Carrega os dados completamente (limpa e recria)
             configurarCarregamentoIncremental(data, saldoInicial);
         }
 
@@ -1049,12 +1042,13 @@ async function atualizarTabela(dados, saldoInicial) {
                     <button onclick="selecionarLinha(this)" data-idextrato="${item.IDEXTRATO}" class="select-btn-extrato-opcoes">
                         <i class="fas fa-hand-pointer"></i>
                     </button>
-                    <form action="insercao/deletar-extrato" method="post" onsubmit="return confirm('Tem certeza que deseja deletar este extrato?');">
+                    <form onsubmit="return deletarLinhaExtrato(event, ${item.IDEXTRATO})">
                         <input type="hidden" name="idExtrato" value="${item.IDEXTRATO}">
                         <button type="submit" class="delete-btn-extrato-opcoes">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </form>
+
                 </div>
             </div>
         `;
@@ -1130,6 +1124,35 @@ async function atualizarTabela(dados, saldoInicial) {
     return saldo;
 }
 
+async function deletarLinhaExtrato(event, idExtrato) {
+    event.preventDefault(); // Impede o recarregamento da página
+
+    const confirmacao = confirm("Tem certeza que deseja deletar este extrato?");
+    if (!confirmacao) return; // Se o usuário cancelar, não faz nada
+
+    try {
+        const response = await fetch('/insercao/deletar-extrato', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `idExtrato=${encodeURIComponent(idExtrato)}`
+        });
+
+        if (!response.ok) {
+            throw new Error("Erro ao deletar extrato");
+        }
+
+        console.log("Extrato deletado com sucesso!");
+
+        // Atualiza os dados chamando buscarDados(true)
+        limparTabela()
+        await buscarDados();
+
+    } catch (error) {
+        console.error("Erro ao deletar extrato:", error);
+    }
+}
 async function buscarAnexos(idExtrato) {
     try {
         const response = await fetch(`/insercao/anexos?idExtrato=${idExtrato}`);
@@ -1376,18 +1399,16 @@ function editarLinha(buttonElement) {
             fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
                 .then(response => response.json())
                 .then(categorias => {
-                    console.log(categorias);
                     const listaCategorias = categorias.map(categoria => ({
                         id: categoria.IDCATEGORIA,
                         nome: categoria.NOME,
                     }));
-                    console.log(listaCategorias);
                     // Criar dropdown personalizado
                     const valorAtual = cell.textContent.trim(); // Pega o valor da célula antes de editar
 
                     const dropdownCategorias = criarDropdownPersonalizado(
                         listaCategorias,
-                        'Categoria',
+                        'rubricas',
                         (tipo) => abrirPopupOpcao(tipo),
                         valorAtual
                     );
@@ -1440,7 +1461,7 @@ function editarLinha(buttonElement) {
                     // Criar dropdown personalizado
                     const dropdownFornecedores = criarDropdownPersonalizado(
                         listaFornecedores, // Lista de fornecedores
-                        'Fornecedor',      // Tipo
+                        'fornecedor',      // Tipo
                         (tipo) => abrirPopupOpcao(tipo), // Callback para abrir o popup
                         valorAtual         // Valor atual da célula
                     );
@@ -1474,8 +1495,8 @@ function editarLinha(buttonElement) {
                     // Cria o dropdown personalizado para rubricas
                     const dropdownRubricas = criarDropdownPersonalizado(
                         listaRubricas, // Lista de rubricas
-                        'Rubrica',     // Tipo
-                        (tipo) => abrirPopupOpcao(tipo), // Callback para abrir o popup "Adicionar Novo"
+                        'rubricas',     // Tipo
+                        (tipo) => abrirPopupOpcao(tipo),
                         valorAtual      // Valor atual da célula
                     );
 
@@ -1561,7 +1582,6 @@ function confirmarEdicao(buttonElement) {
         categoriaNome = dadosOriginais[1]; // Usa o valor original se nenhum for selecionado
     }
 
-    console.log('Categoria selecionada:', categoriaNome); // Apenas para debug
 
     // Obtém o nome da rubrica contábil selecionada
     const rubricaContabilCell = cells[5]; // Rubrica Contábil (sexta coluna)
@@ -1594,14 +1614,12 @@ function confirmarEdicao(buttonElement) {
         valor: valor // Apenas o valor, seja de entrada ou saída
     };
 
-    console.log(dadosEditados);
 
     // Envia os dados para o backend
     enviarEdicaoExtrato(dadosEditados, buttonElement);
 }
 
 function enviarEdicaoExtrato(dadosEditados, buttonElement) {
-    console.log(dadosEditados);
     fetch('consulta/editar/extrato', {
         method: 'POST',
         headers: {
@@ -1616,7 +1634,6 @@ function enviarEdicaoExtrato(dadosEditados, buttonElement) {
             return response.json();
         })
         .then(data => {
-            console.log(data);
             if (data.affectedRows > 0) {
                 alert('Edição confirmada com sucesso!');
             } else {
@@ -1688,8 +1705,9 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
                 <option value="" >Selecione um Fornecedor</option>
             </select>
         </td>
-        <td><input type="text" name="descricao" class="editavel" placeholder="Descrição" style="width: 100%;"></td>
         <td><input type="text" name="observacao" class="editavel" placeholder="Observação" style="width: 100%;"></td>
+
+        <td><input type="text" name="descricao" class="editavel" placeholder="Descrição" style="width: 100%;"></td>
         <td>
             <select name="rubricaContabil" class="styled-select" style="width: 100%;" id="subextratoRubricaContabil">
                 <option value="" >Selecione uma Rubrica</option>
@@ -1761,19 +1779,24 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
     const row = buttonElement.closest('tr');
 
     // Valida valores de entrada ou saída
-    let tipo = null;
-    let valorEn = null;
-    let valorSa = null;
+    let valorEn = row.querySelector('[name="valorEn"]').value.trim();
+    let valorSa = row.querySelector('[name="valorSa"]').value.trim();
 
-    if (row.querySelector('[name="valorEn"]').value) {
+    valorEn = valorEn ? parseFloat(valorEn.replace(/\./g, '').replace(',', '.')) || null : null;
+    valorSa = valorSa ? parseFloat(valorSa.replace(/\./g, '').replace(',', '.')) || null : null;
+
+    // Determinar tipo de transação corretamente
+    let tipo = null;
+
+    if (valorEn !== null && valorEn > 0) {
         tipo = 'ENTRADA';
-        valorEn = parseFloat(row.querySelector('[name="valorEn"]').value.replace(/\./g, '').replace(',', '.')) || null;
-    } else if (row.querySelector('[name="valorSa"]').value) {
+    }
+    if (valorSa !== null && valorSa > 0) {
         tipo = 'SAIDA';
-        valorSa = parseFloat(row.querySelector('[name="valorSa"]').value.replace(/\./g, '').replace(',', '.')) || null;
     }
 
-    if (!tipo && valorEn === null && valorSa === null) {
+    // Se nenhum valor for válido, exibe erro
+    if (!tipo) {
         alert('Por favor, insira um valor válido para entrada ou saída.');
         return;
     }
@@ -1814,7 +1837,7 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
         rubricaContabil: rubricaContabil,
         id_extrato_principal: idExtratoPrincipal
     };
-
+    console.log(data)
     fetch('/insercao/inserir-subextrato', {
         method: 'POST',
         headers: {
@@ -1838,7 +1861,6 @@ function confirmarSubextrato(idExtratoPrincipal, buttonElement) {
 }
 
 function atualizarTabelaComSubextrato(idExtratoPrincipal) {
-    console.log("idPrincipal", idExtratoPrincipal);
 
     // Função interna para formatar os valores no formato 2.300,30
     function formatarValorComPonto(valor) {
@@ -1939,8 +1961,6 @@ function atualizarTabelaComSubextrato(idExtratoPrincipal) {
                 extratoRow.classList.remove('erro-principal');
             }
 
-            console.log(`Discrepância: ${discrepancia ? 'Sim' : 'Não'}`);
-            console.log(`Total Entradas: ${formatarValorComPonto(totalEntradas)}, Total Saídas: ${formatarValorComPonto(totalSaidas)}, Valor Principal: ${formatarValorComPonto(valorPrincipal)}`);
         })
         .catch(error => {
             console.error('Erro ao atualizar subextratos:', error);
@@ -2122,8 +2142,8 @@ function confirmarEdicaoSubextrato(idSubextrato, buttonElement) {
     const row = buttonElement.closest('tr');
     const cells = row.querySelectorAll('td');
 
-    // Obter o idExtratoPrincipal a partir do dataset ou de outra referência
-    const idExtratoPrincipal = row.dataset.idextratoprincipal; // Certifique-se de definir isso ao criar a linha
+    // Obter o idExtratoPrincipal a partir do dataset
+    const idExtratoPrincipal = row.dataset.idextratoprincipal;
 
     const dadosEditados = {
         idSubextrato: idSubextrato,
@@ -2131,11 +2151,11 @@ function confirmarEdicaoSubextrato(idSubextrato, buttonElement) {
         categoria: cells[1].querySelector('select')
             ? (cells[1].querySelector('select').selectedOptions[0]?.text.trim() || '')
             : '',
-        observacao:cells[3].querySelector('input') ? cells[3].querySelector('input').value || '' : '',
-        descricao: cells[4].querySelector('input') ? cells[4].querySelector('input').value || '' : '',
         fornecedor: cells[2].querySelector('select')
             ? (cells[2].querySelector('select').selectedOptions[0]?.text.trim() || '')
             : '',
+        observacao: cells[3].querySelector('input') ? cells[3].querySelector('input').value.trim() || '' : '',
+        descricao: cells[4].querySelector('input') ? cells[4].querySelector('input').value.trim() || '' : '',
         rubricaContabil: cells[5].querySelector('select')
             ? (cells[5].querySelector('select').selectedOptions[0]?.text.trim() || '')
             : '',
@@ -2146,8 +2166,6 @@ function confirmarEdicaoSubextrato(idSubextrato, buttonElement) {
             ? (cells[7].querySelector('input').value === '0,00' ? '' : parseFloat(cells[7].querySelector('input').value.replace(/\./g, '').replace(',', '.')) || '')
             : ''
     };
-
-    console.log(dadosEditados);
 
     // Chamada à API para salvar a edição do subextrato
     fetch('/insercao/editar-subextrato', {
@@ -2161,7 +2179,12 @@ function confirmarEdicaoSubextrato(idSubextrato, buttonElement) {
         })
         .then(result => {
             alert(result.message);
-            atualizarTabelaComSubextrato(idExtratoPrincipal); // Atualiza a tabela usando o idExtratoPrincipal
+
+            // Remove a linha editada antes de atualizar a tabela
+            row.remove();
+
+            // Atualiza a tabela completa com os subextratos atualizados
+            atualizarTabelaComSubextrato(idExtratoPrincipal);
         })
         .catch(error => {
             console.error(error);
@@ -2248,44 +2271,52 @@ async function fetchSaldoInicial() {
     }
 }
 
-function fetchSaldoFinal() {
-    const extratoBody = document.getElementById('extrato-body');
-    const rows = extratoBody.getElementsByTagName('tr');
-    const saldoFinalTable = document.getElementById('saldoFinalTable').querySelector('tbody');
+async function fetchSaldoFinal() {
+    const idBancoElement = document.getElementById('seletorBanco');
+    const idBanco = IDBANCO || (idBancoElement ? idBancoElement.value : null);
 
-    const saldoInicialTable = document.getElementById('saldoInicialTable');
-    let saldoInicial = 0;
-
-    if (saldoInicialTable) {
-        const saldoInicialRow = saldoInicialTable.querySelector('tbody tr');
-        if (saldoInicialRow) {
-            const saldoInicialText = saldoInicialRow.cells[0].textContent;
-            saldoInicial = parseFloat(saldoInicialText.replace(/\./g, '').replace(',', '.')) || 0;
-        } else {
-            console.warn('Nenhum saldo inicial encontrado na tabela.');
-        }
-    } else {
-        console.warn('Elemento saldoInicialTable não encontrado.');
+    if (!idBanco) {
+        console.error('Banco não selecionado ou elemento não encontrado.');
+        return;
     }
 
-    let saldoFinal = saldoInicial;
+    const mesAno = document.getElementById('mesSelectorValue').value;
+    const dataFormatada = formatDateToFirstOfMonth(mesAno);
 
-    if (rows.length > 0) {
-        Array.from(rows).forEach(row => {
-            const entradaCell = row.cells[6].textContent.trim();
-            const saidaCell = row.cells[7].textContent.trim();
-            const entrada = parseFloat(entradaCell.replace(/\./g, '').replace(',', '.')) || 0;
-            const saida = parseFloat(saidaCell.replace(/\./g, '').replace(',', '.')) || 0;
 
-            saldoFinal += entrada - saida;
+    try {
+        // Pega o saldo inicial
+        const saldoInicial = await fetchSaldoInicial();
+
+        // Busca os dados diretamente do servidor
+        const response = await fetch(`/consulta/dados?banco=${idBanco}&data=${dataFormatada}&empresa=${idEmpresa}`);
+        const data = await response.json();
+
+        let saldoFinal = saldoInicial;
+
+        // Percorre os dados e calcula o saldo final
+        data.forEach(item => {
+            const valor = parseFloat(item.VALOR) || 0;
+            if (item.TIPO_DE_TRANSACAO === 'ENTRADA') {
+                saldoFinal += valor;
+            } else if (item.TIPO_DE_TRANSACAO === 'SAIDA') {
+                saldoFinal -= valor;
+            }
         });
-    }
 
-    saldoFinalTable.innerHTML = '';
-    const rowFinal = saldoFinalTable.insertRow();
-    rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
-    console.log("saldo finao", rowFinal)
-    definirSaldoInicialProximoMes(saldoFinal);
+
+        // Atualiza a interface com o saldo final
+        const saldoFinalTable = document.getElementById('saldoFinalTable').querySelector('tbody');
+        saldoFinalTable.innerHTML = '';
+        const rowFinal = saldoFinalTable.insertRow();
+        rowFinal.insertCell().textContent = formatarValorNumerico(saldoFinal);
+
+        // Define o saldo inicial para o próximo mês
+        definirSaldoInicialProximoMes(saldoFinal);
+
+    } catch (error) {
+        console.error('Erro ao calcular o saldo final:', error);
+    }
 }
 
 $(function() {
@@ -2325,7 +2356,6 @@ function definirSaldoInicialProximoMes(saldoFinal) {
             return response.json();
         })
         .then(data => {
-            console.log(data);
             // Só define o saldo se definidoManual for false
             if (data.definidoManual === false || data.definidoManual === 0) {
                 fetch('/consulta/definirSaldoInicial', {
@@ -2350,7 +2380,6 @@ function definirSaldoInicialProximoMes(saldoFinal) {
                         console.error('Erro ao definir saldo inicial do próximo mês:', error);
                     });
             } else {
-                console.log('Saldo definido manualmente, não será atualizado.');
             }
         })
         .catch(error => {
@@ -2539,7 +2568,6 @@ function abrirPopupAnexos(idExtrato) {
     const overlay = document.getElementById('anexo-overlay');
     const anexoContent = document.getElementById('anexo-content');
     anexoContent.innerHTML = ''; // Limpa conteúdo anterior
-    console.log(idExtrato)
 
     // Chama os anexos via fetch e abre o popup
     fetch(`/insercao/anexos?idExtrato=${idExtrato}`)
@@ -2672,7 +2700,6 @@ function salvarOrdem(ordem) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log('Ordem salva com sucesso');
             } else {
                 console.error('Erro ao salvar ordem');
             }
@@ -2719,8 +2746,6 @@ async function processarExtrato(nomeBanco) {
             alert('Por favor, selecione um arquivo.');
             return;
         }
-        console.log(nomeBanco)
-        console.log(file)
         const fileName = file.name.toLowerCase();
         const fileExtension = fileName.split('.').pop();
 
@@ -2735,8 +2760,6 @@ async function processarExtrato(nomeBanco) {
                     data.push(item.str);
                 });
             }
-            console.log(data)
-            console.log(nomeBanco)
             // Processamento de PDFs baseado no nomeBanco
             if (nomeBanco.toLowerCase().includes('banco do brasil')) {
                 // Banco do Brasil
@@ -2757,7 +2780,6 @@ async function processarExtrato(nomeBanco) {
                 const linhasExtrato = data.some(item => item.includes("Bradesco Internet Banking"))
                     ? processarDadosDoExtratoBradesco1(data)
                     : processarDadosDoExtratoBradesco2(data);
-                console.log(linhasExtrato)
                 mostrarExtratoPopup(linhasExtrato);
 
             } else if (nomeBanco.includes('mercado pago')) {
@@ -2782,7 +2804,6 @@ async function processarExtrato(nomeBanco) {
                 const linhasExtrato = data.some(item => item.includes("Internet Banking Empresarial"))
                     ? processarDadosSantander2(data) // Se for "Internet Banking Empresarial"
                     : processarDadosDoExtratoBancoDoSantander(data); // Outros formatos do Santander
-                console.log(linhasExtrato);
                 mostrarExtratoPopup(linhasExtrato);
             }
             else {
@@ -2825,7 +2846,6 @@ function processarDadosDoExtratoBancoDoSantander(data) {
     const valueRegex = /-?\d+,\d{2}/;
     const saldoRegex = /saldo\s*\(R\$\)/i;
     const saldoAnteriorRegex = /Saldo anterior/i;
-    console.log(data)
     let linhaAtual = null;
     let dentroDoIntervaloSaldo = false;
 
@@ -3002,7 +3022,6 @@ function processarDadosDoExtratoSicoob(data) {
         extrato.push(linhaAtual);
     }
 
-    console.log(extrato);
 
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
@@ -3060,7 +3079,6 @@ function processarDadosDoExtratoStone(data) {
         extrato.push(linhaAtual);
     }
 
-    console.log(extrato);
 
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
@@ -3120,7 +3138,6 @@ function processarDadosDoExtratoMercadoPago1(data) {
         extrato.push(linhaAtual);
     }
 
-    console.log(extrato);
 
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
@@ -3227,13 +3244,11 @@ function processarDadosDoExtratoBradesco1(data) {
         });
     });
 
-    console.log(extrato);
 
     return extrato.slice(0, descricoes.length);
 }
 function processarDadosDoExtratoBradesco2(data) {
     const extrato = [];
-    console.log(extrato)
     const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
     const valueRegex = /-?\d+,\d{2}/;
     const saldoRegex = /saldo/i;
@@ -3280,7 +3295,6 @@ function processarDadosDoExtratoBradesco2(data) {
 
 //banco do brasil
 function processarDadosDoExtratoBancoDoBrasil(data) {
-    console.log(data)
 
     const extrato = [];
     const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
@@ -3445,7 +3459,6 @@ function processarDadosDoExtratoItau(data) {
         }
     }
 
-    console.log(JSON.stringify(extrato, null, 2));
     return extrato;
 }
 function processarDadosDoExtratoItauPersonalite(data) {
@@ -3825,7 +3838,6 @@ function salvarAlteracoes() {
     });
 
     const json_object = JSON.stringify(entradas);
-    console.log(json_object);
 
     // Enviar os dados via fetch
     fetch('/insercao/inserir-lote', {
@@ -3890,7 +3902,6 @@ function executarMetodoAutomatizado() {
 
 document.getElementById('excelFile').addEventListener('change', function() {
     if (this.files && this.files[0]) {
-        console.log(this.files)
         lerExcel();
     }
 });

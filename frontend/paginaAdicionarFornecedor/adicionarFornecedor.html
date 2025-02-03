@@ -14,8 +14,14 @@
 <div class="lista-fornecedores">
     <h2>Fornecedores</h2>
     <div class="adicionar-fornecedor-container">
-        <button id="adicionar-fornecedor-btn" class="adicionar-fornecedor-btn" onclick="abrirPopup('popup-adicionar-fornecedor')">Adicionar Novo Fornecedor</button>
+        <button id="adicionar-fornecedor-btn" class="adicionar-fornecedor-btn" onclick="abrirPopup('popup-adicionar-fornecedor')">
+            Adicionar Novo Fornecedor
+        </button>
     </div>
+
+    <!-- Linha separadora -->
+    <hr class="separador-fornecedores">
+
     <ul id="fornecedor-lista" class="fornecedor-lista">
         <!-- Lista será populada dinamicamente -->
     </ul>
@@ -23,6 +29,8 @@
 
 
 
+
+<!-- Popup para Adicionar Fornecedor -->
 <!-- Popup para Adicionar Fornecedor -->
 <div id="popup-adicionar-fornecedor" class="popup">
     <div class="popup-content">
@@ -30,13 +38,27 @@
         <h2>Adicionar Novo Fornecedor</h2>
         <form id="formAdd" onsubmit="adicionarFornecedor(event)">
             <input type="text" id="nomeEmpresa" name="nomeFornecedor" placeholder="Nome do Fornecedor" required>
+
             <select id="seletorCNPJ">
                 <option value="0">CPF</option>
                 <option value="1">CNPJ</option>
             </select>
+
             <input type="text" id="cpf" name="cpf" placeholder="CPF" class="cpf-cnpj">
             <input type="text" id="cnpj" name="cnpj" placeholder="CNPJ" class="cpf-cnpj" style="display:none;">
             <input type="text" id="tipoProduto" name="tipoProduto" placeholder="Tipo de Produto">
+
+            <div>
+                <label>
+                    <input type="checkbox" id="entrada" name="entrada" onclick="toggleTipoFornecedor('entrada')">
+                    Entrada
+                </label>
+                <label>
+                    <input type="checkbox" id="saida" name="saida" onclick="toggleTipoFornecedor('saida')">
+                    Saída
+                </label>
+            </div>
+
             <button type="submit">Adicionar</button>
         </form>
     </div>

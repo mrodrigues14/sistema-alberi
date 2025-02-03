@@ -28,7 +28,6 @@ section {
 h1 {
     font-size: 24px;
     margin-bottom: 20px;
-    color: #1d3557;
 }
 
 fieldset {
@@ -41,7 +40,6 @@ fieldset {
 legend {
     padding: 0 10px;
     font-size: 18px;
-    color: #457b9d;
 }
 
 .form-group {
@@ -52,7 +50,6 @@ label {
     font-weight: 600;
     margin-bottom: 5px;
     display: block;
-    color: #457b9d;
 }
 
 input[type="text"], select {
@@ -65,8 +62,6 @@ input[type="text"], select {
 }
 
 input[type="text"]:focus, select:focus {
-    border-color: #1d3557;
-    box-shadow: 0 0 5px rgba(29, 53, 87, 0.3);
     outline: none;
 }
 
@@ -86,7 +81,7 @@ button:hover {
 }
 
 .btn-primary {
-    background-color: #457b9d;
+    background-color: #2d3692;
     color: #fff;
 }
 

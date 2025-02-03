@@ -113,16 +113,12 @@ function abrirPopupEditarFornecedor(idFornecedor) {
             document.getElementById('novoNomeFornecedor').value = fornecedor.NOME;
             document.getElementById('novoTipoProduto').value = fornecedor.TIPO_DE_PRODUTO || '';
 
-            const novoSeletorDocumento = document.getElementById('novoSeletorDocumento');
-            if (fornecedor.CPF) {
-                novoSeletorDocumento.value = 'CPF';
-                document.getElementById('novoCpf').value = fornecedor.CPF;
-                document.getElementById('novoCnpj').style.display = 'none';
-            } else {
-                novoSeletorDocumento.value = 'CNPJ';
-                document.getElementById('novoCnpj').value = fornecedor.CNPJ;
-                document.getElementById('novoCpf').style.display = 'none';
-            }
+            // Verifica qual checkbox ativar
+            document.getElementById('novoEntrada').checked = fornecedor.ENTRADA;
+            document.getElementById('novoSaida').checked = fornecedor.SAIDA;
+
+            // Aplicar comportamento de exclusividade
+            toggleTipoFornecedor(fornecedor.ENTRADA ? 'entrada' : 'saida');
 
             popup.style.display = 'flex';
         })
@@ -137,6 +133,15 @@ function fecharPopup(popupId) {
     }
 }
 
+function toggleTipoFornecedor(tipo) {
+    if (tipo === 'entrada') {
+        document.getElementById('saida').checked = false;
+    } else if (tipo === 'saida') {
+        document.getElementById('entrada').checked = false;
+    }
+}
+
+
 function adicionarFornecedor(event) {
     event.preventDefault();
 
@@ -146,9 +151,20 @@ function adicionarFornecedor(event) {
     const cnpj = document.getElementById('cnpj').value || null;
     const tipoProduto = document.getElementById('tipoProduto').value || null;
 
+    // Capturar valores dos checkboxes
+    const entrada = document.getElementById('entrada').checked;
+    const saida = document.getElementById('saida').checked;
+
+    if (!entrada && !saida) {
+        alert('Por favor, selecione se o fornecedor é de Entrada ou Saída.');
+        return;
+    }
+
     const dados = {
         nomeFornecedor,
         tipoProduto,
+        entrada,
+        saida,
         idcliente
     };
 
@@ -165,10 +181,13 @@ function adicionarFornecedor(event) {
         },
         body: JSON.stringify(dados)
     })
-        .then(response => {
-            if (response.ok) {
-                alert('Fornecedor adicionado com sucesso!');
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
                 location.reload();
+            } else {
+                throw new Error(data.message);
             }
         })
         .catch(error => {
@@ -187,12 +206,23 @@ function editarFornecedor(event) {
     const cnpj = document.getElementById('novoCnpj').value || null;
     const tipoProduto = document.getElementById('novoTipoProduto').value || null;
 
+    // Capturar valores dos checkboxes
+    const entrada = document.getElementById('novoEntrada').checked;
+    const saida = document.getElementById('novoSaida').checked;
+
+    if (!entrada && !saida) {
+        alert('Por favor, selecione se o fornecedor é de Entrada ou Saída.');
+        return;
+    }
+
     const dados = {
         idFornecedor: fornecedorId,
         nomeFornecedor,
         cpf,
         cnpj,
-        tipoProduto
+        tipoProduto,
+        entrada,
+        saida
     };
 
     fetch('/fornecedor/editar', {
@@ -202,19 +232,13 @@ function editarFornecedor(event) {
         },
         body: JSON.stringify(dados)
     })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error('Erro ao editar fornecedor');
-            }
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
                 alert(data.message);
-                window.location.href = '/fornecedor';
+                location.reload();
             } else {
-                throw new Error('Erro ao editar fornecedor');
+                throw new Error(data.message);
             }
         })
         .catch(error => {
