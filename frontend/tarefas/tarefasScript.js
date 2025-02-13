@@ -241,24 +241,29 @@ function createItemEl(columnEl, column, item, index) {
     }
 
     const descriptionsCount = item.descriptions ? item.descriptions.length : 0;
-
     const stars = '★'.repeat(item.prioridade || 0);
+
+    // Removendo quebras de linha no título
+    const sanitizedTitle = (item.title || '').replace(/\n/g, ' ');
 
     listEl.innerHTML = `
         <div class="item-content">
             <div class="item-header">
                 <!-- Edit Icon -->
-                <div class="edit-icon" onclick="editItem(${index}, ${column}); event.stopPropagation();">&#9998;</div>
+                <div class="edit-icon" onclick="event.stopPropagation(); editItem(${index}, ${column});">
+                    &#9998;
+                </div>
                 <!-- Delete Icon -->
-                <div class="delete-icon" onclick="showDeleteConfirmPopup(${item.idtarefa}, '${item.title}', ${index}, ${column}); event.stopPropagation();">
+                <div class="delete-icon" onclick="event.stopPropagation(); showDeleteConfirmPopup(${item.idtarefa}, '${sanitizedTitle}', ${index}, ${column});">
                     &#128465;
                 </div>
             </div>
-            <a class="item-title">${item.title || ''}</a>
+            <a class="item-title">${sanitizedTitle}</a>
             <div class="item-priority">${stars}</div>
             <span class="item-company">${item.apelido || ''}</span>
         </div>
     `;
+
     columnEl.appendChild(listEl);
 }
 
