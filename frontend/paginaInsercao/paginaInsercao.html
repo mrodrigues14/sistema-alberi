@@ -18,7 +18,9 @@
 </head>
 <body>
 <div id="menu-container"></div>
-
+<div id="popupOpcoesModal" style="display:none; z-index: 9999 !important;">
+    <iframe id="popupIframe" src="" frameborder="0" style="width: 100%; height: 100%;"></iframe>
+</div>
 <div class="body-insercao">
     <div class="seletores">
         <div>
@@ -174,9 +176,7 @@
     </div>
 
 
-    <div id="popupOpcoesModal" style="display:none;">
-        <iframe id="popupIframe" src="" frameborder="0" style="width: 100%; height: 100%;"></iframe>
-    </div>
+
 
     <div class="mes-selector-container" id="mesSelectorWrapper">
         <button class="arrow-button" onclick="scrollMeses('left')">&#8249;</button>

@@ -1330,4 +1330,57 @@ select.fornecedor-select {
     gap: 10px;
 }
 
-seletorCategoria
+.custom-select-container {
+    position: relative;
+    width: 200px;
+}
+
+.selected {
+    background: #fff;
+    padding: 8px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.options-container {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 9999; /* Aumenta a prioridade sobre outros elementos */
+    display: none;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Adiciona sombra para destaque */
+}
+
+.options-container.active {
+    display: block;
+}
+
+.search-box {
+    width: 100%;
+    padding: 6px;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.options-list .option {
+    padding: 8px;
+    cursor: pointer;
+    background: #fff;
+}
+
+.options-list .option:hover {
+    background: #f0f0f0;
+}
+.add-new-option {
+    font-weight: bold;
+    color: red;
+    cursor: pointer;
+}
+
+.add-new-option:hover {
+    background: #f8d7da;
+}

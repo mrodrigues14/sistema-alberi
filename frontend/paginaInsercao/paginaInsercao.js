@@ -1691,24 +1691,11 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
         <td>
             <input type="text" name="Data" class="editavel" placeholder="dd/mm/aaaa" required style="width: 100%;">
         </td>
-        <td>
-            <select name="categoria" class="styled-select" style="width: 100%;" id="subextratoCategoria" required>
-                <option value="" >Selecione uma Categoria</option>
-            </select>
-        </td>
-        <td>
-            <select name="fornecedor" class="styled-select" style="width: 100%;" id="subextratoFornecedor">
-                <option value="" >Selecione um Fornecedor</option>
-            </select>
-        </td>
+        <td></td>
+        <td></td>
         <td><input type="text" name="observacao" class="editavel" placeholder="Observação" style="width: 100%;"></td>
-
         <td><input type="text" name="descricao" class="editavel" placeholder="Descrição" style="width: 100%;"></td>
-        <td>
-            <select name="rubricaContabil" class="styled-select" style="width: 100%;" id="subextratoRubricaContabil">
-                <option value="" >Selecione uma Rubrica</option>
-            </select>
-        </td>
+        <td></td>
         <td><input type="text" name="valorEn" class="editavel" placeholder="Entrada" style="width: 100%;"></td>
         <td><input type="text" name="valorSa" class="editavel" placeholder="Saída" style="width: 100%;"></td>
         <td colspan="2">
@@ -1726,37 +1713,71 @@ function adicionarLinhaSubextrato(idExtratoPrincipal, row) {
     // Configuração do campo de data
     const inputData = newRow.querySelector('input[name="Data"]');
     inputData.addEventListener('input', function () {
-        let value = this.value.replace(/\D/g, ''); // Remove caracteres não numéricos
-        if (value.length > 2) value = value.slice(0, 2) + '/' + value.slice(2); // Adiciona o primeiro "/"
-        if (value.length > 5) value = value.slice(0, 5) + '/' + value.slice(5); // Adiciona o segundo "/"
-        this.value = value.slice(0, 10); // Limita ao formato dd/mm/aaaa
+        let value = this.value.replace(/\D/g, '');
+        if (value.length > 2) value = value.slice(0, 2) + '/' + value.slice(2);
+        if (value.length > 5) value = value.slice(0, 5) + '/' + value.slice(5);
+        this.value = value.slice(0, 10);
     });
 
     inputData.addEventListener('blur', function () {
         const valor = this.value.trim();
-        const match = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); // Valida o formato dd/mm/aaaa
+        const match = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
 
         if (match) {
             const [_, dia, mes, ano] = match;
-
-            // Validações adicionais (dias e meses válidos)
             if (parseInt(dia, 10) > 31 || parseInt(mes, 10) > 12) {
                 alert('Data inválida. Verifique o dia e o mês.');
                 this.value = '';
                 return;
             }
-
-            this.value = `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`; // Ajusta o formato final
+            this.value = `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`;
         } else {
             alert('Data inválida. Por favor, use o formato dd/mm/aaaa.');
-            this.value = ''; // Limpa o campo se a data for inválida
+            this.value = '';
         }
     });
 
-    // Popula os campos de categoria, fornecedor e rubrica contábil
-    popularSelectCategoria(document.getElementById('subextratoCategoria'));
-    popularSelectFornecedor(document.getElementById('subextratoFornecedor'));
-    popularSelectRubricaContabil(document.getElementById('subextratoRubricaContabil'));
+    // Buscar e popular as categorias
+    fetch(`/insercao/dados-categoria?idcliente=${IDCLIENTE}`)
+        .then(response => response.json())
+        .then(categorias => {
+            const categoriaCell = newRow.children[1];
+            const dropdownCategorias = criarDropdownPersonalizado(
+                categorias.map(categoria => ({ id: categoria.IDCATEGORIA, nome: categoria.NOME })),
+                'rubricas',
+                (tipo) => abrirPopupOpcao(tipo)
+            );
+            categoriaCell.appendChild(dropdownCategorias);
+        })
+        .catch(error => console.error('Erro ao buscar categorias:', error));
+
+    // Buscar e popular os fornecedores
+    fetch(`/fornecedor/listar?idcliente=${IDCLIENTE}`)
+        .then(response => response.json())
+        .then(fornecedores => {
+            const fornecedorCell = newRow.children[2];
+            const dropdownFornecedores = criarDropdownPersonalizado(
+                fornecedores.map(fornecedor => fornecedor.NOME_TIPO),
+                'fornecedor',
+                (tipo) => abrirPopupOpcao(tipo)
+            );
+            fornecedorCell.appendChild(dropdownFornecedores);
+        })
+        .catch(error => console.error('Erro ao buscar fornecedores:', error));
+
+    // Buscar e popular as rubricas contábeis
+    fetch(`/insercao/listar-rubricas-contabeis`)
+        .then(response => response.json())
+        .then(rubricasContabeis => {
+            const rubricaCell = newRow.children[5];
+            const dropdownRubricas = criarDropdownPersonalizado(
+                rubricasContabeis.map(rubrica => ({ id: rubrica.IDRUBRICA, nome: rubrica.NOME })),
+                'rubricas',
+                (tipo) => abrirPopupOpcao(tipo)
+            );
+            rubricaCell.appendChild(dropdownRubricas);
+        })
+        .catch(error => console.error('Erro ao buscar rubricas contábeis:', error));
 
     // Adiciona formatação ao campo de entrada e saída
     const inputEntrada = newRow.querySelector('input[name="valorEn"]');
@@ -3956,24 +3977,111 @@ function mostrarExtratoPopup(extrato) {
         const row = document.createElement('tr');
         row.dataset.index = index;
 
-        // Função para remover acentos e normalizar letras maiúsculas/minúsculas
+        // Função para normalizar texto
         function normalizarTexto(texto) {
-            if (typeof texto !== 'string') return '';  // Verifica se o texto é string, senão retorna string vazia
+            if (typeof texto !== 'string') return '';
             return texto
-                .normalize("NFD") // Normaliza acentos
-                .replace(/[\u0300-\u036f]/g, "") // Remove acentos
-                .toLowerCase(); // Converte para minúsculas
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase();
         }
 
-        // Função para verificar se o valor está presente nas opções do select, ignorando acentos e maiúsculas/minúsculas
-        function verificarValorNoSelect(selectElement, valor) {
-            const valorNormalizado = normalizarTexto(valor);
-            return Array.from(selectElement.options).some(option => normalizarTexto(option.value) === valorNormalizado);
+        // Criar dropdown customizado com pesquisa dinâmica
+        function criarDropdownCustomizado(valorInicial, selectModel, tipo) {
+            const container = document.createElement("div");
+            container.classList.add("custom-select-container");
+            container.dataset.tipo = tipo; // 🔹 Identifica se é Rubrica ou Fornecedor
+
+            const selected = document.createElement("div");
+            selected.classList.add("selected");
+            selected.textContent = valorInicial || "Selecione uma opção";
+
+            const optionsContainer = document.createElement("div");
+            optionsContainer.classList.add("options-container");
+
+            const searchBox = document.createElement("input");
+            searchBox.type = "text";
+            searchBox.classList.add("search-box");
+            searchBox.placeholder = "Digite para buscar...";
+
+            const optionsList = document.createElement("div");
+            optionsList.classList.add("options-list");
+
+            // Criar opções baseadas no select original
+            Array.from(selectModel.options).forEach(option => {
+                const optionDiv = document.createElement("div");
+                optionDiv.classList.add("option");
+                optionDiv.textContent = option.textContent;
+
+                optionDiv.addEventListener("click", () => {
+                    selected.textContent = optionDiv.textContent;
+                    optionsContainer.classList.remove("active");
+                });
+
+                optionsList.appendChild(optionDiv);
+            });
+
+            optionsContainer.appendChild(searchBox);
+            optionsContainer.appendChild(optionsList);
+            container.appendChild(selected);
+            container.appendChild(optionsContainer);
+
+            // Toggle de exibição
+            selected.addEventListener("click", (event) => {
+                optionsContainer.classList.toggle("active");
+                searchBox.value = "";
+                filtrarOpcoes("", optionsList);
+                searchBox.focus();
+                event.stopPropagation(); // Evita fechar imediatamente ao abrir
+            });
+
+            // Fechar ao clicar fora
+            document.addEventListener("click", (event) => {
+                if (!container.contains(event.target)) {
+                    optionsContainer.classList.remove("active");
+                }
+            });
+
+            // Filtrar opções com base no input
+            searchBox.addEventListener("keyup", function(e) {
+                const searchTerm = e.target.value;
+                filtrarOpcoes(searchTerm, optionsList);
+
+                // Verifica se a opção não existe
+                if (!existeOpcao(searchTerm, optionsList)) {
+                    const addOptionDiv = document.createElement("div");
+                    addOptionDiv.classList.add("option", "add-new-option");
+                    addOptionDiv.textContent = `Adicionar "${searchTerm}"`;
+
+                    addOptionDiv.addEventListener("click", () => {
+                        abrirPopupOpcao(tipo);
+                        optionsContainer.classList.remove("active");
+                    });
+
+                    // Remove qualquer opção de "Adicionar" antiga antes de adicionar a nova
+                    const existingAddOption = optionsContainer.querySelector(".add-new-option");
+                    if (existingAddOption) {
+                        existingAddOption.remove();
+                    }
+
+                    optionsContainer.appendChild(addOptionDiv);
+                }
+            });
+
+            return container;
         }
 
-        // Função para destacar o campo em vermelho e fazer piscar
-        function destacarCampo(campo) {
-            campo.classList.add('campo-vermelho-piscante');
+        function filtrarOpcoes(searchTerm, optionsList) {
+            searchTerm = normalizarTexto(searchTerm);
+            Array.from(optionsList.children).forEach(option => {
+                let label = normalizarTexto(option.textContent);
+                option.style.display = label.includes(searchTerm) ? "block" : "none";
+            });
+        }
+
+        function existeOpcao(searchTerm, optionsList) {
+            searchTerm = normalizarTexto(searchTerm);
+            return Array.from(optionsList.children).some(option => normalizarTexto(option.textContent) === searchTerm);
         }
 
         // Data
@@ -3984,24 +4092,10 @@ function mostrarExtratoPopup(extrato) {
         dataCell.appendChild(dataInput);
         row.appendChild(dataCell);
 
-        // Rubrica (categoria)
+        // Rubrica (categoria) - Dropdown customizado com pesquisa
         const rubricaCell = document.createElement('td');
-        const rubricaSelect = document.createElement('select');
-        preencherSelectComOpcoesContabil(rubricaSelect, document.getElementById('seletorCategoria')); // Preenche com as opções de categoria
-
-        const categoriaValor = linha.categoria || ''; // Valor vindo do Excel
-
-        const opcaoCustom = document.createElement('option');
-        opcaoCustom.value = categoriaValor; // Define o valor vindo do Excel
-        opcaoCustom.textContent = categoriaValor || 'Valor não informado'; // Texto exibido no select
-        opcaoCustom.selected = true; // Define como selecionado
-        rubricaSelect.appendChild(opcaoCustom); // Adiciona a nova opção ao select
-
-        if (!verificarValorNoSelect(rubricaSelect, categoriaValor)) {
-            destacarCampo(rubricaSelect);
-        }
-
-        rubricaCell.appendChild(rubricaSelect);
+        const rubricaDropdown = criarDropdownCustomizado(linha.categoria, document.getElementById('seletorCategoria'), "rubricas");
+        rubricaCell.appendChild(rubricaDropdown);
         row.appendChild(rubricaCell);
 
         // Nome no Extrato
@@ -4020,42 +4114,11 @@ function mostrarExtratoPopup(extrato) {
         obsCell.appendChild(obsInput);
         row.appendChild(obsCell);
 
-        // Fornecedor
+        // Fornecedor - Dropdown customizado com pesquisa
         const fornecedorCell = document.createElement('td');
-        const fornecedorSelect = document.createElement('select');
-        preencherSelectComOpcoesContabil(fornecedorSelect, document.getElementById('seletorFornecedor'));
-
-        if (verificarValorNoSelect(fornecedorSelect, linha.fornecedor)) {
-            fornecedorSelect.value = linha.fornecedor;
-        } else {
-            const opcaoCustomFornecedor = document.createElement('option');
-            opcaoCustomFornecedor.value = linha.fornecedor || '';
-            opcaoCustomFornecedor.textContent = linha.fornecedor || 'Valor não informado';
-            fornecedorSelect.appendChild(opcaoCustomFornecedor);
-            fornecedorSelect.value = linha.fornecedor || '';
-        }
-
-        fornecedorCell.appendChild(fornecedorSelect);
+        const fornecedorDropdown = criarDropdownCustomizado(linha.fornecedor, document.getElementById('seletorFornecedor'), "fornecedor");
+        fornecedorCell.appendChild(fornecedorDropdown);
         row.appendChild(fornecedorCell);
-
-        // Rubrica Contábil - Aplicar a mesma lógica do fornecedor e rubrica financeira
-        const rubricaContabilCell = document.createElement('td');
-        const rubricaContabilSelect = document.createElement('select');
-        preencherSelectComOpcoesContabil(rubricaContabilSelect, document.getElementById('seletorRubricaContabil'));
-
-        if (verificarValorNoSelect(rubricaContabilSelect, linha.rubricaContabil)) {
-            rubricaContabilSelect.value = linha.rubricaContabil;
-        } else {
-            const opcaoCustomRubricaContabil = document.createElement('option');
-            opcaoCustomRubricaContabil.value = linha.rubricaContabil || '';
-            opcaoCustomRubricaContabil.textContent = linha.rubricaContabil || 'Valor não informado';
-            rubricaContabilSelect.appendChild(opcaoCustomRubricaContabil);
-            rubricaContabilSelect.value = linha.rubricaContabil || '';
-            destacarCampo(rubricaContabilSelect);
-        }
-
-        rubricaContabilCell.appendChild(rubricaContabilSelect);
-        row.appendChild(rubricaContabilCell);
 
         // Saída
         const saidaCell = document.createElement('td');
@@ -4072,18 +4135,6 @@ function mostrarExtratoPopup(extrato) {
         entradaInput.value = linha.tipo === 'entrada' ? linha.valor : '';
         entradaCell.appendChild(entradaInput);
         row.appendChild(entradaCell);
-
-        // Botão de Remover (Lixeira)
-        const removerCell = document.createElement('td');
-        const removerButton = document.createElement('button');
-        removerButton.innerHTML = '🗑️';
-        removerButton.classList.add('remover-linha');
-        removerButton.addEventListener('click', () => {
-            row.remove();
-            extrato.splice(index, 1);
-        });
-        removerCell.appendChild(removerButton);
-        row.appendChild(removerCell);
 
         extratoTableBody.appendChild(row);
     });
@@ -4117,20 +4168,26 @@ function salvarAlteracoes() {
     const entradas = [];
 
     linhas.forEach(linha => {
-        const data = linha.querySelector('td:nth-child(1) input').value || ''; // Data
-        const categoria = linha.querySelector('td:nth-child(2) select').value || '';  // Rubrica financeira
-        const nome = linha.querySelector('td:nth-child(3) input').value || ''; // Nome no extrato
-        const descricao = linha.querySelector('td:nth-child(4) input').value || ''; // Observação
+        const data = linha.querySelector('td:nth-child(1) input')?.value || ''; // Data
 
-        const fornecedorSelect = linha.querySelector('td:nth-child(5) select');
+        // 🔹 Captura a categoria do dropdown customizado e verifica se é "Selecione uma opção"
+        const categoriaElement = linha.querySelector('td:nth-child(2) .selected');
+        let categoria = categoriaElement ? categoriaElement.textContent.trim() : '';
+        categoria = (categoria === "Selecione uma opção") ? "" : categoria;
+
+        const nome = linha.querySelector('td:nth-child(3) input')?.value || ''; // Nome no extrato
+        const descricao = linha.querySelector('td:nth-child(4) input')?.value || ''; // Observação
+
+        // 🔹 Captura o fornecedor do dropdown customizado e verifica se é "Selecione uma opção"
+        const fornecedorElement = linha.querySelector('td:nth-child(5) .selected');
+        let fornecedor = fornecedorElement ? fornecedorElement.textContent.trim() : '';
+        fornecedor = (fornecedor === "Selecione uma opção") ? "" : fornecedor;
+
         const rubricaContabilInput = linha.querySelector('td:nth-child(6) input');
+        const rubricaContabil = rubricaContabilInput ? rubricaContabilInput.value : '';  // Rubrica contábil
 
-        const fornecedor = fornecedorSelect && fornecedorSelect.selectedIndex >= 0 ? fornecedorSelect.options[fornecedorSelect.selectedIndex].text : '';  // Nome do fornecedor, se não existir, usa uma string vazia
-
-        const rubricaContabil = rubricaContabilInput ? rubricaContabilInput.value : '';  // Rubrica contábil, se não existir, usa uma string vazia
-
-        const saida = linha.querySelector('td:nth-child(7) input').value || '0,00';  // Saída
-        const entrada = linha.querySelector('td:nth-child(8) input').value || '0,00';  // Entrada
+        const saida = linha.querySelector('td:nth-child(7) input')?.value || '0,00';  // Saída
+        const entrada = linha.querySelector('td:nth-child(8) input')?.value || '0,00';  // Entrada
 
         let tipo = '';
         let valor = '';
@@ -4143,8 +4200,11 @@ function salvarAlteracoes() {
             valor = formatarValorParaInsercao(saida);
         }
 
+        console.log(`✅ Registro capturado: Categoria: ${categoria}, Fornecedor: ${fornecedor}, Valor: ${valor}`);
+
         const idBancoElement = document.getElementById('seletorBanco');
         const idBanco = IDBANCO || (idBancoElement ? idBancoElement.value : null);
+
         entradas.push({
             Data: data,
             Categoria: categoria,
@@ -4160,6 +4220,7 @@ function salvarAlteracoes() {
     });
 
     const json_object = JSON.stringify(entradas);
+    console.log("📤 Enviando JSON:", json_object);
 
     // Enviar os dados via fetch
     fetch('/insercao/inserir-lote', {
@@ -4176,12 +4237,12 @@ function salvarAlteracoes() {
             return response.text();
         })
         .then(data => {
-            alert('Dados inseridos com sucesso!');
+            alert('✅ Dados inseridos com sucesso!');
             location.reload();
             fecharExtratoPopup();
         })
         .catch(error => {
-            console.error('Falha ao enviar dados:', error);
+            console.error('❌ Falha ao enviar dados:', error);
             alert('Erro ao inserir os dados.');
         });
 }
@@ -4240,22 +4301,79 @@ function abrirPopupOpcao(opcaoSelecionada) {
     }
 
     if (url) {
+        // Exibir o fundo escuro
+        $("#popupBackdrop").fadeIn();
+
         $("#popupOpcoesModal").dialog({
             modal: true,
-            width: 800, // Ajuste conforme necessário
-            height: 600, // Ajuste conforme necessário
+            width: 800,
+            height: 600,
             title: "Configuração",
             open: function () {
                 $("#popupIframe").attr("src", url);
+
+                // Ajustar z-index do popup e do fundo escuro
+                $(".ui-dialog").css("z-index", "99999");
+                $(".ui-widget-overlay").css("z-index", "99998"); // Fundo escuro correto
             },
             close: function () {
                 $("#popupIframe").attr("src", "");
+                $("#popupBackdrop").fadeOut(); // Esconder fundo escuro ao fechar
+
+                // 🔹 Aguarda um pequeno tempo para garantir que os selects foram atualizados
+                setTimeout(() => {
+                    atualizarListasDropdown();
+                }, 300);
 
                 initializePage();
             }
         });
     }
 }
+
+function atualizarListasDropdown() {
+    console.log("Atualizando listas...");
+
+    // Obtém os selects originais novamente
+    const seletorCategoria = document.getElementById('seletorCategoria');
+    const seletorFornecedor = document.getElementById('seletorFornecedor');
+
+    // Atualiza todas as instâncias do dropdown customizado
+    document.querySelectorAll('.custom-select-container').forEach(container => {
+        const tipo = container.dataset.tipo; // Identifica se é rubrica ou fornecedor
+
+        let selectModel;
+        if (tipo === "rubricas") {
+            selectModel = seletorCategoria;
+        } else if (tipo === "fornecedor") {
+            selectModel = seletorFornecedor;
+        }
+
+        if (selectModel) {
+            // Remove todas as opções existentes no dropdown
+            const optionsList = container.querySelector('.options-list');
+            optionsList.innerHTML = "";
+
+            // Adiciona as novas opções vindas do select original
+            Array.from(selectModel.options).forEach(option => {
+                const optionDiv = document.createElement("div");
+                optionDiv.classList.add("option");
+                optionDiv.textContent = option.textContent;
+
+                optionDiv.addEventListener("click", () => {
+                    container.querySelector('.selected').textContent = optionDiv.textContent;
+                    container.querySelector('.options-container').classList.remove("active");
+                });
+
+                optionsList.appendChild(optionDiv);
+            });
+
+            console.log(`Lista de ${tipo} atualizada!`);
+        }
+    });
+}
+
+
 
 
 
