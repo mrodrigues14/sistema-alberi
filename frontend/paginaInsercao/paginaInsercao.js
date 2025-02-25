@@ -2777,15 +2777,27 @@ async function processarExtrato(nomeBanco) {
                     data.push(item.str);
                 });
             }
+            console.log(data)
             // Processamento de PDFs baseado no nomeBanco
             if (nomeBanco.toLowerCase().includes('banco do brasil')) {
-                // Banco do Brasil
-                const linhasExtrato = data.some(item => item.includes("BB Cash - Conta corrente - Consulta autorizaveis - Extrato de conta corrente" || "Consultas - Extrato de conta corrente"))
-                    ? processarDadosDoExtratoBancoDoBrasil(data)
-                    : processarDadosDoExtratoBancoDoBrasil2(data);
-                mostrarExtratoPopup(linhasExtrato);
+                console.log(data);
 
-            } else if (nomeBanco.toLowerCase().includes('itau')) {
+                // Junta todas as linhas do extrato em uma única string para facilitar a busca
+                const textoCompleto = data.join(" ");
+
+                // Verifica se contém a frase específica
+                if (textoCompleto.includes("Pagando pelo App BB, App Ourocard, WhatsApp ou bb.com.br")) {
+                    const linhasExtrato = processarDadosDoExtratoBancoDoBrasil3(data);
+                    mostrarExtratoPopup(linhasExtrato);
+                } else {
+                    const linhasExtrato = data.some(item => item.includes("BB Cash - Conta corrente - Consulta autorizaveis - Extrato de conta corrente") ||
+                        item.includes("Consultas - Extrato de conta corrente"))
+                        ? processarDadosDoExtratoBancoDoBrasil2(data)
+                        : processarDadosDoExtratoBancoDoBrasil(data);
+                    mostrarExtratoPopup(linhasExtrato);
+                }
+            }
+            else if (nomeBanco.toLowerCase().includes('itau')) {
                 // Itaú
                 const linhasExtrato = data.some(item => item.includes("Total contratado. O uso do Limite da Conta e Limite da Conta adicional poderá ter cobrança de juros + IOF."))
                     ? processarDadosDoExtratoItauPersonalite(data)
@@ -3591,7 +3603,7 @@ function processarDadosDoExtratoBradesco2(data) {
 
 //banco do brasil
 function processarDadosDoExtratoBancoDoBrasil(data) {
-
+    console.log(data)
     const extrato = [];
     const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
     const valueRegex = /-?\d+,\d{2}/;
@@ -3705,6 +3717,52 @@ function processarDadosDoExtratoBancoDoBrasil2(data) {
 
     return extrato.filter(linha => linha.data && linha.descricao && linha.valor !== null);
 }
+function processarDadosDoExtratoBancoDoBrasil3(data) {
+    const extrato = [];
+    let capturando = false;
+
+    for (let i = 0; i < data.length; i++) {
+        const text = data[i].trim();
+
+        // Inicia captura a partir de "Detalhes da fatura"
+        if (!capturando && text.includes("Detalhes da fatura")) {
+            capturando = true;
+            continue;
+        }
+
+        if (capturando) {
+            // Identifica se a linha é uma data (exemplo: "25/11" ou "25 11")
+            const dateRegex = /^(\d{2})[\/ ](\d{2})$/;
+            if (text.match(dateRegex)) {
+                let dia = text.match(dateRegex)[1];
+                let mes = text.match(dateRegex)[2];
+
+                let descricao = data[i + 2]?.trim() || "";
+                let valor = data[i + 4]?.trim() || "";
+
+                if (descricao && valor && !descricao.toLowerCase().includes("subtotal") && !descricao.toLowerCase().includes("saldo fatura")) {
+                    let tipo = valor.startsWith("-") ? "entrada" : "saida";
+
+                    // Limpeza do valor (remove "R$", espaços e converte vírgula para ponto)
+                    valor = valor.replace(/[^\d,-]/g, "").replace(",", ".");
+
+                    extrato.push({
+                        data: `${dia}/${mes}/2024`, // Ajuste do ano conforme necessário
+                        descricao: descricao,
+                        valor: parseFloat(valor),
+                        tipo: tipo
+                    });
+
+                    i += 4; // Avança para a próxima transação
+                }
+            }
+        }
+    }
+
+    console.log("Extrato final:", extrato);
+    return extrato;
+}
+
 function formatarValorFinanceiro(valor) {
     return valor
         .toLocaleString('pt-BR', {
